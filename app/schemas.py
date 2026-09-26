@@ -40,6 +40,18 @@ class FaqOut(BaseModel):
     sort_order: int
 
 
+class PortfolioOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    title: str
+    description: str
+    image_url: str | None = None
+    site_url: str | None = None
+    tags: str | None = None
+    sort_order: int
+
+
 # ---------- Заявки ----------
 
 class LeadCreate(BaseModel):

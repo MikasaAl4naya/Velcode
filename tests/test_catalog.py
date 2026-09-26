@@ -1,6 +1,6 @@
 import pytest
 
-from app.models import Category, Service
+from app.models import Category, Portfolio, Service
 
 
 @pytest.mark.asyncio
@@ -47,3 +47,20 @@ async def test_filter_services_by_category(client, db_session):
     body = response.json()
     assert len(body) == 1
     assert body[0]["title"] == "S1"
+
+
+@pytest.mark.asyncio
+async def test_portfolio_list(client, db_session):
+    async with db_session() as session:
+        session.add_all([
+            Portfolio(title="Сайт А", description="Описание А", tags="Веб-разработка", sort_order=1),
+            Portfolio(title="Сайт Б", site_url="https://example.com", sort_order=2),
+        ])
+        await session.commit()
+
+    response = await client.get("/api/portfolio")
+    assert response.status_code == 200
+    body = response.json()
+    assert len(body) == 2
+    assert body[0]["title"] == "Сайт А"
+    assert body[1]["site_url"] == "https://example.com"

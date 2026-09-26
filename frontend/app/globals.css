@@ -1,0 +1,22 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand: #2583FF;
+  --color-brand-hover: #0872FF;
+  --color-text: #333333;
+  --font-sans: var(--font-montserrat), 'Montserrat', sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-sans);
+  color: #333;
+}
+
+/* Offset for fixed header */
+[id] {
+  scroll-margin-top: 72px;
+}

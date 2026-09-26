@@ -66,6 +66,21 @@ class Faq(Base):
     sort_order: Mapped[int] = mapped_column(Integer, default=0)
 
 
+class Portfolio(Base):
+    """Кейс/проект для раздела Портфолио."""
+
+    __tablename__ = "portfolio"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    title: Mapped[str] = mapped_column(String(255), nullable=False)
+    description: Mapped[str] = mapped_column(Text, default="")
+    image_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    site_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    # Теги через запятую, например "Веб-разработка, Битрикс24"
+    tags: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    sort_order: Mapped[int] = mapped_column(Integer, default=0)
+
+
 class Lead(Base):
     """Заявка с сайта (форма 'Оставить заявку' / 'Получить бесплатный аудит')."""
 

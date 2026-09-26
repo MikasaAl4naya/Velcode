@@ -1,0 +1,41 @@
+#!/bin/sh
+# Запускается перед каждым git push.
+# Останавливает пуш если тесты или сборка фронта упали.
+
+set -e
+
+ROOT="$(git rev-parse --show-toplevel)"
+cd "$ROOT"
+
+# Определяем python — Windows или Linux
+if [ -f ".venv/Scripts/python.exe" ]; then
+    PYTHON=".venv/Scripts/python.exe"
+elif [ -f ".venv/bin/python" ]; then
+    PYTHON=".venv/bin/python"
+else
+    echo "[pre-push] Виртуальное окружение не найдено, пропускаем проверки."
+    exit 0
+fi
+
+echo ""
+echo "=== [pre-push] Тесты бэкенда ==="
+"$PYTHON" -m pytest -q
+if [ $? -ne 0 ]; then
+    echo ""
+    echo "СТОП: тесты упали — пуш отменён. Почини тесты и попробуй снова."
+    exit 1
+fi
+
+echo ""
+echo "=== [pre-push] Сборка фронтенда ==="
+cd "$ROOT/frontend"
+npm run build --silent
+if [ $? -ne 0 ]; then
+    echo ""
+    echo "СТОП: next build упал — пуш отменён. Почини ошибки сборки и попробуй снова."
+    exit 1
+fi
+
+echo ""
+echo "=== [pre-push] Всё ОК — пушим ==="
+exit 0

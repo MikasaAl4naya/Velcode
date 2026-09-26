@@ -4,8 +4,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.database import get_db
-from app.models import Category, Faq, Service
-from app.schemas import CategoryOut, FaqOut, ServiceOut
+from app.models import Category, Faq, Portfolio, Service
+from app.schemas import CategoryOut, FaqOut, PortfolioOut, ServiceOut
 
 router = APIRouter(prefix="/api", tags=["catalog"])
 
@@ -31,4 +31,10 @@ async def list_services(
 @router.get("/faq", response_model=list[FaqOut])
 async def list_faq(db: AsyncSession = Depends(get_db)) -> list[Faq]:
     result = await db.execute(select(Faq).order_by(Faq.sort_order, Faq.id))
+    return list(result.scalars().all())
+
+
+@router.get("/portfolio", response_model=list[PortfolioOut])
+async def list_portfolio(db: AsyncSession = Depends(get_db)) -> list[Portfolio]:
+    result = await db.execute(select(Portfolio).order_by(Portfolio.sort_order, Portfolio.id))
     return list(result.scalars().all())
