@@ -1,101 +1,229 @@
-'use client'
-
-import { useEffect, useRef } from 'react'
 import Link from 'next/link'
-import gsap from 'gsap'
 
-const MARQUEE_TEXT =
-  '· САЙТЫ ПОД КЛЮЧ · UX/UI ЛЮБОЙ СЛОЖНОСТИ · ВНЕДРЕНИЕ ИИ · ИНТЕГРАЦИИ С 1С И БИТРИКС24 · ПРОДВИЖЕНИЕ · ФИРМЕННЫЙ СТИЛЬ · ДОРАБОТКА 1С · СОЗДАНИЕ ЧАТ-БОТОВ  '
+const TAGS_ROW1 = ['Разработка сайтов', 'Веб-дизайн', 'Внедрение ИИ']
+const TAGS_ROW2 = ['Продвижение', 'Интеграции с 1С и Битрикс24']
 
 export default function Hero() {
-  const marqueeRef = useRef<HTMLDivElement>(null)
-  const tweenRef = useRef<gsap.core.Tween | null>(null)
-
-  useEffect(() => {
-    const el = marqueeRef.current
-    if (!el) return
-
-    const play = () => {
-      tweenRef.current?.kill()
-      const width = el.children[0]
-        ? (el.children[0] as HTMLElement).offsetWidth
-        : 0
-      if (!width) return
-      tweenRef.current = gsap.fromTo(
-        el.children,
-        { x: 0 },
-        { x: -width, duration: width / 20, ease: 'none', repeat: -1 },
-      )
-    }
-
-    play()
-    window.addEventListener('resize', play)
-    return () => {
-      tweenRef.current?.kill()
-      window.removeEventListener('resize', play)
-    }
-  }, [])
-
   return (
     <section
       id="main"
-      className="relative min-h-screen flex flex-col"
       style={{
-        backgroundImage: `url('https://img3.creatium.ru/disk2/af/93/59/bc699dfc530687d44c0c35884138c30553/frame_15_1.png')`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
+        background: '#ffffff',
+        minHeight: 952,
+        paddingTop: 96,
+        display: 'flex',
+        flexDirection: 'column',
+        boxSizing: 'border-box',
       }}
     >
-      {/* Dark overlay */}
-      <div className="absolute inset-0 bg-black/60" />
+      <div style={{
+        flex: 1,
+        display: 'flex',
+        alignItems: 'stretch',
+        justifyContent: 'center',
+        paddingBottom: 20,
+      }}>
+        <div style={{
+          maxWidth: 1600,
+          width: '100%',
+          padding: '0 50px',
+          display: 'flex',
+          alignItems: 'stretch',
+          gap: 0,
+          boxSizing: 'border-box',
+        }} className="hero-inner">
 
-      {/* Content */}
-      <div className="relative z-10 flex-1 flex items-center">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-32 w-full">
-          <div className="max-w-xl">
-            <h1 className="text-4xl sm:text-5xl lg:text-[56px] font-bold text-white leading-tight mb-6">
-              Сайты под ключ<br />
-              и&nbsp;автоматизация<br />
-              процессов для<br />
-              <span className="text-[#4a98ff]">вашего бизнеса</span>
-            </h1>
-            <p className="text-white/80 text-lg mb-10 leading-relaxed">
-              Разработка и автоматизация под ключ с гарантией и техподдержкой:
-              связываем сайты, 1С и CRM в единую рабочую систему.
-              <br />
-              Начните с бесплатного аудита!
-            </p>
-            <div className="flex flex-wrap gap-4">
-              <Link
-                href="/#contacts"
-                className="bg-[#2583FF] hover:bg-[#0872FF] text-white font-semibold px-7 py-3.5 rounded-lg transition-colors text-[15px]"
-              >
-                Получить бесплатный аудит ↗
-              </Link>
-              <Link
-                href="/#service"
-                className="border border-white/40 text-white hover:border-white hover:bg-white/10 font-semibold px-7 py-3.5 rounded-lg transition-colors text-[15px]"
-              >
-                Смотреть услуги
-              </Link>
+          {/* Left column */}
+          <div style={{
+            display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
+            paddingTop: 55, paddingBottom: 45,
+            flexShrink: 0, marginRight: -50,
+          }} className="hero-left">
+
+            {/* Top group: heading + description + buttons */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 70 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 50 }}>
+                {/* Heading */}
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <h1 style={{ margin: 0, lineHeight: '78px', fontSize: 71, fontWeight: 500, letterSpacing: '-1.4px' }}>
+                    <span style={{ color: '#5366a4' }}>Цифровые решения</span>
+                  </h1>
+                  <h1 style={{ margin: 0, lineHeight: '78px', fontSize: 70, fontWeight: 500, color: '#171819', letterSpacing: '-1.4px' }}>
+                    для вашего бизнеса
+                  </h1>
+                </div>
+
+                {/* Description */}
+                <p style={{
+                  margin: 0, fontSize: 16, color: 'rgba(23,24,25,0.7)',
+                  lineHeight: '22px', fontWeight: 300,
+                }}>
+                  Веб-разработка и автоматизация процессов. Создадим<br />
+                  и поддержим всю digital-инфраструктуру вашей компании.
+                </p>
+              </div>
+
+              {/* Buttons */}
+              <div style={{ display: 'flex', alignItems: 'center' }}>
+                <Link
+                  href="/#contacts"
+                  style={{
+                    background: '#171819', color: '#ffffff', fontSize: 16, fontWeight: 400,
+                    height: 56, padding: '0 25px', borderRadius: 30,
+                    textDecoration: 'none', display: 'flex', alignItems: 'center',
+                    border: '0.5px solid #26292d', whiteSpace: 'nowrap', flexShrink: 0,
+                  }}
+                >
+                  Получить консультацию
+                </Link>
+
+                <Link
+                  href="/#service"
+                  style={{
+                    background: '#ffffff', color: '#171819', fontSize: 16, fontWeight: 300,
+                    height: 56, paddingRight: 25,
+                    borderRadius: 30, border: '1px solid #d0d1d1',
+                    textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 15,
+                    whiteSpace: 'nowrap', flexShrink: 0,
+                  }}
+                >
+                  <span style={{
+                    width: 56, height: 56, borderRadius: 30, background: '#7183bd',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                  }}>
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+                      <path d="M7 17L17 7M17 7H7M17 7V17" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </span>
+                  Наши услуги
+                </Link>
+              </div>
+            </div>
+
+            {/* Tags */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div style={{ display: 'flex', gap: 0 }}>
+                {TAGS_ROW1.map(tag => (
+                  <span key={tag} style={{
+                    background: '#ffffff', border: '1px solid #d0d1d1',
+                    color: '#171819', fontSize: 15, fontWeight: 300,
+                    height: 40, padding: '0 20px', borderRadius: 30,
+                    display: 'flex', alignItems: 'center', flexShrink: 0,
+                  }}>
+                    {tag}
+                  </span>
+                ))}
+              </div>
+              <div style={{ display: 'flex', gap: 0 }}>
+                {TAGS_ROW2.map(tag => (
+                  <span key={tag} style={{
+                    background: '#ffffff', border: '1px solid #d0d1d1',
+                    color: '#171819', fontSize: 15, fontWeight: 300,
+                    height: 40, padding: '0 20px', borderRadius: 30,
+                    display: 'flex', alignItems: 'center', flexShrink: 0,
+                  }}>
+                    {tag}
+                  </span>
+                ))}
+              </div>
             </div>
           </div>
+
+          {/* Right column: price card + torus */}
+          <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+
+            {/* Price card (overlaps torus by 200px) */}
+            <div style={{
+              display: 'flex', flexDirection: 'column', alignItems: 'flex-end',
+              justifyContent: 'flex-end',
+              height: '100%', paddingBottom: 40,
+              marginRight: -200, zIndex: 2, position: 'relative',
+            }}>
+              {/* Badge */}
+              <div style={{
+                background: '#7183bd', color: '#ffffff',
+                fontSize: 14, fontWeight: 500,
+                padding: 10, borderRadius: 30,
+                marginBottom: -8, position: 'relative', zIndex: 2,
+              }}>
+                + бесплатный аудит
+              </div>
+
+              {/* Glassmorphism card */}
+              <div style={{
+                backdropFilter: 'blur(10px)',
+                WebkitBackdropFilter: 'blur(10px)',
+                background: 'linear-gradient(270deg, rgba(235,242,255,0.5) 0%, rgba(255,255,255,0.5) 100%)',
+                border: '1px solid rgba(255,255,255,0.5)',
+                borderRadius: 25,
+                padding: '10px 24px 10px 10px',
+                display: 'flex', gap: 20, alignItems: 'center',
+                zIndex: 1, position: 'relative',
+              }}>
+                {/* Image placeholder */}
+                <div style={{
+                  width: 110, height: 80, borderRadius: 20,
+                  background: 'linear-gradient(135deg, #1a1a2e 0%, #0d0d0d 100%)',
+                  flexShrink: 0, overflow: 'hidden', display: 'flex',
+                  alignItems: 'center', justifyContent: 'center',
+                }}>
+                  <div style={{
+                    width: '100%', height: '100%',
+                    background: 'repeating-conic-gradient(#222 0% 25%, #111 0% 50%) 0 0 / 20px 20px',
+                  }} />
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                  <p style={{ margin: 0, fontSize: 16, fontWeight: 300, color: '#171819' }}>Сайт под ключ</p>
+                  <p style={{ margin: 0, fontSize: 20, fontWeight: 500, color: '#171819' }}>от 36 000 ₽</p>
+                </div>
+
+                {/* Arrow circle */}
+                <div style={{
+                  width: 56, height: 56, borderRadius: '50%',
+                  border: '1px solid rgba(23,24,25,0.5)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  flexShrink: 0,
+                }}>
+                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+                    <path d="M7 17L17 7M17 7H7M17 7V17" stroke="#171819" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            {/* Torus */}
+            <div style={{ width: 780, height: 780, flexShrink: 0, zIndex: 1, position: 'relative' }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/torus.png"
+                alt=""
+                style={{
+                  width: '100%', height: '100%', objectFit: 'cover',
+                  display: 'block',
+                  maskImage: 'radial-gradient(circle at 50% 50%, black 55%, transparent 78%)',
+                  WebkitMaskImage: 'radial-gradient(circle at 50% 50%, black 55%, transparent 78%)',
+                }}
+              />
+            </div>
+          </div>
+
         </div>
       </div>
 
-      {/* Marquee strip */}
-      <div className="relative z-10 overflow-hidden bg-[#2583FF]/20 backdrop-blur-sm border-t border-white/10">
-        <div ref={marqueeRef} className="flex whitespace-nowrap py-3">
-          {[0, 1].map((i) => (
-            <span
-              key={i}
-              className="text-white/90 font-semibold text-[13px] tracking-wider uppercase px-4 shrink-0"
-            >
-              {MARQUEE_TEXT}
-            </span>
-          ))}
-        </div>
-      </div>
+      <style>{`
+        @media (max-width: 1100px) {
+          .hero-inner { flex-direction: column !important; padding: 20px 24px !important; }
+          .hero-left { margin-right: 0 !important; padding-top: 30px !important; padding-bottom: 30px !important; }
+          .hero-inner > div:last-child { justify-content: center !important; }
+          .hero-inner > div:last-child > div:last-child { width: 100% !important; max-width: 500px !important; height: auto !important; }
+          .hero-inner > div:last-child > div:last-child img { width: 100% !important; height: auto !important; }
+          .hero-inner > div:last-child > div:first-child { display: none !important; }
+        }
+        @media (max-width: 600px) {
+          .hero-left h1 { font-size: 44px !important; line-height: 52px !important; }
+        }
+      `}</style>
     </section>
   )
 }
