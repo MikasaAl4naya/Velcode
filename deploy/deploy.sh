@@ -12,16 +12,16 @@ echo "=== Pull ==="
 git pull origin master
 
 echo "=== Backend: зависимости ==="
-.venv/bin/pip install -r requirements.txt -q
+venv/bin/pip install -r requirements.txt -q
 
 echo "=== Backend: миграции ==="
-.venv/bin/alembic upgrade head
+venv/bin/alembic upgrade head
 
 echo "=== Frontend: зависимости ==="
 cd frontend
-npm ci --omit=dev=false
+npm ci
 echo "=== Frontend: сборка ==="
-npm run build
+NODE_OPTIONS='--max-old-space-size=1536' npm run build
 
 # standalone-сервер требует статику рядом с собой
 cp -r .next/static .next/standalone/.next/static
@@ -35,6 +35,9 @@ if [ "$FIRST_RUN" = "--first-run" ]; then
     sudo systemctl daemon-reload
     sudo systemctl enable velcode-backend velcode-frontend
 fi
+
+echo "=== Права на директорию ==="
+sudo chown -R www-data:www-data "$APP_DIR"
 
 echo "=== Перезапуск сервисов ==="
 sudo systemctl restart velcode-backend
