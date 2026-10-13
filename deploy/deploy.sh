@@ -26,6 +26,8 @@ NODE_OPTIONS='--max-old-space-size=1536' npm run build
 # standalone-сервер требует статику рядом с собой
 cp -r .next/static .next/standalone/.next/static
 cp -r public  .next/standalone/public 2>/dev/null || true
+# favicon из app/ — Next.js кладёт его в .next/server, копируем в public
+cp app/favicon.ico .next/standalone/public/favicon.ico 2>/dev/null || true
 cd ..
 
 if [ "$FIRST_RUN" = "--first-run" ]; then
