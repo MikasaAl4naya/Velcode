@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useModal } from '@/hooks/useModal';
 import { NAV_LINKS } from '@/lib/siteData';
 import { COMPANY_CONFIG } from '@/lib/company';
@@ -14,6 +15,7 @@ type HeaderProps = {
 export function Header({ currentPath = '/' }: HeaderProps) {
   const [isOpen, setIsOpen] = useState(false);
   const { openModal } = useModal();
+  const pathname = usePathname();
   const navRef = useRef<HTMLElement>(null);
   const headerRef = useRef<HTMLElement>(null);
 
@@ -48,7 +50,11 @@ export function Header({ currentPath = '/' }: HeaderProps) {
   return (
     <header className={`header ${isOpen ? 'header--menu-open' : ''}`} ref={headerRef}>
       <div className="header__container">
-        <Link href="/" className="header__logo">
+        <Link
+          href="/"
+          className="header__logo"
+          onClick={() => { if (pathname === '/') window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+        >
           {COMPANY_CONFIG.brandName}
         </Link>
 
