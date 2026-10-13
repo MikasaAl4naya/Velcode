@@ -1,5 +1,6 @@
 import { Header } from '@/components/sections/Header';
 import { Services } from '@/components/sections/Services';
+import { Contacts } from '@/components/sections/Contacts';
 import { Footer } from '@/components/sections/Footer';
 
 export const metadata = {
@@ -13,6 +14,7 @@ export default function ServicesPage() {
       <Header currentPath="/services" />
       <main>
         <Services isStandalone={true} />
+        <Contacts />
       </main>
       <Footer />
     </>

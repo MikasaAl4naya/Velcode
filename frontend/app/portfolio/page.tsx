@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Header } from '@/components/sections/Header';
+import { Contacts } from '@/components/sections/Contacts';
 import { Footer } from '@/components/sections/Footer';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { PORTFOLIO_PAGE_ITEMS } from '@/lib/siteData';
@@ -71,6 +72,7 @@ export default function PortfolioPage() {
             </div>
           </div>
         </div>
+        <Contacts />
       </main>
       <Footer />
     </>

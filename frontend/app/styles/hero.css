@@ -93,6 +93,7 @@
   flex-direction: column;
   gap: var(--hero-gap);
   width: 50%;
+  margin-top: -80px;
 }
 
 .hero__title-wrap {

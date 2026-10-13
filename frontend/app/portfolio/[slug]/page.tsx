@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useModal } from '@/hooks/useModal';
 import { Header } from '@/components/sections/Header';
+import { Contacts } from '@/components/sections/Contacts';
 import { Footer } from '@/components/sections/Footer';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 
@@ -177,6 +178,7 @@ export default function CasePage() {
             </div>
           </div>
         </div>
+        <Contacts />
       </main>
       <Footer />
     </>

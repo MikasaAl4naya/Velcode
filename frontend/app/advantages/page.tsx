@@ -1,5 +1,6 @@
 import { Header } from '@/components/sections/Header';
 import { Advantages } from '@/components/sections/Advantages';
+import { Contacts } from '@/components/sections/Contacts';
 import { Footer } from '@/components/sections/Footer';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 
@@ -24,6 +25,7 @@ export default function AdvantagesPage() {
           </div>
           <Advantages isStandalone={true} />
         </div>
+        <Contacts />
       </main>
       <Footer />
     </>
