@@ -103,19 +103,19 @@ export const ADVANTAGES_DATA = [
 export const PORTFOLIO_DATA = [
   {
     title: 'Кейс Trattoria Pomodoro',
-    img: '/assets/portfolio-site-preview-1.png',
+    img: '/assets/case-trattoria.png',
     url: 'velcode.ru/',
     link: '/portfolio/case',
   },
   {
-    title: 'Кейс интернет-магазин',
-    img: '/assets/portfolio-site-preview-2.png',
+    title: 'Кейс интернет-магазин спорт-товаров',
+    img: '/assets/case-sport.png',
     url: 'velcode.ru/',
     link: '/portfolio/case',
   },
   {
-    title: 'Кейс корпоративный портал',
-    img: '/assets/portfolio-site-preview-3.png',
+    title: 'Кейс интеграция Битрикс24 и 1С',
+    img: '/assets/case-bitrix.png',
     url: 'velcode.ru/',
     link: '/portfolio/case',
   },
@@ -125,7 +125,7 @@ export const PORTFOLIO_PAGE_ITEMS = [
   {
     id: 'case-1',
     title: 'Сайт-визитка для рестобара',
-    img: '/assets/portfolio-site-preview-1.png',
+    img: '/assets/case-trattoria.png',
     tags: ['Веб-дизайн'],
     link: '/portfolio/case',
     empty: false,
@@ -133,7 +133,7 @@ export const PORTFOLIO_PAGE_ITEMS = [
   {
     id: 'case-2',
     title: 'Сайт для магазина спорт-товаров',
-    img: '/assets/portfolio-site-preview-2.png',
+    img: '/assets/case-sport.png',
     tags: ['Веб-дизайн'],
     link: '/portfolio/case',
     empty: false,
@@ -141,7 +141,7 @@ export const PORTFOLIO_PAGE_ITEMS = [
   {
     id: 'case-3',
     title: 'Модуль интеграции Битрикс24 и 1С:Предприятие',
-    img: '/assets/portfolio-site-preview-3.png',
+    img: '/assets/case-bitrix.png',
     tags: ['Интеграции с 1С и Битрикс24'],
     link: '/portfolio/case',
     empty: false,
