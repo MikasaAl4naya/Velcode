@@ -97,6 +97,7 @@ export function LeadForm({
           name: formData.name,
           phone: formData.phone,
           question: formData.question,
+          consent: formData.consent,
         }),
       });
 
