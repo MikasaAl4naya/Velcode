@@ -1,0 +1,248 @@
+/* ============================================================
+   PORTFOLIO PAGE
+   Адаптивная страница портфолио:
+   - Хлебные крошки: 16px
+   - Заголовок и подзаголовок в две колонки
+   - Сетка проектов: отступы по бокам 20px (gap), по строкам 70px (gap)
+   - Карточки без рамки Safari (чистый макет со скруглением и тенью)
+   - Теги/бейджи под каждым проектом
+============================================================ */
+
+.portfolio-page {
+  /* Увеличенный отступ от фиксированной шапки */
+  padding-top: calc(var(--header-offset) + clamp(30px, 4vw, 55px));
+  padding-bottom: var(--section-pad);
+}
+
+.portfolio-page__container {
+  /* Поля и максимальная ширина стандартизированы с глобальной сеткой в variables.css */
+}
+
+/* ---------- Хлебные крошки (16px) ---------- */
+.breadcrumbs {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: clamp(24px, 2.5vw, 40px);
+  font-size: 16px;
+  line-height: 1.4;
+  font-weight: 400; /* все regular */
+}
+
+.breadcrumbs__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 400;
+}
+
+.breadcrumbs__link {
+  color: var(--color-dark);
+  opacity: 0.5; /* неактивная 0.5 */
+  font-weight: 400;
+  text-decoration: none;
+  transition: opacity var(--transition-base), color var(--transition-base);
+  cursor: pointer;
+}
+
+.breadcrumbs__link:hover {
+  opacity: 1;
+  color: var(--color-dark);
+}
+
+.breadcrumbs__separator {
+  color: var(--color-dark);
+  opacity: 0.5;
+  font-weight: 400;
+  user-select: none;
+}
+
+.breadcrumbs__current {
+  color: var(--color-dark);
+  font-weight: 400; /* regular */
+  opacity: 1;
+}
+
+/* ---------- Заголовок и подзаголовок секции ---------- */
+.portfolio-page__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: clamp(24px, 4vw, 60px);
+  margin-bottom: clamp(40px, 4.5vw, 64px);
+}
+
+.portfolio-page__title {
+  color: var(--color-dark);
+  font-size: var(--fs-h2);
+  font-weight: 500;
+  line-height: 1.08;
+  letter-spacing: -1.2px;
+  margin: 0;
+}
+
+.portfolio-page__desc {
+  max-width: 440px;
+  color: var(--color-muted);
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.5;
+  margin: 0;
+  padding-top: 6px;
+}
+
+/* ---------- Сетка проектов ----------
+   Отступы по бокам 20px, по строкам 70px */
+.portfolio-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  column-gap: 20px;
+  row-gap: 70px;
+}
+
+/* ---------- Карточка проекта ---------- */
+.portfolio-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  transition: transform var(--transition-base);
+}
+
+.portfolio-card__preview {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  border-radius: 18px;
+  overflow: hidden;
+  background: #f4f6fa;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  outline: none;
+}
+
+.portfolio-card__preview:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.portfolio-card__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  display: block;
+}
+
+/* Пустая 4-я карточка */
+.portfolio-card--empty .portfolio-card__preview {
+  border: 1.5px dashed #cfd6e4;
+  background: #f8fafc;
+  box-shadow: none;
+  cursor: default;
+}
+
+.portfolio-card--empty .portfolio-card__img {
+  object-fit: contain;
+  padding: 24px;
+}
+
+/* Информация под превью */
+.portfolio-card__info {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.portfolio-card__title {
+  color: var(--color-dark);
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: -0.3px;
+  margin: 0;
+}
+
+.portfolio-card__title-link {
+  color: inherit;
+  text-decoration: none;
+  transition: color var(--transition-base);
+}
+
+@media (hover: hover) {
+  .portfolio-card__title-link:hover,
+  .portfolio-card__preview:hover ~ .portfolio-card__info .portfolio-card__title-link {
+    color: var(--color-blue-pill);
+  }
+}
+
+/* Теги карточки */
+.portfolio-card__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Плашки/теги карточки: font-size 15px, без обводки, фон #EFF3FE, цвет #5366A4, padding: 10px 16px */
+.portfolio-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 16px;
+  border-radius: 9999px;
+  background: #EFF3FE;
+  color: #5366A4;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1;
+  border: none;
+}
+
+/* ---------- Адаптивные брейкпоинты для страницы портфолио ---------- */
+
+/* Ноутбуки и планшеты (max-width: 991.98px): 2 колонки */
+@media (max-width: 991.98px) {
+  .portfolio-page__header {
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .portfolio-page__desc {
+    max-width: 560px;
+    padding-top: 0;
+  }
+
+  .portfolio-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: 50px;
+  }
+}
+
+/* Мобильные телефоны (max-width: 767.98px): 1 колонка, аккуратные отступы */
+@media (max-width: 767.98px) {
+  .portfolio-page {
+    padding-top: calc(var(--header-height) + var(--section-pad));
+  }
+
+  .breadcrumbs {
+    font-size: 15px;
+    margin-bottom: 20px;
+  }
+
+  .portfolio-page__header {
+    margin-bottom: 32px;
+  }
+
+  .portfolio-grid {
+    grid-template-columns: 1fr;
+    row-gap: 40px;
+  }
+
+  .portfolio-card__title {
+    font-size: 18px;
+  }
+
+  .portfolio-card__preview {
+    border-radius: 16px;
+  }
+}

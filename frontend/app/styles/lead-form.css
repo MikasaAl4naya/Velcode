@@ -1,0 +1,269 @@
+/* ============================================================
+   10. ФОРМА ЗАЯВКИ (модалка и контакты)
+   Цвета и размеры — переменными; --dark и --large их переопределяют
+============================================================ */
+.lead-form {
+  --lf-text: #25292d;
+  --lf-muted: #747c87;
+  --lf-placeholder: #7e7e7e;
+  --lf-line: #d8d8d8;
+  --lf-focus: var(--color-blue-pill);
+  --lf-ok: #43d417;
+  --lf-error: #d41717;
+  --lf-error-line: rgba(212, 23, 23, 0.55);
+  --lf-error-text: #ae2626;
+  --lf-box: #cccccc;
+
+  --lf-input-height: var(--form-input-height);
+  --lf-label-top: 15px;               /* центр поднявшейся подписи от верха поля */
+  --lf-label-room: 18px;              /* место над текстом под поднявшуюся подпись */
+  --lf-fields-gap: var(--form-fields-gap);
+  --lf-footer-gap: var(--form-footer-gap); /* последнее поле → строка с кнопкой */
+  --lf-pad-x: var(--form-input-pad-x);
+  --lf-consent-size: var(--fs-caption);
+  --lf-consent-color: var(--lf-muted);
+
+  display: flex;
+  flex-direction: column;
+  color: var(--lf-text);
+}
+
+/* Тёмная форма (в контактах) */
+.lead-form--dark {
+  --lf-text: #ffffff;
+  --lf-muted: rgba(255, 255, 255, 0.7);
+  --lf-placeholder: rgba(255, 255, 255, 0.6);
+  --lf-line: rgba(255, 255, 255, 0.3);
+  --lf-error: #ff4d4d;
+  --lf-error-line: rgba(255, 90, 90, 0.75);
+  --lf-error-text: #ff7a7a;
+  --lf-box: rgba(255, 255, 255, 0.75);
+}
+
+/* Крупная форма (в контактах) */
+.lead-form--large {
+  --lf-input-height: clamp(62px, 58px + 0.769vw, 68px);
+  --lf-label-top: 16px;
+  --lf-label-room: 20px;
+  --lf-footer-gap: clamp(38px, 32px + 1.154vw, 54px);
+  --lf-consent-size: 13px;
+  --lf-consent-color: var(--lf-text);
+}
+
+.lead-form[hidden] {
+  display: none;
+}
+
+.lead-form__fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lf-fields-gap);
+}
+
+.lead-form__field {
+  position: relative;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid var(--lf-line);
+  transition: border-color var(--transition-base);
+}
+
+.lead-form__field:focus-within {
+  border-bottom-color: var(--lf-focus);
+}
+
+.lead-form__field.is-invalid {
+  border-bottom-color: var(--lf-error-line);
+}
+
+.lead-form__input {
+  flex: 1;
+  min-width: 0;
+  height: var(--lf-input-height);
+  padding: var(--lf-label-room) 28px 0 var(--lf-pad-x); /* сверху место под поднявшуюся подпись */
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--lf-text);
+  font-size: 15.5px;
+}
+
+/* Подсказка формата (у телефона) видна только в фокусе, пока подпись наверху */
+.lead-form__input::placeholder {
+  color: var(--lf-placeholder);
+  opacity: 0;
+  transition: opacity var(--transition-base);
+}
+
+.lead-form__input:focus::placeholder {
+  opacity: 0.6;
+}
+
+/* Подпись поля: лежит по центру как плейсхолдер, при фокусе или заполнении
+   уезжает наверх и уменьшается. Только transform — анимация на GPU */
+.lead-form__label {
+  position: absolute;
+  top: 50%;
+  left: var(--lf-pad-x);
+  color: var(--lf-placeholder);
+  font-size: 15px;
+  line-height: 1;
+  white-space: nowrap;
+  pointer-events: none;
+  transform: translateY(-50%);
+  transform-origin: left center;
+  transition: transform 0.25s var(--ease-out), color var(--transition-base);
+}
+
+.lead-form__input:focus + .lead-form__label,
+.lead-form__input:not(:placeholder-shown) + .lead-form__label {
+  transform: translateY(calc(-50% - var(--lf-input-height) / 2 + var(--lf-label-top))) scale(0.8);
+}
+
+.lead-form__input:focus + .lead-form__label {
+  color: var(--lf-focus);
+}
+
+.lead-form__field.is-invalid .lead-form__label {
+  color: var(--lf-error-text);
+}
+
+/* Точка статуса справа: зелёная — ок, красная — ошибка */
+.lead-form__dot {
+  position: absolute;
+  right: var(--lf-pad-x);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--lf-ok);
+  opacity: 0;
+  transform: scale(0.4);
+  transition: opacity var(--transition-base), transform 0.3s var(--ease-out), background-color var(--transition-base);
+  pointer-events: none;
+}
+
+.lead-form__field.is-valid .lead-form__dot,
+.lead-form__field.is-invalid .lead-form__dot {
+  opacity: 1;
+  transform: none;
+}
+
+.lead-form__field.is-invalid .lead-form__dot {
+  background: var(--lf-error);
+}
+
+/* Низ формы: слева «Обязательное поле» + согласие, справа кнопка */
+.lead-form__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-top: var(--lf-footer-gap);
+  padding-left: var(--lf-pad-x);
+}
+
+.lead-form__agree {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.lead-form__error {
+  color: var(--lf-error-text);
+  font-size: var(--fs-caption);
+}
+
+.lead-form__consent {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--lf-consent-color);
+  font-size: var(--lf-consent-size);
+  line-height: 1.35;
+  cursor: pointer;
+}
+
+.lead-form__checkbox {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Круглый чекбокс с галочкой */
+.lead-form__checkmark {
+  position: relative;
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  border: 1px solid var(--lf-box);
+  border-radius: 50%;
+  transition: border-color var(--transition-base), background-color var(--transition-base);
+}
+
+.lead-form__checkmark::after {
+  content: '';
+  position: absolute;
+  top: 45%;
+  left: 50%;
+  width: 4px;
+  height: 8px;
+  border: solid #ffffff;
+  border-width: 0 1.6px 1.6px 0;
+  opacity: 0;
+  transform: translate(-50%, -50%) rotate(45deg) scale(0.4);
+  transition: opacity 0.2s ease, transform 0.25s var(--ease-out);
+}
+
+.lead-form__checkbox:checked + .lead-form__checkmark {
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+}
+
+.lead-form__checkbox:checked + .lead-form__checkmark::after {
+  opacity: 1;
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.lead-form__checkbox:focus-visible + .lead-form__checkmark {
+  outline: 2px solid var(--lf-focus);
+  outline-offset: 2px;
+}
+
+.lead-form__consent.is-invalid .lead-form__checkmark {
+  border-color: var(--lf-error);
+}
+
+.lead-form__link {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color var(--transition-base);
+}
+
+@media (hover: hover) {
+  .lead-form__link:hover {
+    color: var(--color-blue-pill);
+  }
+}
+
+/* Сообщение после отправки */
+.lead-success {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.lead-success[hidden] {
+  display: none;
+}
+
+.lead-success__title {
+  font-size: var(--fs-h4);
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.lead-success__text {
+  font-size: var(--fs-small);
+  opacity: 0.7;
+}
+

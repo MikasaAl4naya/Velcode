@@ -1,0 +1,204 @@
+/* ============================================================
+   1. ТОКЕНЫ
+   Плавные значения: clamp(минимум на 360px, …, максимум с 1400px).
+   Меняете цифры здесь — меняется вся страница.
+============================================================ */
+:root {
+  /* ---------- Цвета ---------- */
+  --color-dark: #171819;
+  --color-dark-sub: #2d2d2d;
+  --color-blue-accent: #5366a4;
+  --color-blue-pill: #7183bd;
+  --color-accent: #7d98f0;             /* фиолетовые кнопки и цвет наведения */
+  --color-border: #d0d1d1;
+  --color-muted: rgba(23, 24, 25, 0.7);
+  --color-muted-light: rgba(255, 255, 255, 0.7);
+  --color-folder-bg: #bbcbef;
+  --color-folder-card: #8fa9dc;
+
+  --header-bg: rgba(255, 255, 255, 0.85);
+  --header-backdrop: blur(10px);
+
+  /* ---------- Шрифт и размеры текста ---------- */
+  --font-family-base: 'Euclid Circular A', sans-serif;
+
+  --fs-display: clamp(42px, 31.96px + 2.788vw, 71px);   /* заголовок hero */
+  --fs-h2: clamp(36px, 24.23px + 3.269vw, 70px);        /* заголовки секций */
+  --fs-h3: clamp(32px, 25.08px + 1.923vw, 52px);        /* заголовок контактов */
+  --fs-h4: clamp(22px, 20.62px + 0.385vw, 26px);        /* заголовок модалки, цены */
+  --fs-lead: clamp(19px, 17.96px + 0.288vw, 22px);      /* названия карточек */
+  --fs-title: clamp(18px, 17.31px + 0.192vw, 20px);     /* подзаголовки пунктов и форм */
+  --fs-body: clamp(15px, 14.65px + 0.096vw, 16px);      /* основной текст, кнопки */
+  --fs-small: clamp(13px, 12.65px + 0.096vw, 14px);     /* подписи */
+  --fs-caption: 12px;           /* согласие, ошибки */
+
+  /* ---------- Отступы: шкала ---------- */
+  --space-3xs: 4px;
+  --space-2xs: 8px;
+  --space-xs: 12px;
+  --space-s: 16px;
+  --space-m: 24px;
+  --space-l: 32px;
+  --space-xl: 40px;
+
+  /* ---------- Отступы: смысловые (плавные) ---------- */
+  --container-pad: clamp(16px, 7.69px + 2.308vw, 40px);      /* поля контейнера слева и справа */
+  /* Ритм страницы: расстояние между соседними блоками одно везде.
+     Каждый блок даёт половину сверху и половину снизу — соседние половины складываются в целое */
+  --section-space: clamp(72px, 55.38px + 4.615vw, 120px);
+  --section-pad: calc(var(--section-space) / 2);
+  --layout-gap: clamp(32px, 15.38px + 4.615vw, 80px);         /* между колонками внутри секции */
+  --heading-gap: clamp(24px, 18.46px + 1.538vw, 40px);        /* от заголовка секции до контента */
+  --content-gap: clamp(16px, 11.15px + 1.346vw, 30px);        /* заголовок ↔ текст ↔ кнопка */
+  --panel-pad: clamp(20px, 6.15px + 3.846vw, 60px);          /* внутри тёмной карточки контактов и папки портфолио */
+
+  /* ---------- Сетка и шапка ---------- */
+  --max-width: 1600px;
+  --header-pad-y: 20px;
+  --header-row: 46px;                  /* высота кнопки в шапке = высота строки */
+  --header-height: calc(var(--header-row) + var(--header-pad-y) * 2); /* считается сама из строки и отступов */
+  --page-gap: clamp(36px, 32.88px + 0.865vw, 45px);          /* от строки шапки до контента (и от контента до низа hero) */
+  /* где начинается контент: строка шапки (без нижнего поля) + отступ */
+  --header-offset: calc(var(--header-row) + var(--header-pad-y) + var(--page-gap));
+
+  /* ---------- Формы и модалка ---------- */
+  --radius-section: 28px;
+  --radius-card: 36px;
+  --radius-btn: 9999px;
+
+  --modal-pad: clamp(32px, 3.5vw, 44px);                    /* базовый внутренний отступ модалки */
+  --modal-pad-service: clamp(28px, 3vw, 36px);              /* отступ модалки с карточкой услуги */
+  --modal-service-gap: clamp(32px, 3.5vw, 48px);            /* расстояние между карточкой услуги и формой */
+  --modal-badge-pad: clamp(28px, 3vw, 36px) clamp(24px, 2.5vw, 32px); /* отступы внутри карточки услуги */
+  --modal-head-gap: 8px;                                    /* зазор между заголовком и подзаголовком модалки */
+  --modal-head-pad-b: clamp(18px, 2vw, 26px);               /* отступ от шапки модалки до первого поля ввода (уменьшен на треть) */
+
+  --form-input-height: clamp(58px, 4vw, 64px);              /* высота полей ввода во всех формах */
+  --form-input-pad-x: 8px;                                  /* внутренний отступ полей ввода по бокам */
+  --form-fields-gap: 4px;                                   /* зазор между строками полей формы */
+  --form-footer-gap: clamp(36px, 4vw, 48px);                /* отступ от полей до кнопки и согласия */
+  --form-head-gap-b: clamp(14px, 1.5vw, 20px);              /* отступ под заголовком формы (поменьше) */
+
+  /* ---------- Анимации ---------- */
+  --transition-base: 0.2s ease;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* ---------- Скроллбар: тонкий, белая дорожка, фиолетовый ползунок, без стрелок ---------- */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track,
+::-webkit-scrollbar-corner {
+  background: #ffffff;
+}
+
+::-webkit-scrollbar-thumb {
+  border: 2px solid #ffffff; /* белая рамка «утоньшает» ползунок до 4px */
+  border-radius: 8px;
+  background: var(--color-accent);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-blue-pill);
+}
+
+::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+/* Firefox не знает ::-webkit-scrollbar — ему стандартные свойства */
+@supports not selector(::-webkit-scrollbar) {
+  html {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-accent) #ffffff;
+  }
+}
+
+body,
+body.page,
+.page {
+  font-family: var(--font-family-base);
+  background-color: #ffffff;
+  color: var(--color-dark);
+  line-height: 1.4;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+button,
+input {
+  font-family: inherit;
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+/* якоря: секция встаёт вплотную под шапку, воздух сверху даёт её собственный отступ */
+[id] {
+  scroll-margin-top: var(--header-height);
+}
+
+/* Блокировка прокрутки под модалкой. Именно на body: overflow у html
+   сделал бы body отдельным скролл-контейнером, и sticky у услуг отвалился бы */
+body.is-scroll-locked {
+  overflow: hidden;
+}
+
+/* Пока прокрутка заблокирована: место под скроллбар остаётся (страница не сдвигается вбок),
+   scroll-snap выключен (иначе браузер «доводит» страницу к ближайшей точке) */
+html:has(body.is-scroll-locked) {
+  scrollbar-gutter: stable;
+  scroll-snap-type: none;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Контейнеры всех блоков: одинаковая ширина и поля */
+.header__container,
+.hero__container,
+.services__container,
+.services__track-wrapper,
+.advantages__container,
+.portfolio__container,
+.portfolio-page__container,
+.contacts__container,
+.footer__container,
+.legal-page__container,
+.case-page__container {
+  width: 100%;
+  max-width: calc(var(--max-width) + var(--container-pad) * 2);
+  margin-inline: auto;
+  padding-inline: var(--container-pad);
+}
+

@@ -1,0 +1,89 @@
+/* ============================================================
+   EUCLID CIRCULAR A FONTS
+============================================================ */
+
+/* 1. Light (300) */
+@font-face {
+  font-family: 'Euclid Circular A';
+  src: url('/fonts/euclid-circular-a/euclid-circular-a-light.ttf') format('truetype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Euclid Circular A';
+  src: url('/fonts/euclid-circular-a/euclid-circular-a-light-italic.ttf') format('truetype');
+  font-weight: 300;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* 2. Regular (400) */
+@font-face {
+  font-family: 'Euclid Circular A';
+  src: url('/fonts/euclid-circular-a/euclid-circular-a-regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Euclid Circular A';
+  src: url('/fonts/euclid-circular-a/euclid-circular-a-italic.ttf') format('truetype');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* 3. Medium (500) */
+@font-face {
+  font-family: 'Euclid Circular A';
+  src: url('/fonts/euclid-circular-a/euclid-circular-a-medium.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Euclid Circular A';
+  src: url('/fonts/euclid-circular-a/euclid-circular-a-medium-italic.ttf') format('truetype');
+  font-weight: 500;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* 4. SemiBold (600) */
+@font-face {
+  font-family: 'Euclid Circular A';
+  src: url('/fonts/euclid-circular-a/euclid-circular-a-semibold.ttf') format('truetype');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Euclid Circular A';
+  src: url('/fonts/euclid-circular-a/euclid-circular-a-semibold-italic.ttf') format('truetype');
+  font-weight: 600;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* 5. Bold (700) */
+@font-face {
+  font-family: 'Euclid Circular A';
+  src: url('/fonts/euclid-circular-a/euclid-circular-a-bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Euclid Circular A';
+  src: url('/fonts/euclid-circular-a/euclid-circular-a-bold-italic.ttf') format('truetype');
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+

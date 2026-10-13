@@ -1,31 +1,24 @@
-import { getCategories, getServices, getFaq, getPortfolio } from '@/lib/api'
-import Header from '@/components/Header'
-import Hero from '@/components/Hero'
-import Services from '@/components/Services'
-import Advantages from '@/components/Advantages'
-import Portfolio from '@/components/Portfolio'
-import Contacts from '@/components/Contacts'
-import Footer from '@/components/Footer'
+import { Header } from '@/components/sections/Header';
+import { Hero } from '@/components/sections/Hero';
+import { Services } from '@/components/sections/Services';
+import { Advantages } from '@/components/sections/Advantages';
+import { Portfolio } from '@/components/sections/Portfolio';
+import { Contacts } from '@/components/sections/Contacts';
+import { Footer } from '@/components/sections/Footer';
+import { SmoothWheelProvider } from '@/components/SmoothWheelProvider';
 
-export default async function Page() {
-  const [categories, services, faqItems, portfolioItems] = await Promise.all([
-    getCategories(),
-    getServices(),
-    getFaq(),
-    getPortfolio(),
-  ])
-
+export default function Page() {
   return (
-    <>
-      <Header />
+    <SmoothWheelProvider>
+      <Header currentPath="/" />
       <main>
         <Hero />
-        <Services categories={categories} services={services} />
-        <Advantages items={faqItems} />
-        <Portfolio items={portfolioItems} />
+        <Services />
+        <Advantages />
+        <Portfolio />
         <Contacts />
       </main>
       <Footer />
-    </>
-  )
+    </SmoothWheelProvider>
+  );
 }

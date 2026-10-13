@@ -1,0 +1,613 @@
+/* ============================================================
+   12. АДАПТИВ (BOOTSTRAP 5 BREAKPOINTS)
+   xxl: max-width 1399.98px — большие экраны / ноутбуки
+   xl:  max-width 1199.98px — ноутбуки
+   lg:  max-width 991.98px  — планшеты (бургер-меню, блоки в колонку)
+   md:  max-width 767.98px  — мобильные (услуги стопкой, полноэкранная модалка)
+   sm:  max-width 575.98px  — компактные смартфоны
+============================================================ */
+
+/* ---------- XXL (< 1400px) ---------- */
+@media (max-width: 1399.98px) {
+  .hero {
+    --hero-card-offset: 80px;
+  }
+}
+
+/* ---------- XL (< 1200px) ---------- */
+@media (max-width: 1199.98px) {
+  .hero {
+    --hero-card-offset: 20px;
+  }
+
+  .advantages__row-head {
+    width: 35%;
+  }
+}
+
+/* ---------- LG (< 992px: Планшеты) ---------- */
+@media (max-width: 991.98px) {
+  /* Шапка: бургер. Меню — часть шапки, шапка плавно вырастает вниз */
+  .header__container {
+    flex-wrap: wrap;
+    row-gap: 0;
+  }
+
+  .header__nav {
+    order: 1;
+    flex: 0 0 100%;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    height: 0;
+    margin-right: 0;
+    overflow: hidden;
+    visibility: hidden;
+    transition: height 0.45s var(--ease-out), visibility 0s 0.45s;
+  }
+
+  .header__nav-link:first-child {
+    margin-top: var(--space-m);
+  }
+
+  .header__nav-socials {
+    display: flex;
+    gap: 5px;
+    margin-bottom: var(--space-2xs);
+  }
+
+  .header__socials {
+    display: none;
+  }
+
+  .header__burger {
+    display: block;
+  }
+
+  .header--menu-open {
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  }
+
+  .header--menu-open .header__nav {
+    visibility: visible;
+    transition: height 0.45s var(--ease-out);
+  }
+
+  .header__nav-link,
+  .header__nav-socials {
+    opacity: 0;
+    transform: translateY(-6px);
+    transition: opacity 0.25s ease, transform 0.35s var(--ease-out);
+  }
+
+  .header--menu-open .header__nav-link,
+  .header--menu-open .header__nav-socials {
+    opacity: 1;
+    transform: none;
+    transition-delay: 0.1s;
+  }
+
+  /* Hero: плашку убираем, теги на всю ширину */
+  .hero__info {
+    width: 100%;
+  }
+
+  .hero__floating-card {
+    display: none;
+  }
+
+  .hero__tags {
+    width: 100%;
+  }
+
+
+
+  /* Преимущества и портфолио */
+  .advantages__container,
+  .portfolio__container {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+  }
+
+  .advantages__intro,
+  .portfolio__info {
+    display: contents;
+  }
+
+  .advantages__title {
+    margin-bottom: var(--heading-gap);
+  }
+
+  .advantages__rows {
+    order: 1;
+    width: 100%;
+  }
+
+  .advantages__btn {
+    order: 2;
+    margin-top: var(--heading-gap);
+  }
+
+  .portfolio__description {
+    order: 1;
+    max-width: 560px;
+    margin-top: var(--content-gap);
+  }
+
+  .portfolio__folder {
+    order: 2;
+    flex: none;
+    margin-top: var(--heading-gap);
+  }
+
+  .portfolio__more {
+    order: 3;
+    align-self: flex-start;
+    margin-top: var(--heading-gap);
+  }
+
+  /* Контакты */
+  .contacts__card {
+    flex-direction: column;
+  }
+
+  .contacts__side {
+    flex: none;
+    align-items: center;
+    text-align: center;
+  }
+
+  .contacts__channels {
+    align-items: center;
+  }
+
+  /* Подвал */
+  .footer__container {
+    flex-direction: column-reverse;
+    align-items: center;
+    gap: var(--space-l);
+    text-align: center;
+  }
+
+  .footer__col-left,
+  .footer__col-right,
+  .footer__links {
+    align-items: center;
+  }
+
+  .footer__col-left {
+    gap: var(--space-s);
+  }
+
+  .footer__link {
+    text-align: center;
+  }
+
+  /* Модальное окно: вертикальная стопка с аккуратными отступами как на мобилке */
+  .modal__panel--has-service {
+    flex-direction: column;
+    padding: 16px 16px 32px;
+    gap: 24px;
+    max-width: 620px;
+  }
+
+  .modal__service-badge {
+    position: relative;
+    flex: none;
+    width: 100%;
+    min-height: auto;
+    border-radius: 22px;
+    padding: 26px 22px 24px;
+    margin-top: 0;
+    overflow: hidden;
+  }
+
+  .modal__close--panel-service {
+    display: none;
+  }
+
+  .modal__service-badge .modal__close--badge {
+    display: block;
+    top: 18px;
+    right: 18px;
+    width: 32px;
+    height: 32px;
+  }
+
+  .modal__panel--has-service .modal__content {
+    padding-right: 16px;
+    padding-left: 16px;
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+}
+
+/* ---------- MD (< 768px: Телефоны) ---------- */
+@media (max-width: 767.98px) {
+  :root {
+    --header-pad-y: 16px;
+  }
+
+  /* Hero */
+  .hero {
+    --hero-art-space: min(58vw, 360px);
+    --hero-art-size: min(120vw, 640px);
+    --hero-art-overlap: min(18vw, 100px);
+
+    min-height: auto;
+    padding-bottom: var(--hero-art-space);
+    overflow-x: clip;
+    padding-top: calc(var(--header-height) + var(--section-pad));
+  }
+
+  .hero__top-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .hero__title {
+    line-height: 1.08;
+    letter-spacing: -1px;
+  }
+
+  .hero__description {
+    max-width: 340px;
+  }
+
+  .hero__bottom-row {
+    display: none;
+  }
+
+  .hero__bg-torus {
+    top: auto;
+    right: auto;
+    bottom: calc(var(--hero-art-overlap) * -1 - var(--hero-art-space));
+    left: 50%;
+    width: var(--hero-art-size);
+    height: auto;
+    max-width: none;
+    transform: translate(-30%, 30%) scale(1.2);
+  }
+
+  .hero__bg-torus-img {
+    object-position: center;
+  }
+
+  /* Услуги: карточки стопкой на sticky (без scroll-snap магнита, чтобы скролл не застревал) */
+  html {
+    scroll-snap-type: none;
+  }
+
+  .services {
+    --card-top: calc(var(--header-height) + var(--space-xs));
+    --card-gap: 6px;
+    --card-height: clamp(340px, calc(100svh - var(--card-top) - var(--space-s)), 430px);
+  }
+
+  .services:not(.services--standalone) {
+    z-index: 2;
+    margin-top: calc(-1 * var(--radius-section));
+    padding-block: var(--section-pad);
+    border-radius: var(--radius-section) var(--radius-section) 0 0;
+  }
+
+  .services__sticky {
+    position: static;
+    max-height: none;
+    padding-block: 0;
+    overflow: visible;
+  }
+
+  .services__track-wrapper {
+    flex: none;
+    min-height: 0;
+  }
+
+  .services__header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-s);
+  }
+
+  .services__controls {
+    display: none;
+  }
+
+  .services__track {
+    flex-direction: column;
+    gap: 0;
+    width: auto;
+    height: auto;
+  }
+
+  .services__snap {
+    display: none;
+  }
+
+  .service-card {
+    position: sticky;
+    top: var(--card-top);
+    width: 100%;
+    height: var(--card-height);
+    border-radius: 24px;
+  }
+
+  /* Преимущества */
+  .advantages__row {
+    flex-direction: column;
+    gap: var(--space-xs);
+  }
+
+  .advantages__row-head {
+    width: 100%;
+  }
+
+  /* Портфолио: браузерная строка и оптимизация отрисовки */
+  .portfolio__browser {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+    transform: translateZ(0);
+  }
+
+  .browser-bar {
+    height: 24px;
+    padding: 0 8px;
+  }
+
+  .browser-bar__icon--hide-sm {
+    display: none;
+  }
+
+  .browser-bar__center {
+    flex-basis: 60%;
+  }
+
+  .browser-bar__address {
+    height: 16px;
+    font-size: 9px;
+  }
+
+  /* Модалки на телефонах: карточкой по центру, боковые отступы как у сетки (--container-pad), скругления сохранены */
+  .modal:not([open]) {
+    display: none !important;
+    pointer-events: none !important;
+  }
+
+  .modal[open] {
+    padding: var(--space-m) var(--container-pad);
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .modal__overlay {
+    display: block;
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+
+  .modal__panel {
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    min-height: auto;
+    margin: auto 0;
+    border-radius: 28px;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);
+    padding: 36px 20px 28px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    background: #ffffff;
+    overflow: hidden;
+  }
+
+  /* Обычная модалка: крестик как на десктопе в правом верхнем углу панели */
+  .modal__close {
+    top: 20px;
+    right: 20px;
+    width: 32px;
+    height: 32px;
+    z-index: 10;
+  }
+
+  /* Модалка с услугой: комфортные отступы, равные отступам карточки формы */
+  .modal__panel--has-service {
+    padding: 16px 16px 32px;
+    border-radius: 28px;
+    gap: 24px;
+  }
+
+  .modal__service-badge {
+    position: relative;
+    flex: none;
+    width: 100%;
+    min-height: auto;
+    border-radius: 22px;
+    padding: 26px 22px 24px;
+    margin-top: 0;
+    overflow: hidden;
+  }
+
+  .modal__service-badge .modal__close--badge {
+    top: 18px;
+    right: 18px;
+    width: 32px;
+    height: 32px;
+  }
+
+  .modal__service-badge-head {
+    gap: 14px;
+    margin-bottom: 22px;
+  }
+
+  .modal__service-badge-num {
+    font-size: 64px;
+    line-height: 0.9;
+  }
+
+  .modal__service-badge-title {
+    font-size: 22px;
+    line-height: 1.2;
+    letter-spacing: -0.5px;
+    padding-right: 36px; /* отступ справа под крестик */
+  }
+
+  .modal__service-badge-desc {
+    font-size: 13.5px;
+    line-height: 1.45;
+  }
+
+  .modal__content {
+    flex: 1 1 auto;
+    justify-content: flex-start;
+    margin-block: 0;
+    padding-inline: 16px;
+  }
+
+  .modal__panel--has-service .modal__content {
+    padding-right: 16px;
+    padding-left: 16px;
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+
+  .modal__head {
+    padding: 0 0 18px 8px;
+  }
+
+  .modal__title {
+    font-size: 28px;
+    font-weight: 500;
+    letter-spacing: -0.6px;
+  }
+
+  .modal__subtitle {
+    font-size: 14px;
+    margin-top: 4px;
+  }
+}
+
+/* ---------- SM (< 576px: Узкие телефоны) ---------- */
+@media (max-width: 575.98px) {
+  .modal[open] {
+    padding: var(--space-s) var(--container-pad);
+  }
+
+  .modal__panel {
+    padding: 34px 20px 28px;
+    border-radius: 24px;
+  }
+
+  .modal__close {
+    top: 18px;
+    right: 18px;
+  }
+
+  .modal__panel--has-service {
+    padding: 14px 14px 26px;
+    border-radius: 24px;
+    gap: 20px;
+  }
+
+  .modal__service-badge {
+    padding: 22px 18px 20px;
+    border-radius: 20px;
+  }
+
+  .modal__service-badge .modal__close--badge {
+    top: 16px;
+    right: 16px;
+  }
+
+  .modal__service-badge-num {
+    font-size: 56px;
+  }
+
+  .modal__content,
+  .modal__panel--has-service .modal__content {
+    padding-inline: 12px;
+  }
+
+  .modal__service-badge-title {
+    font-size: 20px;
+  }
+
+  .modal__content {
+    padding-inline: 8px;
+  }
+
+  .modal__panel--has-service .modal__content {
+    padding-inline: 8px;
+  }
+
+  .lead-form {
+    --lf-input-height: 52px;
+    --lf-footer-gap: 24px;
+  }
+
+  .lead-form__footer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .lead-form__submit {
+    width: 100%;
+  }
+
+  .services {
+    --card-height: clamp(340px, calc(100svh - var(--card-top) - var(--space-s)), 410px);
+  }
+}
+
+/* ---------- Низкие экраны (ноутбук с панелями, телефон/планшет лёжа) ----------
+   Прилипающая лента не помещается в окно — выключаем прилипание:
+   на широких экранах карточки листаются горизонтальной прокруткой,
+   на узких идут обычным списком. JS при этом ленту не двигает. */
+@media (max-height: 560px) {
+  html {
+    scroll-snap-type: none;
+  }
+
+  .services__sticky {
+    position: static;
+    max-height: none;
+  }
+
+  .services__track-wrapper {
+    flex: none;
+    min-height: 0;
+  }
+
+  .services__track {
+    height: auto;
+  }
+
+  .services__controls, .services__snap { display: none; }
+
+  .services__track-wrapper {
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: var(--container-pad);
+    scrollbar-width: none;
+  }
+
+  .services__track-wrapper::-webkit-scrollbar {
+    display: none;
+  }
+
+  .service-card {
+    position: relative;
+    top: auto;
+    height: var(--card-height-min);
+    scroll-snap-align: start;
+  }
+}
+

@@ -1,0 +1,99 @@
+/* ============================================================
+   6. ADVANTAGES
+============================================================ */
+.advantages {
+  --row-space: clamp(24px, 20.19px + 1.058vw, 35px);   /* отступ над и под каждым пунктом */
+
+  padding-block: var(--section-pad);
+}
+
+.advantages__container {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: var(--layout-gap);
+}
+
+.advantages__intro {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-shrink: 0;
+  width: 32%;
+}
+
+.advantages__title {
+  display: flex;
+  flex-direction: column;
+  color: var(--color-dark-sub);
+  font-size: var(--fs-h2);
+  font-weight: 500;
+  line-height: 1.15;
+  letter-spacing: -1.4px;
+}
+
+.advantages__title-line--accent {
+  color: var(--color-blue-accent);
+}
+
+.advantages__btn {
+  align-self: flex-start;
+}
+
+.advantages__rows {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 62%;
+}
+
+.advantages__row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 30px;
+  padding-block: var(--row-space);
+  border-top: 1px solid var(--color-border);
+}
+
+.advantages__row:first-child {
+  padding-top: 0;
+  border-top: none;
+}
+
+.advantages__row:last-child {
+  padding-bottom: 0;
+}
+
+.advantages__row-head {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex-shrink: 0;
+  width: 38%;
+}
+
+.advantages__bullet {
+  flex-shrink: 0;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--color-blue-pill);
+}
+
+.advantages__row-title {
+  color: #18191a;
+  font-size: var(--fs-title);
+  font-weight: 400;
+  letter-spacing: -0.4px;
+}
+
+.advantages__row-desc {
+  flex: 1;
+  color: rgba(30, 32, 34, 0.7);
+  font-size: 15px;
+  font-weight: 300;
+  line-height: 1.5;
+}
+

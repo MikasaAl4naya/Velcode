@@ -1,0 +1,248 @@
+/* ============================================================
+   4. HERO
+============================================================ */
+.hero {
+  --hero-card-offset: 180px;         /* плашка «Сайт под ключ» от правого края */
+  --hero-gap: clamp(54px, 39.69px + 2.307vw, 72px); /* текст → кнопки */
+  --hero-title-gap: clamp(20px, 17.92px + 0.577vw, 26px);    /* заголовок → описание */
+
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: stretch;
+  min-height: 100vh;
+  min-height: 100svh; /* высота окна без панелей мобильного браузера; если контент выше — блок растёт */
+  padding-top: var(--header-offset);   /* шапка + отступ */
+  padding-bottom: var(--page-gap);     /* тот же отступ снизу — контент ровно по центру видимой части */
+  overflow: clip; /* картинка никогда не может вылезти за пределы экрана и секции */
+}
+
+.hero__container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.hero__bg-torus {
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  right: var(--container-pad);
+  bottom: 0;
+  width: auto;
+  max-width: 100%; /* ограничена ровно шириной контейнера сетки */
+  aspect-ratio: 1 / 1;
+  pointer-events: none;
+}
+
+/* При портретной/квадратной ориентации планшета сдвигаем торус вправо-вниз */
+.hero.is-tablet-ratio {
+  overflow: clip;
+}
+
+.hero.is-tablet-ratio .hero__bg-torus {
+  top: auto;
+  bottom: -15vh;
+  right: -10vw;
+  height: 70vh;
+  height: 70svh;
+  width: auto;
+  aspect-ratio: 1 / 1;
+  max-width: 90vw;
+  transform: translate(6%, 14%);
+  z-index: 0;
+}
+
+.hero.is-tablet-ratio .hero__bg-torus-img {
+  object-position: center;
+  -webkit-mask-image: radial-gradient(circle at 50% 50%, black 58%, transparent 78%);
+  mask-image: radial-gradient(circle at 50% 50%, black 58%, transparent 78%);
+}
+
+.hero.is-tablet-ratio .hero__info {
+  width: min(580px, 85%);
+  position: relative;
+  z-index: 2;
+}
+
+.hero.is-tablet-ratio .hero__bottom-row {
+  position: relative;
+  z-index: 2;
+}
+
+.hero__bg-torus-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: right center;
+  -webkit-mask-image: radial-gradient(circle at 50% 50%, black 58%, transparent 78%);
+  mask-image: radial-gradient(circle at 50% 50%, black 58%, transparent 78%);
+}
+
+.hero__top-row {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  height: 100%;
+  align-items: center;
+}
+
+.hero__info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--hero-gap);
+  width: 50%;
+}
+
+.hero__title-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--hero-title-gap);
+}
+
+.hero__title {
+  display: flex;
+  flex-direction: column;
+  font-size: var(--fs-display);
+  font-weight: 500;
+  line-height: 1.1;
+  letter-spacing: -1.4px;
+}
+
+.hero__title-line--accent {
+  color: var(--color-blue-accent);
+}
+
+.hero__description {
+  max-width: 540px;
+  color: var(--color-muted);
+  font-size: var(--fs-body);
+  font-weight: 300;
+  line-height: 1.45;
+}
+
+.hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  row-gap: var(--space-2xs);
+}
+
+.hero__bottom-row {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: flex-end;
+  column-gap: 15%;
+  padding-top: 70px;
+}
+
+.hero__tags {
+  display: flex;
+  flex-direction: column;
+  row-gap: 8px;
+}
+
+.hero__tags-row {
+  display: flex;
+}
+
+.hero__floating-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  margin-right: var(--hero-card-offset);
+}
+
+.hero__card-badge {
+  position: relative;
+  z-index: 2;
+  margin-bottom: -10px;
+  padding: 8px 16px;
+  border-radius: var(--radius-btn);
+  background: var(--color-blue-pill);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* Плашка — кнопка, открывает модалку */
+.hero__card-glass {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 20px 10px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 25px;
+  background: linear-gradient(270deg, rgba(235, 242, 255, 0.65) 0%, rgba(255, 255, 255, 0.75) 100%);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.hero__card-thumb {
+  display: block;
+  flex-shrink: 0;
+  width: 110px;
+  height: 80px;
+  overflow: hidden;
+  border-radius: 18px;
+  background: #111111;
+}
+
+.hero__card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hero__card-text {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.hero__card-label {
+  color: var(--color-dark);
+  font-size: 16px;
+  font-weight: 300;
+  white-space: nowrap;
+}
+
+.hero__card-price {
+  color: var(--color-dark);
+  font-size: 20px;
+  font-weight: 500;
+}
+
+.hero__card-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 54px;
+  height: 54px;
+  border: 1px solid rgba(23, 24, 25, 0.3);
+  border-radius: 50%;
+  color: var(--color-dark);
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
+
+.hero__card-icon {
+  width: 20px;
+  height: 20px;
+}
+
+@media (hover: hover) {
+  .hero__card-glass:hover .hero__card-arrow {
+    border-color: var(--color-blue-pill);
+    background-color: var(--color-blue-pill);
+    color: #ffffff;
+  }
+}
+

@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 750" width="1200" height="750">
+  <rect width="1200" height="750" rx="24" fill="#f4f6fa"/>
+  <rect x="16" y="16" width="1168" height="718" rx="16" fill="none" stroke="#d2d8e4" stroke-width="2" stroke-dasharray="10 10"/>
+  <g transform="translate(600, 340)" text-anchor="middle">
+    <circle cx="0" cy="-40" r="36" fill="#e3e8f2"/>
+    <path d="M-12 -40 h24 M0 -52 v24" stroke="#8b98b0" stroke-width="3.5" stroke-linecap="round"/>
+    <text y="45" font-family="'Euclid Circular A', -apple-system, sans-serif" font-size="28" font-weight="600" fill="#8b98b0">Новый проект</text>
+    <text y="80" font-family="'Euclid Circular A', -apple-system, sans-serif" font-size="18" fill="#a6b2c8">Скоро здесь появится наш следующий кейс</text>
+  </g>
+</svg>

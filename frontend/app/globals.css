@@ -1,29 +1,31 @@
-@import "tailwindcss";
+/* Euclid Circular A fonts */
+@import './styles/fonts.css';
 
-@theme {
-  --font-sans: var(--font-montserrat), 'Montserrat', sans-serif;
-}
+/* CSS tokens and global resets */
+@import './styles/variables.css';
 
-*, *::before, *::after {
-  box-sizing: border-box;
-}
+/* Base/shared styles: .btn, .icon, .tag */
+@import './styles/base.css';
 
-html {
-  scroll-behavior: smooth;
-}
+/* Section styles */
+@import './styles/header.css';
+@import './styles/hero.css';
+@import './styles/services.css';
+@import './styles/advantages.css';
+@import './styles/portfolio.css';
+@import './styles/contacts.css';
+@import './styles/footer.css';
 
-body {
-  font-family: var(--font-sans);
-  background: #ffffff;
-  color: #171819;
-  margin: 0;
-}
+/* UI components */
+@import './styles/lead-form.css';
+@import './styles/modal.css';
 
-[id] {
-  scroll-margin-top: 96px;
-}
+/* Sub-pages */
+@import './styles/subpage.css';
+@import './styles/portfolio-page.css';
+@import './styles/case-page.css';
+@import './styles/legal-page.css';
+@import './styles/not-found.css';
 
-input::placeholder,
-textarea::placeholder {
-  color: rgba(255, 255, 255, 0.7);
-}
+/* Responsive overrides — must be last */
+@import './styles/responsive.css';

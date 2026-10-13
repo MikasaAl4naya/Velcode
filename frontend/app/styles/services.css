@@ -1,0 +1,208 @@
+/* ============================================================
+   5. SERVICES
+   Десктоп и планшет: горизонтальная лента в sticky-блоке (JS).
+   Телефон: стопка карточек на CSS (см. медиазапрос ниже).
+============================================================ */
+.services {
+  --card-pad: clamp(24px, 21.92px + 0.577vw, 30px);
+  --card-gap: 10px;
+  --card-height-max: 500px;   /* лента сжимается под свободную высоту окна */
+  --card-height-min: 340px;   /* меньше — уже режим «низкий экран» ниже */
+
+  position: relative;
+  z-index: 5;
+  background: #ffffff;
+  /* высоту на десктопе ставит JS: высота sticky-блока + ход ленты */
+}
+
+/* Липнет сразу под шапкой. Высота — по контенту, отступы как у всех блоков.
+   Если контент выше окна, блок ограничен окном, и лента карточек
+   сама ужимается по высоте под свободное место — ничего не обрезается */
+.services__sticky {
+  position: sticky;
+  top: var(--header-height); /* JS читает это значение сам */
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-height: calc(100vh - var(--header-height));
+  padding-block: var(--section-pad);
+  overflow-x: clip; /* карточки уходят за сетку до краёв экрана; по вертикали не режем */
+}
+
+.services__track-wrapper {
+  flex: 0 1 var(--card-height-max);
+  min-height: var(--card-height-min);
+}
+
+.services__header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 30px;
+  margin-bottom: var(--heading-gap);
+}
+
+.services__title {
+  color: var(--color-dark-sub);
+  font-size: var(--fs-h2);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -1.4px;
+}
+
+.services__header-side {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+}
+
+.services__desc {
+  max-width: 480px;
+  color: var(--color-muted);
+  font-size: var(--fs-body);
+  font-weight: 300;
+  line-height: 1.45;
+}
+
+.services__controls {
+  display: flex;
+  flex-shrink: 0;
+}
+
+.services__control-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 54px;
+  height: 54px;
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  background: #ffffff;
+  cursor: pointer;
+  transition: opacity var(--transition-base);
+}
+
+.services__control-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.services__track {
+  display: flex;
+  gap: var(--card-gap);
+  width: max-content;
+  height: 100%; /* карточки тянутся на высоту ленты */
+  will-change: transform;
+}
+
+/* Точки остановки прокрутки для стопки карточек на телефоне */
+.services__snap {
+  display: none;
+}
+
+.service-card {
+  position: relative;
+  isolation: isolate; /* декоративный ::before ложится под контент без z-index у детей */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  flex-shrink: 0;
+  width: 350px;
+  padding: var(--card-pad);
+  overflow: hidden;
+  border-radius: 30px;
+  min-height: 450px;
+}
+
+/* Карточка с 3D-моделью на фоне */
+.service-card--decor::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background: url('/assets/card-abstract-model.png') no-repeat -175% 250% / 120% auto;
+  pointer-events: none;
+}
+
+.service-card--blue-grad {
+  background: linear-gradient(180deg, #bbc8e9 0%, #6e91d0 100%);
+  color: #ffffff;
+}
+
+.service-card--dark {
+  background: linear-gradient(180deg, #171819 0%, #222527 100%);
+  color: #ffffff;
+}
+
+.service-card--blue-soft {
+  background: linear-gradient(180deg, #bbc7e8 0%, #6f91d1 100%);
+  color: #ffffff;
+}
+
+.service-card--outline {
+  border: 1px solid var(--color-border);
+  background: #ffffff;
+  color: var(--color-dark);
+}
+
+.service-card__head {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.service-card__num {
+  color: rgba(116, 124, 135, 0.12);
+  font-size: 96px;
+  font-weight: 700;
+  line-height: 0.9;
+  letter-spacing: -2px;
+}
+
+.service-card--outline .service-card__num{
+  color: #BBC7E8;
+}
+
+.service-card--blue-grad .service-card__num,
+.service-card--blue-soft .service-card__num {
+  color: rgba(255, 255, 255, 0.15);
+}
+
+.service-card__name {
+  font-size: var(--fs-lead);
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: -0.44px;
+}
+
+.service-card__text {
+  color: var(--color-muted);
+  font-size: 14px;
+  font-weight: 300;
+  line-height: 1.5;
+}
+
+.service-card__foot {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.service-card__cost {
+  display: flex;
+  flex-direction: column;
+}
+
+.service-card__cost-val {
+  font-size: var(--fs-h4);
+  font-weight: 500;
+  letter-spacing: -0.52px;
+}
+
+.service-card__cost-sub {
+  font-size: 14px;
+  font-weight: 400;
+  opacity: 0.8;
+}
+

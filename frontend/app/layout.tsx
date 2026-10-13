@@ -1,12 +1,8 @@
-import type { Metadata } from 'next'
-import { Montserrat } from 'next/font/google'
-import './globals.css'
-
-const montserrat = Montserrat({
-  subsets: ['latin', 'cyrillic'],
-  variable: '--font-montserrat',
-  display: 'swap',
-})
+import type { Metadata } from 'next';
+import './globals.css';
+import { ModalProvider } from '@/components/ModalProvider';
+import { SvgSprite } from '@/components/ui/SvgSprite';
+import { CookieBanner } from '@/components/ui/CookieBanner';
 
 export const metadata: Metadata = {
   title: 'Велкод — разработка сайтов и автоматизация бизнеса',
@@ -22,12 +18,18 @@ export const metadata: Metadata = {
     locale: 'ru_RU',
     type: 'website',
   },
-}
+};
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ru" className={montserrat.variable}>
-      <body>{children}</body>
+    <html lang="ru">
+      <body className="page">
+        <SvgSprite />
+        <ModalProvider>
+          {children}
+          <CookieBanner />
+        </ModalProvider>
+      </body>
     </html>
-  )
+  );
 }
