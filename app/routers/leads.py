@@ -6,7 +6,7 @@ from app.models import Lead
 from app.notifications import notify_new_lead
 from app.schemas import LeadCreate, LeadOut
 
-router = APIRouter(prefix="/api/leads", tags=["leads"])
+router = APIRouter(prefix="/api/v1/leads", tags=["leads"])
 
 
 @router.post("", response_model=LeadOut, status_code=201)

@@ -9,7 +9,7 @@ async def test_create_lead_with_valid_data(client):
         "question": "Сколько стоит лендинг?",
         "consent": True,
     }
-    response = await client.post("/api/leads", json=payload)
+    response = await client.post("/api/v1/leads", json=payload)
 
     assert response.status_code == 201
     body = response.json()
@@ -21,28 +21,28 @@ async def test_create_lead_with_valid_data(client):
 @pytest.mark.asyncio
 async def test_create_lead_without_name_fails(client):
     payload = {"name": "  ", "phone": "+79991112233", "consent": True}
-    response = await client.post("/api/leads", json=payload)
+    response = await client.post("/api/v1/leads", json=payload)
     assert response.status_code == 422
 
 
 @pytest.mark.asyncio
 async def test_create_lead_with_short_phone_fails(client):
     payload = {"name": "Иван", "phone": "12345", "consent": True}
-    response = await client.post("/api/leads", json=payload)
+    response = await client.post("/api/v1/leads", json=payload)
     assert response.status_code == 422
 
 
 @pytest.mark.asyncio
 async def test_create_lead_without_consent_fails(client):
     payload = {"name": "Иван", "phone": "+79991112233", "consent": False}
-    response = await client.post("/api/leads", json=payload)
+    response = await client.post("/api/v1/leads", json=payload)
     assert response.status_code == 422
 
 
 @pytest.mark.asyncio
 async def test_lead_not_created_on_validation_error(client, db_session):
     payload = {"name": "", "phone": "123", "consent": False}
-    await client.post("/api/leads", json=payload)
+    await client.post("/api/v1/leads", json=payload)
 
     from sqlalchemy import select
     from app.models import Lead
