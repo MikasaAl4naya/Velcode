@@ -3,6 +3,7 @@ import { Header } from '@/components/sections/Header';
 import { Contacts } from '@/components/sections/Contacts';
 import { Footer } from '@/components/sections/Footer';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
+import { Tag } from '@/components/ui/Tag';
 import { PORTFOLIO_PAGE_ITEMS } from '@/lib/siteData';
 
 export const metadata = {
@@ -61,9 +62,7 @@ export default function PortfolioPage() {
 
                     <div className="portfolio-card__tags">
                       {item.tags.map((tag, idx) => (
-                        <span key={idx} className="portfolio-tag">
-                          {tag}
-                        </span>
+                        <Tag key={idx}>{tag}</Tag>
                       ))}
                     </div>
                   </div>

@@ -1,0 +1,58 @@
+/* ============================================================
+   ХЛЕБНЫЕ КРОШКИ (BREADCRUMBS)
+   Единый стиль для всех подстраниц проекта:
+   /portfolio, /portfolio/case, /services, /advantages, /contacts, /privacy, /consent, /cookies.
+   Шрифт 16px (15px на мобильных), регулярный, увеличенный отступ снизу clamp(30px, 3.125vw, 50px).
+============================================================ */
+
+.breadcrumbs {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: clamp(30px, 3.125vw, 50px);
+  font-size: 16px;
+  line-height: 1.4;
+  font-weight: 400;
+}
+
+.breadcrumbs__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 400;
+}
+
+.breadcrumbs__link {
+  color: var(--color-dark);
+  opacity: 0.5;
+  font-weight: 400;
+  text-decoration: none;
+  transition: opacity var(--transition-base), color var(--transition-base);
+  cursor: pointer;
+}
+
+.breadcrumbs__link:hover {
+  opacity: 1;
+  color: var(--color-dark);
+}
+
+.breadcrumbs__separator {
+  color: var(--color-dark);
+  opacity: 0.5;
+  font-weight: 400;
+  user-select: none;
+}
+
+.breadcrumbs__current {
+  color: var(--color-dark);
+  font-weight: 400;
+  opacity: 1;
+}
+
+@media (max-width: 767.98px) {
+  .breadcrumbs {
+    font-size: 15px;
+    margin-bottom: clamp(20px, 4vw, 28px);
+  }
+}

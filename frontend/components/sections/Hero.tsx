@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { useModal } from '@/hooks/useModal';
 import { HERO_TAGS } from '@/lib/siteData';
+import { SplitText } from '@/components/ui/SplitText';
+import { Tag } from '@/components/ui/Tag';
 
 export function Hero() {
   const { openModal } = useModal();
@@ -44,6 +46,7 @@ export function Hero() {
       ref={heroRef}
     >
       <div className="hero__container">
+        {/* Фоновый торус: справа на всю высоту контейнера */}
         <div className="hero__bg-torus" ref={torusRef} aria-hidden="true">
           <img
             src="/assets/hero-abstract-torus.png"
@@ -56,14 +59,21 @@ export function Hero() {
           />
         </div>
 
+        {/* Верхняя часть: заголовки и кнопки */}
         <div className="hero__top-row">
           <div className="hero__info">
             <div className="hero__title-wrap">
               <h1 className="hero__title">
-                <span className="hero__title-line hero__title-line--accent">
-                  Цифровые решения
-                </span>
-                <span className="hero__title-line">для&nbsp;вашего бизнеса</span>
+                <SplitText
+                  text="Цифровые решения"
+                  className="hero__title-line hero__title-line--accent"
+                  startDelay={0.01}
+                />
+                <SplitText
+                  text="для вашего бизнеса"
+                  className="hero__title-line"
+                  startDelay={0.24}
+                />
               </h1>
               <p className="hero__description">
                 Веб-разработка и автоматизация процессов. Создадим и&nbsp;поддержим всю digital-инфраструктуру вашей компании.
@@ -90,14 +100,13 @@ export function Hero() {
           </div>
         </div>
 
+        {/* Нижняя единая линия: теги слева и карточка по одной оси */}
         <div className="hero__bottom-row">
           <div className="hero__tags">
             {HERO_TAGS.map((row, idx) => (
               <div key={idx} className="hero__tags-row">
                 {row.map((tag) => (
-                  <span key={tag} className="tag">
-                    {tag}
-                  </span>
+                  <Tag key={tag}>{tag}</Tag>
                 ))}
               </div>
             ))}

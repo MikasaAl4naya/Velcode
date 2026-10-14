@@ -72,7 +72,7 @@
 /* Страница контактов */
 .contacts-page {
   padding-top: calc(var(--header-offset) + clamp(30px, 4vw, 55px));
-  padding-bottom: var(--section-pad);
+  padding-bottom: 0;
 }
 
 .contacts-page .contacts {

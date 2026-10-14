@@ -3,270 +3,100 @@
 ============================================================ */
 
 .case-page {
-  padding-top: calc(var(--header-offset) + clamp(24px, 3.5vw, 48px));
-  padding-bottom: var(--section-pad);
+  padding-top: calc(var(--header-offset) + clamp(30px, 4vw, 55px));
+  padding-bottom: 0; /* отступ снизу даёт секция Contacts */
 }
 
-.case-page__container {
-  width: 100%;
-  max-width: calc(var(--max-width) + var(--container-pad) * 2);
-  margin-inline: auto;
-  padding-inline: var(--container-pad);
-}
-
-/* ---------- Хедер кейса ---------- */
-.case-page__header {
-  margin-bottom: clamp(36px, 4vw, 64px);
-}
-
-.case-page__title-wrap {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
+/* ---------- Заголовок ---------- */
 .case-page__title {
   color: var(--color-dark);
   font-size: var(--fs-h2);
   font-weight: 500;
   line-height: 1.08;
   letter-spacing: -1.2px;
-  margin: 0;
+  margin: 0 0 clamp(20px, 2vw, 32px);
 }
 
-.case-page__lead {
-  max-width: 860px;
-  color: var(--color-muted);
-  font-size: clamp(16px, 1.3vw, 20px);
-  font-weight: 400;
-  line-height: 1.55;
-  margin: 0;
-}
-
-/* Плашки-теги */
+/* ---------- Теги — сразу под заголовком ---------- */
 .case-page__tags {
   display: flex;
   flex-wrap: wrap;
+  /* Без column-gap: теги вплотную, как в Hero */
   column-gap: 0;
   row-gap: 8px;
-  margin-top: 24px;
+  margin-bottom: clamp(20px, 2vw, 28px);
 }
 
-.case-tag {
-  display: inline-flex;
-  align-items: center;
-  padding: 10px 18px;
-  border-radius: 9999px;
-  background: #eff3fe;
-  color: #5366a4;
-  font-size: 15px;
-  font-weight: 400;
-  line-height: 1;
-}
-
-/* ---------- Информационная плашка кейса (Спецификация) ---------- */
-.case-page__specs {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 28px;
-  margin-bottom: clamp(40px, 5vw, 70px);
-  padding: 0;
-  background: transparent;
-  border: none;
-}
-
-.case-spec {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.case-spec__label {
-  color: var(--color-muted);
-  font-size: 13px;
-  font-weight: 400;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.case-spec__value {
-  color: var(--color-dark);
-  font-size: clamp(16px, 1.2vw, 18px);
-  font-weight: 500;
-  line-height: 1.3;
-}
-
-/* ---------- 3 Картинки из кейсов ---------- */
-.case-page__gallery {
-  display: flex;
-  flex-direction: column;
-  gap: clamp(24px, 3vw, 40px);
-  margin-bottom: clamp(48px, 6vw, 80px);
-}
-
-.case-page__img-main {
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  border-radius: 24px;
-  overflow: hidden;
-  background: #f4f6fa;
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.05);
-}
-
-.case-page__img-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: clamp(20px, 2.5vw, 36px);
-}
-
-.case-page__img-sub {
-  width: 100%;
-  aspect-ratio: 16 / 10;
-  border-radius: 20px;
-  overflow: hidden;
-  background: #f4f6fa;
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
-}
-
-.case-page__img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: top center;
-  display: block;
-}
-
-/* ---------- Блок призыва: «Хотите такой же сайт?» ---------- */
-.case-page__cta {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 32px;
-  padding: clamp(36px, 4vw, 56px);
-  border-radius: var(--radius-card);
-  background: var(--color-dark);
-  color: #ffffff;
-  margin-bottom: clamp(48px, 6vw, 80px);
-  position: relative;
-  overflow: hidden;
-}
-
-/* Фоновый мягкий градиент */
-.case-page__cta::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  right: -10%;
-  width: 500px;
-  height: 500px;
-  background: radial-gradient(circle, rgba(113, 131, 189, 0.25) 0%, transparent 70%);
-  pointer-events: none;
-}
-
-.case-page__cta-content {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+/* ---------- Лид-текст ---------- */
+.case-page__lead {
   max-width: 680px;
-  position: relative;
-  z-index: 1;
+  color: var(--color-muted);
+  font-size: clamp(14px, 1.1vw, 17px);
+  font-weight: 400;
+  line-height: 1.6;
+  margin: 0 0 clamp(36px, 4vw, 56px);
 }
 
-.case-page__cta-title {
-  color: #ffffff;
-  font-size: clamp(26px, 2.5vw, 38px);
-  font-weight: 500;
-  line-height: 1.15;
-  letter-spacing: -0.8px;
-  margin: 0;
-}
-
-.case-page__cta-desc {
-  color: var(--color-muted-light);
-  font-size: clamp(15px, 1.2vw, 17px);
-  line-height: 1.5;
-  margin: 0;
-}
-
-.case-page__cta-btn {
-  flex-shrink: 0;
-  position: relative;
-  z-index: 1;
-}
-
-/* ---------- Текстовый блок описания результатов и этапов ---------- */
-.case-page__narrative {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: clamp(32px, 5vw, 80px);
+/* ---------- Hero-изображение (ноутбук) — по ширине сетки со стандартным скруглением ---------- */
+.case-page__hero-wrap {
+  width: 100%;
+  border-radius: var(--radius-section);
+  overflow: hidden;
+  background: #3c4a3e; /* цвет фона из фото если не загрузилось */
   margin-bottom: clamp(48px, 6vw, 80px);
 }
 
-.case-narrative-block {
+.case-page__hero-img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+}
+
+/* ---------- «Что было сделано» — 2 колонки ---------- */
+.case-page__what {
+  display: grid;
+  grid-template-columns: 1fr 1.55fr;
+  gap: clamp(32px, 5vw, 80px);
+  margin-bottom: clamp(40px, 5vw, 64px);
+  align-items: start;
+}
+
+.case-page__what-title {
+  color: var(--color-dark);
+  font-size: clamp(22px, 2vw, 32px);
+  font-weight: 500;
+  letter-spacing: -0.5px;
+  line-height: 1.15;
+  margin: 0;
+}
+
+.case-page__what-body {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-.case-narrative-block__title {
-  color: var(--color-dark);
-  font-size: clamp(22px, 2vw, 28px);
-  font-weight: 500;
-  letter-spacing: -0.5px;
-  margin: 0;
-}
-
-.case-narrative-block__text {
+.case-page__what-text {
   color: var(--color-muted);
-  font-size: 16px;
-  line-height: 1.65;
+  font-size: clamp(14px, 1.1vw, 16px);
+  line-height: 1.7;
   margin: 0;
 }
 
-.case-narrative-block__list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.case-narrative-block__item {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  color: var(--color-dark);
-  font-size: 16px;
-  line-height: 1.5;
-}
-
-.case-narrative-block__dot {
-  flex-shrink: 0;
-  width: 8px;
-  height: 8px;
-  margin-top: 8px;
-  border-radius: 50%;
-  background: var(--color-blue-pill);
+/* ---------- Браузерный мокап ---------- */
+.case-page__mockup-wrap {
+  margin-bottom: clamp(48px, 6vw, 80px);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
 }
 
 /* ---------- Адаптивные брейкпоинты ---------- */
 @media (max-width: 991.98px) {
-  .case-page__specs {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 24px;
-  }
-
-  .case-page__cta {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .case-page__narrative {
+  .case-page__what {
     grid-template-columns: 1fr;
-    gap: 36px;
+    gap: 20px;
   }
 }
 
@@ -279,29 +109,5 @@
     font-size: 28px;
     letter-spacing: -0.6px;
     line-height: 1.15;
-  }
-
-  .case-page__specs {
-    grid-template-columns: 1fr;
-    gap: 16px;
-    padding: 0;
-  }
-
-  .case-page__img-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .case-page__img-main,
-  .case-page__img-sub {
-    border-radius: 18px;
-  }
-
-  .case-page__cta {
-    padding: 28px 20px;
-    border-radius: 24px;
-  }
-
-  .case-page__cta-btn {
-    width: 100%;
   }
 }

@@ -177,26 +177,14 @@
   }
 }
 
-/* Теги карточки */
+/* Теги карточки — без column-gap, как в Hero */
 .portfolio-card__tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  column-gap: 0;
+  row-gap: 8px;
 }
 
-/* Плашки/теги карточки: font-size 15px, без обводки, фон #EFF3FE, цвет #5366A4, padding: 10px 16px */
-.portfolio-tag {
-  display: inline-flex;
-  align-items: center;
-  padding: 10px 16px;
-  border-radius: 9999px;
-  background: #EFF3FE;
-  color: #5366A4;
-  font-size: 15px;
-  font-weight: 400;
-  line-height: 1;
-  border: none;
-}
 
 /* ---------- Адаптивные брейкпоинты для страницы портфолио ---------- */
 

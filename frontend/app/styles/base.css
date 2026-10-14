@@ -194,6 +194,12 @@ main > * + * {
   }
 }
 
+
+/* -------------------------------------------------------
+   Единый компонент тега - Hero, PortfolioPage, CasePage.
+   Стиль: белый фон, рамка, pill - как в Hero.
+   column-gap=0 задаётся в контейнере, не в теге.
+------------------------------------------------------- */
 .tag {
   display: inline-flex;
   align-items: center;
@@ -205,9 +211,8 @@ main > * + * {
   color: var(--color-dark);
   font-size: 15px;
   font-weight: 300;
+  line-height: 1;
   white-space: nowrap;
 }
 
-
 #root { display: contents; }
-

@@ -1,0 +1,137 @@
+/* ============================================================
+   BROWSER MOCKUP — переиспользуемое окно браузера macOS
+   Используется в: Portfolio (главная), CasePage
+============================================================ */
+
+.browser-mockup {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 0 10px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* ---------- Шапка браузера ---------- */
+.browser-mockup__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  height: 30px;
+  padding: 0 12px;
+  background: #ffffff;
+  border-bottom: 1px solid #e6e6e6;
+  color: #6d6d72;
+  flex-shrink: 0;
+}
+
+.browser-mockup__bar-side {
+  flex: 1 1 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.browser-mockup__bar-side--end {
+  justify-content: flex-end;
+}
+
+.browser-mockup__dots {
+  display: flex;
+  gap: 5px;
+  margin-right: 4px;
+}
+
+.browser-mockup__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.browser-mockup__dot--close    { background: #ff5f57; }
+.browser-mockup__dot--minimize { background: #febc2e; }
+.browser-mockup__dot--zoom     { background: #28c840; }
+
+.browser-mockup__icon,
+.browser-mockup__lock,
+.browser-mockup__reload {
+  flex-shrink: 0;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.browser-mockup__icon {
+  width: 14px;
+  height: 14px;
+}
+
+.browser-mockup__icon--muted {
+  opacity: 0.35;
+}
+
+.browser-mockup__bar-center {
+  flex: 0 1 50%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.browser-mockup__address {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  height: 20px;
+  min-width: 0;
+  padding: 0 24px;
+  border-radius: 6px;
+  background: #f0f0f2;
+  font-size: 10px;
+  color: #3c3c43;
+}
+
+.browser-mockup__lock {
+  width: 9px;
+  height: 9px;
+}
+
+.browser-mockup__url {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.browser-mockup__reload {
+  position: absolute;
+  right: 7px;
+  width: 10px;
+  height: 10px;
+}
+
+.browser-mockup__content {
+  display: block;
+  width: 100%;
+  line-height: 0; /* убираем phantom gap под img */
+}
+
+.browser-mockup__content img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+  object-position: top center;
+}
+
+/* Скрываем лишние иконки на мелких мокапах */
+@media (max-width: 480px) {
+  .browser-mockup__icon--hide-sm {
+    display: none;
+  }
+}

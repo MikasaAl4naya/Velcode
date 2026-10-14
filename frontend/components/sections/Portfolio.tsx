@@ -1,15 +1,17 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { PORTFOLIO_DATA } from '@/lib/siteData';
+import { SplitText } from '@/components/ui/SplitText';
+import { BrowserMockup } from '@/components/ui/BrowserMockup';
 
 export function Portfolio() {
   const sectionRef = useRef<HTMLElement>(null);
+  const [currentUrl, setCurrentUrl] = useState(PORTFOLIO_DATA[0].url);
 
   useEffect(() => {
     const stack = sectionRef.current ? sectionRef.current.querySelector('#portfolioStack') : null;
-    const urlLabel = sectionRef.current ? sectionRef.current.querySelector('#portfolioUrl') : null;
     const slides = stack ? Array.from(stack.children) as HTMLElement[] : [];
     if (slides.length < 2) return;
 
@@ -53,8 +55,8 @@ export function Portfolio() {
         slide.setAttribute('aria-hidden', String(i !== next));
       });
 
-      if (urlLabel && (slides[next] as HTMLElement).dataset.url) {
-        urlLabel.textContent = (slides[next] as HTMLElement).dataset.url || '';
+      if (slides[next].dataset.url) {
+        setCurrentUrl(slides[next].dataset.url!);
       }
 
       index = next;
@@ -105,58 +107,7 @@ export function Portfolio() {
         <div className="portfolio__folder">
           <div className="portfolio__folder-tab" aria-hidden="true"></div>
           <div className="portfolio__folder-card">
-            <div className="portfolio__browser">
-              <div className="browser-bar" aria-hidden="true">
-                <div className="browser-bar__side">
-                  <span className="browser-bar__dots">
-                    <span className="browser-bar__dot browser-bar__dot--close"></span>
-                    <span className="browser-bar__dot browser-bar__dot--minimize"></span>
-                    <span className="browser-bar__dot browser-bar__dot--zoom"></span>
-                  </span>
-                  <svg className="browser-bar__icon browser-bar__icon--hide-sm" viewBox="0 0 16 16">
-                    <rect x="1.5" y="3" width="13" height="10" rx="2" />
-                    <path d="M6 3v10" />
-                  </svg>
-                  <svg className="browser-bar__icon browser-bar__icon--hide-sm" viewBox="0 0 16 16">
-                    <path d="M10 3.5 5.5 8l4.5 4.5" />
-                  </svg>
-                  <svg className="browser-bar__icon browser-bar__icon--muted browser-bar__icon--hide-sm" viewBox="0 0 16 16">
-                    <path d="M6 3.5 10.5 8 6 12.5" />
-                  </svg>
-                </div>
-                <div className="browser-bar__center">
-                  <svg className="browser-bar__icon browser-bar__icon--hide-sm" viewBox="0 0 16 16">
-                    <path d="M8 1.8 13 3.6v4c0 3.1-2.1 5.4-5 6.6-2.9-1.2-5-3.5-5-6.6v-4z" />
-                    <path d="M8 1.8v12.4" />
-                  </svg>
-                  <div className="browser-bar__address">
-                    <svg className="browser-bar__lock" viewBox="0 0 16 16">
-                      <rect x="3.5" y="7" width="9" height="7" rx="1.5" />
-                      <path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2" />
-                    </svg>
-                    <span className="browser-bar__url" id="portfolioUrl">
-                      {PORTFOLIO_DATA[0].url}
-                    </span>
-                    <svg className="browser-bar__reload" viewBox="0 0 16 16">
-                      <path d="M12.5 8a4.5 4.5 0 1 1-1.3-3.2" />
-                      <path d="M12 2.5v2.8H9.2" />
-                    </svg>
-                  </div>
-                </div>
-                <div className="browser-bar__side browser-bar__side--end">
-                  <svg className="browser-bar__icon" viewBox="0 0 16 16">
-                    <path d="M8 1.5v8M5.2 4.3 8 1.5l2.8 2.8" />
-                    <path d="M5 6.5H3.5v8h9v-8H11" />
-                  </svg>
-                  <svg className="browser-bar__icon" viewBox="0 0 16 16">
-                    <path d="M8 3v10M3 8h10" />
-                  </svg>
-                  <svg className="browser-bar__icon" viewBox="0 0 16 16">
-                    <rect x="2" y="5" width="9" height="9" rx="1.5" />
-                    <path d="M5 2.5h7a1.5 1.5 0 0 1 1.5 1.5v7" />
-                  </svg>
-                </div>
-              </div>
+            <BrowserMockup url={currentUrl} className="portfolio__browser">
               <div className="portfolio__stack" id="portfolioStack">
                 {PORTFOLIO_DATA.map((item, idx) => (
                   <article
@@ -179,11 +130,13 @@ export function Portfolio() {
                   </article>
                 ))}
               </div>
-            </div>
+            </BrowserMockup>
           </div>
         </div>
         <div className="portfolio__info">
-          <h2 className="portfolio__title">Наши кейсы</h2>
+          <h2 className="portfolio__title">
+            <SplitText text="Наши кейсы" />
+          </h2>
           <p className="portfolio__description">
             Мы предлагаем широкий спектр digital-услуг: от создания чат-ботов до сложных сайтов с интеграциями 1С и Битрикс.
           </p>

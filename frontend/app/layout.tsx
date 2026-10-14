@@ -5,6 +5,13 @@ import { SvgSprite } from '@/components/ui/SvgSprite';
 import { CookieBanner } from '@/components/ui/CookieBanner';
 
 export const metadata: Metadata = {
+  icons: {
+    icon: [
+      { url: '/favicon.ico' },
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+    ],
+    apple: '/apple-touch-icon.png',
+  },
   title: 'Велкод — разработка сайтов и автоматизация бизнеса',
   description:
     'Велкод: разработка сайтов под ключ, настройка рекламы и автоматизация бизнеса в Иркутске. Битрикс24, 1С, чат-боты и ИИ-ассистенты. Оставьте заявку!',

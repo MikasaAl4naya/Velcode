@@ -67,119 +67,12 @@
 }
 
 /* Окно браузера: сверху статичная панель Safari, под ней стопка скриншотов */
+/* Браузерное окно в секции Portfolio использует BrowserMockup.
+   Здесь только специфика для этого контекста. */
 .portfolio__browser {
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  border-radius: 12px;
-  background: #ffffff;
-  box-shadow: 0 0 10px 5px rgba(0, 0, 0, 0.2);
+  /* Стили из browser-mockup.css; здесь можно добавить overrides */
 }
 
-.browser-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  height: 30px;
-  padding: 0 12px;
-  background: #ffffff;
-  border-bottom: 1px solid #e6e6e6;
-  color: #6d6d72;
-}
-
-.browser-bar__side {
-  flex: 1 1 0;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.browser-bar__side--end {
-  justify-content: flex-end;
-}
-
-.browser-bar__dots {
-  display: flex;
-  gap: 5px;
-  margin-right: 4px;
-}
-
-.browser-bar__dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-}
-
-.browser-bar__dot--close { background: #ff5f57; }
-.browser-bar__dot--minimize { background: #febc2e; }
-.browser-bar__dot--zoom { background: #28c840; }
-
-.browser-bar__icon,
-.browser-bar__lock,
-.browser-bar__reload {
-  flex-shrink: 0;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.3;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.browser-bar__icon {
-  width: 14px;
-  height: 14px;
-}
-
-.browser-bar__icon--muted {
-  opacity: 0.35;
-}
-
-.browser-bar__center {
-  flex: 0 1 50%;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-width: 0;
-}
-
-.browser-bar__address {
-  flex: 1;
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  height: 20px;
-  min-width: 0;
-  padding: 0 24px;
-  border-radius: 6px;
-  background: #f0f0f2;
-  font-size: 10px;
-  color: #3c3c43;
-}
-
-.browser-bar__lock {
-  width: 9px;
-  height: 9px;
-}
-
-.browser-bar__url {
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-.browser-bar__reload {
-  position: absolute;
-  right: 7px;
-  width: 10px;
-  height: 10px;
-}
-
-/* Стопка скриншотов на flex: все слайды занимают 100% ширины
-   и сдвинуты отрицательным margin в одну точку. Высоту стопки
-   задаёт самая высокая картинка, остальные растягиваются по ней. */
 .portfolio__stack {
   --slide-duration: 1100ms;
   --slide-easing: cubic-bezier(0.65, 0, 0.35, 1); /* плавный старт и финиш */
@@ -264,4 +157,3 @@
   font-weight: 300;
   line-height: 1.5;
 }
-
