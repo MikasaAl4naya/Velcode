@@ -4,14 +4,39 @@ import { Contacts } from '@/components/sections/Contacts';
 import { Footer } from '@/components/sections/Footer';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { Tag } from '@/components/ui/Tag';
-import { PORTFOLIO_PAGE_ITEMS } from '@/lib/siteData';
 
 export const metadata = {
   title: 'Портфолио — Велкод',
   description: 'Примеры выполненных проектов студии Велкод: сайты, интеграции, чат-боты.',
 };
 
-export default function PortfolioPage() {
+interface PortfolioItem {
+  id: number;
+  slug: string | null;
+  title: string;
+  image_url: string | null;
+  tags: string | null;
+}
+
+async function fetchPortfolio(): Promise<PortfolioItem[]> {
+  const base =
+    process.env.INTERNAL_API_URL ||
+    process.env.NEXT_PUBLIC_API_URL ||
+    'http://localhost:8000';
+  try {
+    const res = await fetch(`${base}/api/portfolio`, {
+      next: { revalidate: 60 },
+    });
+    if (!res.ok) return [];
+    return res.json();
+  } catch {
+    return [];
+  }
+}
+
+export default async function PortfolioPage() {
+  const items = await fetchPortfolio();
+
   return (
     <>
       <Header currentPath="/portfolio" />
@@ -33,18 +58,15 @@ export default function PortfolioPage() {
             </div>
 
             <div className="portfolio-grid">
-              {PORTFOLIO_PAGE_ITEMS.map((item) => (
-                <article
-                  key={item.id}
-                  className={`portfolio-card ${item.empty ? 'portfolio-card--empty' : ''}`}
-                >
+              {items.map((item) => (
+                <article key={item.id} className="portfolio-card">
                   <Link
-                    href={item.link}
+                    href={item.slug ? `/portfolio/${item.slug}` : '#'}
                     className="portfolio-card__preview"
                     aria-label={item.title}
                   >
                     <img
-                      src={item.img}
+                      src={item.image_url ?? '/assets/case-placeholder.png'}
                       alt={`${item.title} — разработка сайтов под ключ, веб-дизайн студии Велкод`}
                       title={`${item.title} — проект Велкод Иркутск`}
                       className="portfolio-card__img"
@@ -55,14 +77,17 @@ export default function PortfolioPage() {
 
                   <div className="portfolio-card__info">
                     <h2 className="portfolio-card__title">
-                      <Link href={item.link} className="portfolio-card__title-link">
+                      <Link
+                        href={item.slug ? `/portfolio/${item.slug}` : '#'}
+                        className="portfolio-card__title-link"
+                      >
                         {item.title}
                       </Link>
                     </h2>
 
                     <div className="portfolio-card__tags">
-                      {item.tags.map((tag, idx) => (
-                        <Tag key={idx}>{tag}</Tag>
+                      {(item.tags ?? '').split(',').filter(Boolean).map((tag, idx) => (
+                        <Tag key={idx}>{tag.trim()}</Tag>
                       ))}
                     </div>
                   </div>

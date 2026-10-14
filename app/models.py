@@ -72,6 +72,7 @@ class Portfolio(Base):
     __tablename__ = "portfolio"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    slug: Mapped[str | None] = mapped_column(String(255), unique=True, nullable=True)
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[str] = mapped_column(Text, default="")
     image_url: Mapped[str | None] = mapped_column(String(500), nullable=True)

@@ -38,3 +38,13 @@ async def list_faq(db: AsyncSession = Depends(get_db)) -> list[Faq]:
 async def list_portfolio(db: AsyncSession = Depends(get_db)) -> list[Portfolio]:
     result = await db.execute(select(Portfolio).order_by(Portfolio.sort_order, Portfolio.id))
     return list(result.scalars().all())
+
+
+@router.get("/portfolio/{slug}", response_model=PortfolioOut)
+async def get_portfolio_item(slug: str, db: AsyncSession = Depends(get_db)) -> Portfolio:
+    from fastapi import HTTPException
+    result = await db.execute(select(Portfolio).where(Portfolio.slug == slug))
+    item = result.scalar_one_or_none()
+    if item is None:
+        raise HTTPException(status_code=404, detail="Case not found")
+    return item
