@@ -4,6 +4,8 @@ import { Contacts } from '@/components/sections/Contacts';
 import { Footer } from '@/components/sections/Footer';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { Tag } from '@/components/ui/Tag';
+import { SplitText } from '@/components/ui/SplitText';
+import { PORTFOLIO_PAGE_ITEMS } from '@/lib/siteData';
 
 export const metadata = {
   title: 'Портфолио — Велкод',
@@ -11,7 +13,7 @@ export const metadata = {
 };
 
 interface PortfolioItem {
-  id: number;
+  id: number | string;
   slug: string | null;
   title: string;
   image_url: string | null;
@@ -35,12 +37,21 @@ async function fetchPortfolio(): Promise<PortfolioItem[]> {
 }
 
 export default async function PortfolioPage() {
-  const items = await fetchPortfolio();
+  const fetchedItems = await fetchPortfolio();
+  const items: PortfolioItem[] = fetchedItems.length > 0
+    ? fetchedItems
+    : PORTFOLIO_PAGE_ITEMS.map((item, idx) => ({
+        id: item.id || idx,
+        slug: item.link.replace('/portfolio/', '').replace('/case', 'trattoria-pomodoro'),
+        title: item.title,
+        image_url: item.img,
+        tags: item.tags.join(', '),
+      }));
 
   return (
     <>
       <Header currentPath="/portfolio" />
-      <main>
+      <main className="page__main">
         <div className="portfolio-page">
           <div className="portfolio-page__container">
             <Breadcrumbs
@@ -51,7 +62,9 @@ export default async function PortfolioPage() {
             />
 
             <div className="portfolio-page__header">
-              <h1 className="portfolio-page__title">Портфолио</h1>
+              <h1 className="portfolio-page__title">
+                <SplitText text="Портфолио" />
+              </h1>
               <p className="portfolio-page__desc">
                 Мы предлагаем широкий спектр digital-услуг: от создания чат-ботов до сложных сайтов с интеграциями 1С и Битрикс.
               </p>

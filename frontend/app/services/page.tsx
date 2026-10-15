@@ -12,7 +12,7 @@ export default function ServicesPage() {
   return (
     <>
       <Header currentPath="/services" />
-      <main>
+      <main className="page__main">
         <Services isStandalone={true} />
         <Contacts />
       </main>

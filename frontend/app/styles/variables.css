@@ -195,6 +195,8 @@ html:has(body.is-scroll-locked) {
 .contacts__container,
 .footer__container,
 .legal-page__container,
+.advantages-page__container,
+.contacts-page__container,
 .case-page__container {
   width: 100%;
   max-width: calc(var(--max-width) + var(--container-pad) * 2);

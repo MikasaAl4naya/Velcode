@@ -25,11 +25,25 @@ async function fetchCase(slug: string): Promise<CaseItem | null> {
     'http://127.0.0.1:8000';
   try {
     const res = await fetch(`${base}/api/portfolio/${slug}`, { cache: 'no-store' });
-    if (!res.ok) return null;
-    return res.json();
+    if (res.ok) return await res.json();
   } catch {
-    return null;
+    // fallback below
   }
+
+  if (slug === 'case' || slug === 'trattoria-pomodoro' || slug === 'trattoria') {
+    return {
+      id: 1,
+      slug: 'case',
+      title: 'Сайт-визитка для рестобара Trattoria Pomodoro',
+      description:
+        'Комплексный веб-сайт для рестобара «Trattoria». Главные задачи — передать уникальную атмосферу заведения в цифровой среде, упростить пользовательский путь «выбор меню → бронирование столика» и сократить потери от «быстрых» заявок-бронирований со звонка.',
+      hero_image_url: '/assets/case-trattoria-hero.png',
+      image_url: '/assets/portfolio-site-preview-2.png',
+      site_url: 'trattoria.ru/',
+      tags: 'Концепт, Веб-дизайн',
+    };
+  }
+  return null;
 }
 
 export async function generateMetadata({
@@ -63,7 +77,7 @@ export default async function CasePage({
   return (
     <>
       <Header currentPath="/portfolio" />
-      <main>
+      <main className="page__main">
         <div className="case-page">
           <div className="case-page__container">
             <Breadcrumbs
@@ -97,6 +111,19 @@ export default async function CasePage({
                 />
               </div>
             )}
+
+            {/* «Что было сделано» — 2 колонки */}
+            <div className="case-page__what">
+              <h2 className="case-page__what-title">Что было сделано</h2>
+              <div className="case-page__what-body">
+                <p className="case-page__what-text">
+                  Мы разработали атмосферный визуальный стиль с акцентом на тёплую атмосферу, продуманную типографику, занялись съёмкой с атмосферными фотографиями, создали дружелюбную онлайн-систему меню с удобной интерактивностью, а также реализовали систему «умного» онлайн-бронирования.
+                </p>
+                <p className="case-page__what-text">
+                  В результате работы рестобар «Trattoria» получил не просто красивую визитку, а рабочий инструмент продаж.
+                </p>
+              </div>
+            </div>
 
             <div className="case-page__mockup-wrap">
               <BrowserMockup url={item!.site_url || 'velcode.ru/'}>

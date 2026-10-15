@@ -10,7 +10,7 @@ export default function CookiesPage() {
   return (
     <>
       <Header />
-      <main>
+      <main className="page__main">
         <LegalPageContent type="cookies" />
       </main>
       <Footer />

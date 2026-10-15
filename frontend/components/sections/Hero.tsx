@@ -20,20 +20,33 @@ export function Hero() {
 
   useEffect(() => {
     const checkClearance = () => {
-      const isMobile = window.matchMedia('(max-width: 767.98px)').matches;
-      if (isMobile) {
+      const w = window.innerWidth;
+      // На мобилках (<= 768px) работает своя мобильная верстка
+      if (w <= 768) {
         setIsTabletRatio(false);
         return;
       }
 
+      const hero = heroRef.current;
       const torus = torusRef.current;
-      if (!torus) return;
+      if (!hero || !torus) return;
 
-      const w = window.innerWidth;
+      // Если класс уже стоит, временно снимаем его для честного замера
+      const hadClass = hero.classList.contains('is-tablet-ratio');
+      if (hadClass) {
+        hero.classList.remove('is-tablet-ratio');
+      }
+
       const torusRect = torus.getBoundingClientRect();
       const leftRatio = torusRect.left / w;
 
-      setIsTabletRatio(leftRatio < 0.20);
+      if (hadClass) {
+        hero.classList.add('is-tablet-ratio');
+      }
+
+      // Если свободного пространства слева от картинки меньше 20% ширины экрана
+      const shouldShift = leftRatio < 0.20;
+      setIsTabletRatio(shouldShift);
     };
 
     checkClearance();
@@ -119,6 +132,7 @@ export function Hero() {
                 openModal({
                   theme: 'blue-grad',
                   num: '01',
+                  title: 'Сайт под ключ',
                   name: 'Сайт под ключ',
                   desc: 'От простых лендингов до сложных экосистем с ИИ, интеграцией 1С и Битрикс24',
                 })
@@ -130,8 +144,8 @@ export function Hero() {
                   alt="Разработка сайта под ключ от 36 000 рублей — пример проекта студии Велкод"
                   title="Сайт под ключ от студии Велкод"
                   className="hero__card-img"
-                  width={110}
-                  height={80}
+                  width="110"
+                  height="80"
                   loading="lazy"
                 />
               </span>

@@ -10,7 +10,7 @@ export default function PrivacyPage() {
   return (
     <>
       <Header />
-      <main>
+      <main className="page__main">
         <LegalPageContent type="privacy" />
       </main>
       <Footer />

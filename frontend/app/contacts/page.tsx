@@ -12,7 +12,7 @@ export default function ContactsPage() {
   return (
     <>
       <Header currentPath="/contacts" />
-      <main>
+      <main className="page__main">
         <div className="contacts-page">
           <div className="contacts-page__container">
             <Breadcrumbs

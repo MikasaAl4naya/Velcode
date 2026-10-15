@@ -1,6 +1,7 @@
 import { LeadForm } from '@/components/ui/LeadForm';
 import { SocialLinks } from '@/components/ui/SocialLinks';
 import { COMPANY_CONFIG } from '@/lib/company';
+import { SplitText } from '@/components/ui/SplitText';
 
 type ContactsProps = {
   isStandalone?: boolean;
@@ -16,9 +17,13 @@ export function Contacts({ isStandalone = false }: ContactsProps) {
         <div className="contacts__card">
           <div className="contacts__side">
             {isStandalone ? (
-              <h1 className="contacts__title">Контакты</h1>
+              <h1 className="contacts__title">
+                <SplitText text="Контакты" />
+              </h1>
             ) : (
-              <h2 className="contacts__title">Контакты</h2>
+              <h2 className="contacts__title">
+                <SplitText text="Контакты" />
+              </h2>
             )}
             <p className="contacts__subtitle">
               Остались вопросы? Свяжитесь с нами<br />любым удобным способом

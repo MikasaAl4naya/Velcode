@@ -10,7 +10,7 @@ export default function ConsentPage() {
   return (
     <>
       <Header />
-      <main>
+      <main className="page__main">
         <LegalPageContent type="consent" />
       </main>
       <Footer />

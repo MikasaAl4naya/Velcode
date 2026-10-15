@@ -13,7 +13,7 @@ export default function AdvantagesPage() {
   return (
     <>
       <Header currentPath="/advantages" />
-      <main>
+      <main className="page__main">
         <div className="advantages-page">
           <div className="advantages-page__container">
             <Breadcrumbs

@@ -6,7 +6,7 @@ export default function NotFound() {
   return (
     <>
       <Header />
-      <main>
+      <main className="page__main">
         <section className="not-found-page">
           <div className="not-found-page__container">
             <div className="not-found-page__content">

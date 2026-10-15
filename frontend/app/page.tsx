@@ -35,7 +35,7 @@ export default async function Page() {
   return (
     <SmoothWheelProvider>
       <Header currentPath="/" />
-      <main>
+      <main className="page__main">
         <Hero />
         <Services />
         <Advantages />
