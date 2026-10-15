@@ -1,13 +1,12 @@
-import asyncio
 import re
 from pathlib import Path
 from uuid import uuid4
 
 from markupsafe import Markup
-from sqladmin import Admin, ModelView
+from sqladmin import Admin, BaseView, ModelView, expose
 from sqladmin.authentication import AuthenticationBackend
 from starlette.requests import Request
-from wtforms import FileField
+from starlette.responses import HTMLResponse
 
 from app.config import settings
 from app.database import engine
@@ -15,7 +14,6 @@ from app.models import Category, Faq, Lead, Portfolio, Service
 
 UPLOADS_DIR = Path("uploads")
 
-# Russian → Latin transliteration table
 _TRANSLIT = {
     'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd',
     'е': 'e', 'ё': 'yo', 'ж': 'zh', 'з': 'z', 'и': 'i',
@@ -34,24 +32,10 @@ def _slugify(text: str) -> str:
     return result.strip('-')
 
 
-async def _save_upload(upload) -> str | None:
-    """Save an UploadFile/FileStorage to uploads dir, return relative URL."""
-    if upload is None:
-        return None
-    filename = getattr(upload, 'filename', '') or ''
-    if not filename:
-        return None
-    read = getattr(upload, 'read', None)
-    if read is None:
-        return None
-    content = await read() if asyncio.iscoroutinefunction(read) else read()
-    if not content:
-        return None
-    UPLOADS_DIR.mkdir(exist_ok=True)
-    suffix = Path(filename).suffix or '.png'
-    fname = f"{uuid4().hex}{suffix}"
-    (UPLOADS_DIR / fname).write_bytes(content)
-    return f"/uploads/{fname}"
+def _img_thumb(url: str | None) -> str:
+    if not url:
+        return '—'
+    return Markup(f'<img src="{url}" style="height:40px;border-radius:4px">')
 
 
 class AdminAuth(AuthenticationBackend):
@@ -73,10 +57,73 @@ class AdminAuth(AuthenticationBackend):
         return bool(request.session.get("authenticated"))
 
 
-def _img_thumb(url: str | None) -> str:
-    if not url:
-        return '—'
-    return Markup(f'<img src="{url}" style="height:40px;border-radius:4px">')
+class UploadView(BaseView):
+    name = "Загрузить изображение"
+    icon = "fa-solid fa-upload"
+
+    @expose("/upload", methods=["GET", "POST"])
+    async def upload_page(self, request: Request) -> HTMLResponse:
+        uploaded_url = None
+        error = None
+
+        if request.method == "POST":
+            form = await request.form()
+            file = form.get("file")
+            if file and getattr(file, "filename", ""):
+                content = await file.read()
+                if content:
+                    UPLOADS_DIR.mkdir(exist_ok=True)
+                    suffix = Path(file.filename).suffix or ".png"
+                    fname = f"{uuid4().hex}{suffix}"
+                    (UPLOADS_DIR / fname).write_bytes(content)
+                    uploaded_url = f"/uploads/{fname}"
+                else:
+                    error = "Файл пустой"
+            else:
+                error = "Выберите файл"
+
+        html = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="utf-8">
+            <title>Загрузить изображение — Велкод Admin</title>
+            <style>
+                body {{ font-family: sans-serif; max-width: 600px; margin: 60px auto; padding: 0 20px; }}
+                h1 {{ font-size: 22px; margin-bottom: 24px; }}
+                .form-group {{ margin-bottom: 16px; }}
+                input[type=file] {{ display: block; margin-bottom: 12px; }}
+                button {{ padding: 10px 24px; background: #4f46e5; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 15px; }}
+                .result {{ margin-top: 24px; padding: 16px; background: #f0fdf4; border: 1px solid #86efac; border-radius: 8px; }}
+                .result code {{ display: block; font-size: 14px; margin: 8px 0; word-break: break-all; background: #fff; padding: 8px; border-radius: 4px; border: 1px solid #d1fae5; }}
+                .preview {{ max-width: 100%; max-height: 200px; margin-top: 12px; border-radius: 6px; }}
+                .error {{ margin-top: 16px; padding: 12px; background: #fef2f2; border: 1px solid #fca5a5; border-radius: 8px; color: #dc2626; }}
+                .back {{ display: inline-block; margin-bottom: 20px; color: #4f46e5; text-decoration: none; }}
+            </style>
+        </head>
+        <body>
+            <a href="/admin" class="back">← Назад в админку</a>
+            <h1>Загрузить изображение</h1>
+            <form method="post" enctype="multipart/form-data">
+                <div class="form-group">
+                    <input type="file" name="file" accept="image/*">
+                </div>
+                <button type="submit">Загрузить</button>
+            </form>
+            {"" if not error else f'<div class="error">{error}</div>'}
+            {"" if not uploaded_url else f'''
+            <div class="result">
+                <strong>Готово! Скопируйте URL в поле формы:</strong>
+                <code id="url">{uploaded_url}</code>
+                <button onclick="navigator.clipboard.writeText('{uploaded_url}').then(()=>this.textContent='Скопировано ✓')" type="button">Копировать</button>
+                <br>
+                <img src="{uploaded_url}" class="preview" alt="preview">
+            </div>
+            '''}
+        </body>
+        </html>
+        """
+        return HTMLResponse(html)
 
 
 class PortfolioAdmin(ModelView, model=Portfolio):
@@ -99,31 +146,16 @@ class PortfolioAdmin(ModelView, model=Portfolio):
         Portfolio.tags,
         Portfolio.sort_order,
     ]
-    form_overrides = {
-        "image_url": FileField,
-        "hero_image_url": FileField,
-    }
     column_labels = {
         "slug": "URL-слаг (авто из названия, если пусто)",
-        "image_url": "Скриншот для браузер-мокапа",
-        "hero_image_url": "Изображение героя (ноутбук/устройство)",
+        "image_url": "Скриншот для браузер-мокапа (URL из «Загрузить изображение»)",
+        "hero_image_url": "Изображение героя — ноутбук/устройство (URL из «Загрузить изображение»)",
         "site_url": "URL в строке браузер-мокапа (напр. trattoria.ru/)",
         "tags": "Теги (через запятую)",
         "sort_order": "Порядок",
     }
 
     async def on_model_change(self, data: dict, model, is_created: bool) -> None:
-        # Handle file uploads
-        for field in ("image_url", "hero_image_url"):
-            url = await _save_upload(data.get(field))
-            if url:
-                data[field] = url
-            elif not is_created and model is not None:
-                data[field] = getattr(model, field, None)
-            else:
-                data.pop(field, None)
-
-        # Auto-generate slug from title
         if not str(data.get("slug") or "").strip() and data.get("title"):
             data["slug"] = _slugify(str(data["title"]))
 
@@ -172,4 +204,5 @@ def create_admin(app) -> Admin:
     admin.add_view(CategoryAdmin)
     admin.add_view(FaqAdmin)
     admin.add_view(LeadAdmin)
+    admin.add_base_view(UploadView)
     return admin
