@@ -25,5 +25,10 @@ class Settings(BaseSettings):
 
     cors_origins: list[str] = ["http://localhost:3000", "https://velcode.ru"]
 
+    # Панель администратора
+    admin_username: str = "admin"
+    admin_password: str = "changeme"
+    admin_secret_key: str = "changeme-secret-key-32-chars-min!"
+
 
 settings = Settings()

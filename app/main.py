@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.admin import create_admin
 from app.config import settings
 from app.database import init_models
 from app.routers import catalog, leads
@@ -26,6 +27,8 @@ app.add_middleware(
 
 app.include_router(catalog.router)
 app.include_router(leads.router)
+
+create_admin(app)
 
 
 @app.get("/api/health")
