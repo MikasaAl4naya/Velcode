@@ -23,13 +23,15 @@ async function fetchCase(slug: string): Promise<CaseItem | null> {
     process.env.INTERNAL_API_URL ||
     process.env.NEXT_PUBLIC_API_URL ||
     'http://127.0.0.1:8000';
+  const url = `${base}/api/portfolio/${slug}`;
+  console.log('[fetchCase] url:', url);
   try {
-    const res = await fetch(`${base}/api/portfolio/${slug}`, {
-      cache: 'no-store',
-    });
+    const res = await fetch(url, { cache: 'no-store' });
+    console.log('[fetchCase] status:', res.status);
     if (!res.ok) return null;
     return res.json();
-  } catch {
+  } catch (e) {
+    console.error('[fetchCase] error:', e);
     return null;
   }
 }
