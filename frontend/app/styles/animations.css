@@ -16,7 +16,7 @@
 
 .split-text-line-content {
   display: block;
-  transform: translate3d(0, 115%, 0);
+  transform: translate3d(0, -115%, 0);
   opacity: 0;
   will-change: transform, opacity;
   color: inherit;
@@ -28,7 +28,7 @@
 
 @keyframes splitLineReveal {
   0% {
-    transform: translate3d(0, 115%, 0);
+    transform: translate3d(0, -115%, 0);
     opacity: 0;
   }
   20% {

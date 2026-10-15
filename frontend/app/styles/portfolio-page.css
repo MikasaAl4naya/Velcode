@@ -18,52 +18,6 @@
   /* Поля и максимальная ширина стандартизированы с глобальной сеткой в variables.css */
 }
 
-/* ---------- Хлебные крошки (16px) ---------- */
-.breadcrumbs {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: clamp(24px, 2.5vw, 40px);
-  font-size: 16px;
-  line-height: 1.4;
-  font-weight: 400; /* все regular */
-}
-
-.breadcrumbs__item {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 400;
-}
-
-.breadcrumbs__link {
-  color: var(--color-dark);
-  opacity: 0.5; /* неактивная 0.5 */
-  font-weight: 400;
-  text-decoration: none;
-  transition: opacity var(--transition-base), color var(--transition-base);
-  cursor: pointer;
-}
-
-.breadcrumbs__link:hover {
-  opacity: 1;
-  color: var(--color-dark);
-}
-
-.breadcrumbs__separator {
-  color: var(--color-dark);
-  opacity: 0.5;
-  font-weight: 400;
-  user-select: none;
-}
-
-.breadcrumbs__current {
-  color: var(--color-dark);
-  font-weight: 400; /* regular */
-  opacity: 1;
-}
-
 /* ---------- Заголовок и подзаголовок секции ---------- */
 .portfolio-page__header {
   display: flex;
@@ -210,11 +164,6 @@
 @media (max-width: 767.98px) {
   .portfolio-page {
     padding-top: calc(var(--header-height) + var(--section-pad));
-  }
-
-  .breadcrumbs {
-    font-size: 15px;
-    margin-bottom: 20px;
   }
 
   .portfolio-page__header {

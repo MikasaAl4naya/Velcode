@@ -45,7 +45,7 @@
   --container-pad: clamp(16px, 7.69px + 2.308vw, 40px);      /* поля контейнера слева и справа */
   /* Ритм страницы: расстояние между соседними блоками одно везде.
      Каждый блок даёт половину сверху и половину снизу — соседние половины складываются в целое */
-  --section-space: clamp(72px, 55.38px + 4.615vw, 120px);
+  --section-space: clamp(90px, 69.23px + 5.769vw, 150px);
   --section-pad: calc(var(--section-space) / 2);
   --layout-gap: clamp(32px, 15.38px + 4.615vw, 80px);         /* между колонками внутри секции */
   --heading-gap: clamp(24px, 18.46px + 1.538vw, 40px);        /* от заголовка секции до контента */
@@ -66,7 +66,7 @@
   --radius-card: 36px;
   --radius-btn: 9999px;
 
-  --modal-pad: clamp(24px, 3.5vw, 32px);                    /* базовый внутренний отступ модалки */
+  --modal-pad: clamp(32px, 3.5vw, 44px);                    /* базовый внутренний отступ модалки */
   --modal-pad-service: clamp(28px, 3vw, 36px);              /* отступ модалки с карточкой услуги */
   --modal-service-gap: clamp(32px, 3.5vw, 48px);            /* расстояние между карточкой услуги и формой */
   --modal-badge-pad: clamp(28px, 3vw, 36px) clamp(24px, 2.5vw, 32px); /* отступы внутри карточки услуги */
