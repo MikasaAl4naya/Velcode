@@ -6,9 +6,21 @@ import { PORTFOLIO_DATA } from '@/lib/siteData';
 import { SplitText } from '@/components/ui/SplitText';
 import { BrowserMockup } from '@/components/ui/BrowserMockup';
 
-export function Portfolio() {
+export interface PortfolioItem {
+  title: string;
+  img: string;
+  url: string;
+  link: string;
+}
+
+interface Props {
+  items?: PortfolioItem[];
+}
+
+export function Portfolio({ items }: Props) {
+  const data = items && items.length > 0 ? items : PORTFOLIO_DATA;
   const sectionRef = useRef<HTMLElement>(null);
-  const [currentUrl, setCurrentUrl] = useState(PORTFOLIO_DATA[0].url);
+  const [currentUrl, setCurrentUrl] = useState(data[0].url);
 
   useEffect(() => {
     const stack = sectionRef.current ? sectionRef.current.querySelector('#portfolioStack') : null;
@@ -109,7 +121,7 @@ export function Portfolio() {
           <div className="portfolio__folder-card">
             <BrowserMockup url={currentUrl} className="portfolio__browser">
               <div className="portfolio__stack" id="portfolioStack">
-                {PORTFOLIO_DATA.map((item, idx) => (
+                {data.map((item, idx) => (
                   <article
                     key={idx}
                     className="portfolio__slide"
