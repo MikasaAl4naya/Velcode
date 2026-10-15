@@ -1,11 +1,16 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import dynamic from 'next/dynamic';
 import { useModal } from '@/hooks/useModal';
 import { HERO_TAGS } from '@/lib/siteData';
 import { SplitText } from '@/components/ui/SplitText';
 import { Tag } from '@/components/ui/Tag';
-import { HeroModel } from '@/components/ui/HeroModel';
+
+const HeroModel = dynamic(
+  () => import('@/components/ui/HeroModel').then((m) => m.HeroModel),
+  { ssr: false }
+);
 
 export function Hero() {
   const { openModal } = useModal();
