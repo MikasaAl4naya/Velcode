@@ -155,7 +155,7 @@ class PortfolioAdmin(ModelView, model=Portfolio):
         "sort_order": "Порядок",
     }
 
-    async def on_model_change(self, data: dict, model, is_created: bool) -> None:
+    async def on_model_change(self, data: dict, model, is_created: bool, request: Request) -> None:
         if not str(data.get("slug") or "").strip() and data.get("title"):
             data["slug"] = _slugify(str(data["title"]))
 
