@@ -105,17 +105,42 @@ export function Services({ isStandalone = false, items }: ServicesProps) {
     if (isMobile || isShort) {
       s.maxShift = 0;
       track.style.transform = '';
+      track.style.minHeight = '';
+      sticky.style.minHeight = '';
       if (sectionRef.current) sectionRef.current.style.height = '';
       syncArrows();
       return;
     }
 
+    track.style.transform = 'none';
+    track.style.minHeight = '';
     const cards = [...track.querySelectorAll('.service-card')] as HTMLElement[];
     if (cards.length === 0) return;
 
+    let maxCardHeight = 0;
+    cards.forEach((card) => {
+      const h = card.offsetHeight;
+      if (h > maxCardHeight) maxCardHeight = h;
+    });
+
+    const headerEl = sticky.querySelector('.services__header') as HTMLElement | null;
+    const headerHeight = headerEl
+      ? headerEl.offsetHeight + (parseFloat(getComputedStyle(headerEl).marginBottom) || 0)
+      : (container.offsetHeight || 0);
+
+    const sectionPad =
+      parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--section-pad')) ||
+      parseFloat(getComputedStyle(sticky).paddingTop) ||
+      0;
+
+    if (maxCardHeight > 0) {
+      const minStickyHeight = Math.round(sectionPad * 2 + headerHeight + maxCardHeight);
+      sticky.style.minHeight = `${minStickyHeight}px`;
+    }
+
     const gap = parseFloat(getComputedStyle(track).columnGap) || 0;
     const gridRight = container.getBoundingClientRect().right - parseFloat(getComputedStyle(container).paddingRight);
-    const lastCardRight = cards[cards.length - 1].getBoundingClientRect().right + s.current;
+    const lastCardRight = cards[cards.length - 1].getBoundingClientRect().right;
 
     s.stickyTop = parseFloat(getComputedStyle(sticky).top) || 0;
     const cardStep = cards[0].offsetWidth + gap;
@@ -141,7 +166,7 @@ export function Services({ isStandalone = false, items }: ServicesProps) {
     window.addEventListener('load', measure);
 
     let resizeObserver: ResizeObserver | null = null;
-    if ('ResizeObserver' in window && containerRef.current) {
+    if ('ResizeObserver' in window) {
       let queued = false;
       resizeObserver = new ResizeObserver(() => {
         if (queued) return;
@@ -151,7 +176,7 @@ export function Services({ isStandalone = false, items }: ServicesProps) {
           measure();
         });
       });
-      resizeObserver.observe(containerRef.current);
+      resizeObserver.observe(document.body);
     }
 
     if (isStandalone) {
@@ -197,9 +222,16 @@ export function Services({ isStandalone = false, items }: ServicesProps) {
       const isShort = window.matchMedia('(max-height: 560px)').matches;
       if (s.hasCompleted || isMobile || isShort || s.maxShift <= 0) return null;
 
+      const advSection = document.querySelector('.advantages');
+      if (advSection) {
+        const advRect = advSection.getBoundingClientRect();
+        return window.scrollY + advRect.top - window.innerHeight;
+      }
+
       if (sectionRef.current) {
         const rect = sectionRef.current.getBoundingClientRect();
-        return Math.round(window.scrollY + rect.top - s.stickyTop);
+        const lockTopY = window.scrollY + rect.top - s.stickyTop;
+        return lockTopY - 135;
       }
 
       return null;
@@ -224,13 +256,6 @@ export function Services({ isStandalone = false, items }: ServicesProps) {
           setTarget(s.target + delta);
           return true;
         }
-      } else if (delta < 0 && s.target > 1) {
-        event.preventDefault();
-        if (typeof (window as any).__stopSmoothWheel === 'function') {
-          (window as any).__stopSmoothWheel();
-        }
-        setTarget(s.target + delta);
-        return true;
       }
 
       return false;
@@ -352,6 +377,8 @@ export function Services({ isStandalone = false, items }: ServicesProps) {
       window.removeEventListener('touchstart', handleTouchStart);
       window.removeEventListener('touchmove', handleTouchMove);
       window.removeEventListener('scroll', handleScroll);
+      if (trackRef.current) trackRef.current.style.minHeight = '';
+      if (stickyRef.current) stickyRef.current.style.minHeight = '';
       delete (window as any).__getServicesLockY;
       delete (window as any).__handleServicesWheel;
       delete (window as any).__completeServices;
