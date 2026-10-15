@@ -23,15 +23,11 @@ async function fetchCase(slug: string): Promise<CaseItem | null> {
     process.env.INTERNAL_API_URL ||
     process.env.NEXT_PUBLIC_API_URL ||
     'http://127.0.0.1:8000';
-  const url = `${base}/api/portfolio/${slug}`;
-  console.log('[fetchCase] url:', url);
   try {
-    const res = await fetch(url, { cache: 'no-store' });
-    console.log('[fetchCase] status:', res.status);
+    const res = await fetch(`${base}/api/portfolio/${slug}`, { cache: 'no-store' });
     if (!res.ok) return null;
     return res.json();
-  } catch (e) {
-    console.error('[fetchCase] error:', e);
+  } catch {
     return null;
   }
 }
@@ -39,9 +35,10 @@ async function fetchCase(slug: string): Promise<CaseItem | null> {
 export async function generateMetadata({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }) {
-  const item = await fetchCase(params.slug);
+  const { slug } = await params;
+  const item = await fetchCase(slug);
   if (!item) return {};
   return {
     title: `${item.title} — Велкод`,
@@ -52,9 +49,10 @@ export async function generateMetadata({
 export default async function CasePage({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }) {
-  const item = await fetchCase(params.slug);
+  const { slug } = await params;
+  const item = await fetchCase(slug);
   if (!item) notFound();
 
   const tags = (item!.tags ?? '')
