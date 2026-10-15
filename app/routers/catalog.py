@@ -35,8 +35,12 @@ async def list_faq(db: AsyncSession = Depends(get_db)) -> list[Faq]:
 
 
 @router.get("/portfolio", response_model=list[PortfolioOut])
-async def list_portfolio(db: AsyncSession = Depends(get_db)) -> list[Portfolio]:
-    result = await db.execute(select(Portfolio).order_by(Portfolio.sort_order, Portfolio.id))
+async def list_portfolio(main: bool = False, db: AsyncSession = Depends(get_db)) -> list[Portfolio]:
+    query = select(Portfolio)
+    if main:
+        query = query.where(Portfolio.show_on_main == True)
+    query = query.order_by(Portfolio.sort_order, Portfolio.id)
+    result = await db.execute(query)
     return list(result.scalars().all())
 
 

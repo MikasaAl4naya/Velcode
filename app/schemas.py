@@ -27,6 +27,7 @@ class ServiceOut(BaseModel):
     price_discount: int | None = None
     unit: str
     image_url: str | None = None
+    is_featured: bool = False
     sort_order: int
     categories: list[CategoryOut] = []
 
@@ -51,6 +52,7 @@ class PortfolioOut(BaseModel):
     hero_image_url: str | None = None
     site_url: str | None = None
     tags: str | None = None
+    show_on_main: bool = False
     sort_order: int
 
 

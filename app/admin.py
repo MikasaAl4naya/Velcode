@@ -10,7 +10,7 @@ from starlette.responses import HTMLResponse
 
 from app.config import settings
 from app.database import engine
-from app.models import Category, Faq, Lead, Portfolio, Service
+from app.models import Portfolio, Service
 
 UPLOADS_DIR = Path("uploads")
 
@@ -82,6 +82,18 @@ class UploadView(BaseView):
             else:
                 error = "Выберите файл"
 
+        result_block = ""
+        if uploaded_url:
+            result_block = f"""
+            <div class="result">
+                <strong>Готово! Скопируйте URL в поле формы:</strong>
+                <input type="text" id="url-field" readonly value="{uploaded_url}" onclick="this.select()">
+                <button onclick="copyUrl()" type="button" id="copy-btn">Копировать</button>
+                <br>
+                <img src="{uploaded_url}" class="preview" alt="preview">
+            </div>
+            """
+
         html = f"""
         <!DOCTYPE html>
         <html>
@@ -95,7 +107,7 @@ class UploadView(BaseView):
                 input[type=file] {{ display: block; margin-bottom: 12px; }}
                 button {{ padding: 10px 24px; background: #4f46e5; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 15px; }}
                 .result {{ margin-top: 24px; padding: 16px; background: #f0fdf4; border: 1px solid #86efac; border-radius: 8px; }}
-                .result code {{ display: block; font-size: 14px; margin: 8px 0; word-break: break-all; background: #fff; padding: 8px; border-radius: 4px; border: 1px solid #d1fae5; }}
+                #url-field {{ display: block; width: 100%; font-size: 14px; margin: 8px 0 10px; padding: 8px; border-radius: 4px; border: 1px solid #d1fae5; background: #fff; box-sizing: border-box; cursor: text; }}
                 .preview {{ max-width: 100%; max-height: 200px; margin-top: 12px; border-radius: 6px; }}
                 .error {{ margin-top: 16px; padding: 12px; background: #fef2f2; border: 1px solid #fca5a5; border-radius: 8px; color: #dc2626; }}
                 .back {{ display: inline-block; margin-bottom: 20px; color: #4f46e5; text-decoration: none; }}
@@ -111,15 +123,29 @@ class UploadView(BaseView):
                 <button type="submit">Загрузить</button>
             </form>
             {"" if not error else f'<div class="error">{error}</div>'}
-            {"" if not uploaded_url else f'''
-            <div class="result">
-                <strong>Готово! Скопируйте URL в поле формы:</strong>
-                <code id="url">{uploaded_url}</code>
-                <button onclick="navigator.clipboard.writeText('{uploaded_url}').then(()=>this.textContent='Скопировано ✓')" type="button">Копировать</button>
-                <br>
-                <img src="{uploaded_url}" class="preview" alt="preview">
-            </div>
-            '''}
+            {result_block}
+            <script>
+            function copyUrl() {{
+                var field = document.getElementById('url-field');
+                var btn = document.getElementById('copy-btn');
+                field.select();
+                field.setSelectionRange(0, 99999);
+                if (navigator.clipboard && window.isSecureContext) {{
+                    navigator.clipboard.writeText(field.value).then(function() {{
+                        btn.textContent = 'Скопировано ✓';
+                        setTimeout(function() {{ btn.textContent = 'Копировать'; }}, 2000);
+                    }});
+                }} else {{
+                    try {{
+                        document.execCommand('copy');
+                        btn.textContent = 'Скопировано ✓';
+                        setTimeout(function() {{ btn.textContent = 'Копировать'; }}, 2000);
+                    }} catch(e) {{
+                        btn.textContent = 'Выделите и скопируйте вручную (Ctrl+C)';
+                    }}
+                }}
+            }}
+            </script>
         </body>
         </html>
         """
@@ -131,7 +157,7 @@ class PortfolioAdmin(ModelView, model=Portfolio):
     name_plural = "Портфолио"
     icon = "fa-solid fa-briefcase"
 
-    column_list = [Portfolio.id, Portfolio.title, Portfolio.image_url, Portfolio.tags, Portfolio.sort_order]
+    column_list = [Portfolio.id, Portfolio.title, Portfolio.image_url, Portfolio.show_on_main, Portfolio.sort_order]
     column_formatters = {Portfolio.image_url: lambda m, a: _img_thumb(m.image_url)}
     column_searchable_list = [Portfolio.title, Portfolio.slug]
     column_sortable_list = [Portfolio.sort_order, Portfolio.id]
@@ -144,14 +170,16 @@ class PortfolioAdmin(ModelView, model=Portfolio):
         Portfolio.hero_image_url,
         Portfolio.site_url,
         Portfolio.tags,
+        Portfolio.show_on_main,
         Portfolio.sort_order,
     ]
     column_labels = {
         "slug": "URL-слаг (авто из названия, если пусто)",
-        "image_url": "Скриншот для браузер-мокапа (URL из «Загрузить изображение»)",
-        "hero_image_url": "Изображение героя — ноутбук/устройство (URL из «Загрузить изображение»)",
+        "image_url": "Картинка кейса — карточка + браузер-мокап (URL из «Загрузить изображение»)",
+        "hero_image_url": "Фото на ноутбуке / устройстве — только на странице кейса (URL из «Загрузить изображение»)",
         "site_url": "URL в строке браузер-мокапа (напр. trattoria.ru/)",
         "tags": "Теги (через запятую)",
+        "show_on_main": "Показывать на главной странице",
         "sort_order": "Порядок",
     }
 
@@ -164,36 +192,27 @@ class ServiceAdmin(ModelView, model=Service):
     name = "Услуга"
     name_plural = "Услуги"
     icon = "fa-solid fa-list"
-    column_list = [Service.id, Service.title, Service.price_full, Service.unit, Service.sort_order]
-    column_searchable_list = [Service.title]
+
+    column_list = [Service.id, Service.title, Service.price_full, Service.is_featured, Service.sort_order]
     column_sortable_list = [Service.sort_order, Service.id]
+    column_searchable_list = [Service.title]
 
-
-class CategoryAdmin(ModelView, model=Category):
-    name = "Категория"
-    name_plural = "Категории"
-    icon = "fa-solid fa-tags"
-    column_list = [Category.id, Category.name, Category.sort_order]
-    column_sortable_list = [Category.sort_order, Category.id]
-
-
-class FaqAdmin(ModelView, model=Faq):
-    name = "FAQ"
-    name_plural = "FAQ"
-    icon = "fa-solid fa-circle-question"
-    column_list = [Faq.id, Faq.question, Faq.sort_order]
-    column_sortable_list = [Faq.sort_order, Faq.id]
-
-
-class LeadAdmin(ModelView, model=Lead):
-    name = "Заявка"
-    name_plural = "Заявки"
-    icon = "fa-solid fa-envelope"
-    column_list = [Lead.id, Lead.name, Lead.phone, Lead.question, Lead.source, Lead.created_at]
-    column_searchable_list = [Lead.name, Lead.phone]
-    column_sortable_list = [Lead.created_at, Lead.id]
-    can_create = False
-    can_edit = False
+    form_columns = [
+        Service.title,
+        Service.description,
+        Service.price_full,
+        Service.is_featured,
+        Service.image_url,
+        Service.sort_order,
+    ]
+    column_labels = {
+        "title": "Название",
+        "description": "Описание",
+        "price_full": "Цена (₽)",
+        "is_featured": "Фиолетовая карточка",
+        "image_url": "Картинка (URL из «Загрузить изображение»)",
+        "sort_order": "Порядок",
+    }
 
 
 def create_admin(app) -> Admin:
@@ -201,8 +220,5 @@ def create_admin(app) -> Admin:
     admin = Admin(app=app, engine=engine, authentication_backend=auth, title="Велкод — Admin")
     admin.add_view(PortfolioAdmin)
     admin.add_view(ServiceAdmin)
-    admin.add_view(CategoryAdmin)
-    admin.add_view(FaqAdmin)
-    admin.add_view(LeadAdmin)
     admin.add_base_view(UploadView)
     return admin

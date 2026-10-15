@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { SERVICES_DATA, CONSULTATION_SERVICE } from '@/lib/siteData';
+import { SERVICES_DATA, CONSULTATION_SERVICE, type ServiceData } from '@/lib/siteData';
 import { ServiceCard } from '@/components/ui/ServiceCard';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { SplitText } from '@/components/ui/SplitText';
@@ -10,9 +10,10 @@ const clamp = (value: number, min: number, max: number) => Math.min(Math.max(val
 
 type ServicesProps = {
   isStandalone?: boolean;
+  items?: ServiceData[];
 };
 
-export function Services({ isStandalone = false }: ServicesProps) {
+export function Services({ isStandalone = false, items }: ServicesProps) {
   const sectionRef = useRef<HTMLElement>(null);
   const stickyRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -359,7 +360,7 @@ export function Services({ isStandalone = false }: ServicesProps) {
     };
   }, [measure, setTarget, isStandalone]);
 
-  const allCards = [...SERVICES_DATA, CONSULTATION_SERVICE];
+  const allCards = [...(items ?? SERVICES_DATA), CONSULTATION_SERVICE];
 
   return (
     <section

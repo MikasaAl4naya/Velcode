@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import datetime as dt
 
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Table, Text
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, Table, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
@@ -47,6 +47,7 @@ class Service(Base):
     price_discount: Mapped[int | None] = mapped_column(Integer, nullable=True)
     unit: Mapped[str] = mapped_column(String(32), nullable=False)  # час / блок / проект
     image_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    is_featured: Mapped[bool] = mapped_column(Boolean, default=False)
     # Порядок карточки на сайте (колонка "Порядок для сайта" в прайсе)
     sort_order: Mapped[int] = mapped_column(Integer, default=0)
 
@@ -80,6 +81,7 @@ class Portfolio(Base):
     site_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
     # Теги через запятую, например "Веб-разработка, Битрикс24"
     tags: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    show_on_main: Mapped[bool] = mapped_column(Boolean, default=False)
     sort_order: Mapped[int] = mapped_column(Integer, default=0)
 
 

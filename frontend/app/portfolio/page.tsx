@@ -26,9 +26,7 @@ async function fetchPortfolio(): Promise<PortfolioItem[]> {
     process.env.NEXT_PUBLIC_API_URL ||
     'http://127.0.0.1:8000';
   try {
-    const res = await fetch(`${base}/api/portfolio`, {
-      next: { revalidate: 60 },
-    });
+    const res = await fetch(`${base}/api/portfolio`, { cache: 'no-store' });
     if (!res.ok) return [];
     return res.json();
   } catch {
