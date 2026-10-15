@@ -99,7 +99,7 @@
   flex-direction: column;
   gap: var(--hero-gap);
   width: 50%;
-  padding-bottom: 30px;
+  padding-bottom: 8svh;
 }
 
 .hero__title-wrap {
@@ -142,7 +142,7 @@
   display: flex;
   align-items: flex-end;
   column-gap: 15%;
-  padding-top: 70px;
+  padding-top: 20px;
 }
 
 .hero__tags {

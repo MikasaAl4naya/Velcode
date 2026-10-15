@@ -38,7 +38,7 @@ async function fetchCase(slug: string): Promise<CaseItem | null> {
       description:
         'Комплексный веб-сайт для рестобара «Trattoria». Главные задачи — передать уникальную атмосферу заведения в цифровой среде, упростить пользовательский путь «выбор меню → бронирование столика» и сократить потери от «быстрых» заявок-бронирований со звонка.',
       hero_image_url: '/assets/case-trattoria-hero.png',
-      image_url: '/assets/portfolio-site-preview-2.png',
+      image_url: '/assets/case-example.png',
       site_url: 'trattoria.ru/',
       tags: 'Концепт, Веб-дизайн',
     };
@@ -126,12 +126,13 @@ export default async function CasePage({
             </div>
 
             <div className="case-page__mockup-wrap">
-              <BrowserMockup url={item!.site_url || 'velcode.ru/'}>
+              <BrowserMockup url={item!.site_url || 'velcode.ru/'} scrollable>
                 <img
-                  src={item!.image_url || '/assets/case-placeholder.png'}
+                  src={item!.image_url || '/assets/case-example.png'}
                   alt={`${item!.title} — интерфейс сайта в браузере`}
                   title={`Интерфейс сайта — ${item!.title}`}
                   loading="lazy"
+                  draggable={false}
                 />
               </BrowserMockup>
             </div>

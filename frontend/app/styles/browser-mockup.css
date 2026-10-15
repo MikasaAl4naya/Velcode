@@ -129,9 +129,80 @@
   object-position: top center;
 }
 
-/* Скрываем лишние иконки на мелких мокапах */
-@media (max-width: 480px) {
-  .browser-mockup__icon--hide-sm {
+/* Скроллируемое окно мокапа с скрытым скроллбаром */
+.browser-mockup__content--scrollable {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  min-height: 300px;
+  max-height: clamp(380px, 70vh, 720px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  cursor: grab;
+}
+
+.browser-mockup__content--scrollable:active {
+  cursor: grabbing;
+}
+
+.browser-mockup__content--scrollable::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+.browser-mockup__content--scrollable img {
+  width: 100%;
+  height: auto;
+  display: block;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* Аккуратная шапка браузера на смартфонах */
+@media (max-width: 767.98px) {
+  .browser-mockup__bar {
+    position: relative;
+    height: 28px;
+    padding: 0 10px;
+    gap: 0;
+  }
+
+  .browser-mockup__bar-side {
+    flex: 0 0 auto;
+    z-index: 1;
+  }
+
+  .browser-mockup__icon--hide-sm,
+  .browser-mockup__bar-side--end {
     display: none;
+  }
+
+  .browser-mockup__bar-center {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: min(calc(100% - 90px), 200px);
+    margin: 0;
+    gap: 0;
+    z-index: 2;
+  }
+
+  .browser-mockup__address {
+    width: 100%;
+    height: 18px;
+    padding: 0 20px 0 16px;
+    font-size: 9.5px;
+  }
+
+  .browser-mockup__reload {
+    right: 5px;
+    width: 9px;
+    height: 9px;
   }
 }

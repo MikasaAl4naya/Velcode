@@ -1,5 +1,7 @@
 'use client';
 
+import React, { useRef, useEffect } from 'react';
+
 /**
  * Переиспользуемый макет браузерного окна macOS/Safari.
  * Отображает статичную панель с кнопками и адресной строкой,
@@ -9,13 +11,65 @@ export function BrowserMockup({
   url = 'trattoria.ru/',
   children,
   className = '',
+  scrollable = false,
 }: {
   url?: string;
   children: React.ReactNode;
   className?: string;
+  scrollable?: boolean;
 }) {
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!scrollable) return;
+    const el = contentRef.current;
+    if (!el) return;
+
+    let isDown = false;
+    let startY = 0;
+    let startScrollTop = 0;
+
+    const onPointerDown = (e: PointerEvent) => {
+      if (e.pointerType !== 'mouse' || e.button !== 0) return;
+      isDown = true;
+      startY = e.clientY;
+      startScrollTop = el.scrollTop;
+      try {
+        el.setPointerCapture(e.pointerId);
+      } catch {}
+    };
+
+    const onPointerMove = (e: PointerEvent) => {
+      if (!isDown) return;
+      const dy = e.clientY - startY;
+      el.scrollTop = startScrollTop - dy;
+    };
+
+    const onPointerUp = (e: PointerEvent) => {
+      if (!isDown) return;
+      isDown = false;
+      try {
+        if (el.hasPointerCapture(e.pointerId)) {
+          el.releasePointerCapture(e.pointerId);
+        }
+      } catch {}
+    };
+
+    el.addEventListener('pointerdown', onPointerDown);
+    el.addEventListener('pointermove', onPointerMove);
+    el.addEventListener('pointerup', onPointerUp);
+    el.addEventListener('pointercancel', onPointerUp);
+
+    return () => {
+      el.removeEventListener('pointerdown', onPointerDown);
+      el.removeEventListener('pointermove', onPointerMove);
+      el.removeEventListener('pointerup', onPointerUp);
+      el.removeEventListener('pointercancel', onPointerUp);
+    };
+  }, [scrollable]);
+
   return (
-    <div className={`browser-mockup ${className}`.trim()}>
+    <div className={`browser-mockup ${scrollable ? 'browser-mockup--scrollable' : ''} ${className}`.trim()}>
       {/* Шапка браузера */}
       <div className="browser-mockup__bar">
         <div className="browser-mockup__bar-side">
@@ -70,7 +124,10 @@ export function BrowserMockup({
       </div>
 
       {/* Контент (скриншот) */}
-      <div className="browser-mockup__content">
+      <div
+        ref={contentRef}
+        className={`browser-mockup__content ${scrollable ? 'browser-mockup__content--scrollable' : ''}`.trim()}
+      >
         {children}
       </div>
     </div>

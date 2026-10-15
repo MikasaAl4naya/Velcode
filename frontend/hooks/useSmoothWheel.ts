@@ -65,6 +65,27 @@ export function useSmoothWheel() {
         return;
       }
 
+      // Если колесо мыши крутится над внутренним скроллируемым контейнером (макет в кейсе и т.д.)
+      let targetEl = event.target as HTMLElement | null;
+      while (targetEl && targetEl !== document.body && targetEl !== document.documentElement) {
+        const style = window.getComputedStyle(targetEl);
+        const canScrollY =
+          (style.overflowY === 'auto' || style.overflowY === 'scroll') &&
+          targetEl.scrollHeight > targetEl.clientHeight + 4;
+        if (canScrollY) {
+          const delta = event.deltaY;
+          const atTop = targetEl.scrollTop <= 3;
+          const atBottom =
+            Math.ceil(targetEl.scrollTop + targetEl.clientHeight) >= targetEl.scrollHeight - 6;
+          if ((delta > 0 && !atBottom) || (delta < 0 && !atTop)) {
+            return; // Прокручиваем внутренний контейнер
+          }
+          // Упёрлись в край (вверх или вниз) — даём странице листаться дальше
+          break;
+        }
+        targetEl = targetEl.parentElement;
+      }
+
       if (!isNotchWheel(event)) return;
 
       event.preventDefault();

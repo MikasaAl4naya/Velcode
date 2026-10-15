@@ -247,7 +247,8 @@
   }
 
   .hero__info {
-    padding-bottom: 0;
+    padding-bottom: 5vh;
+    padding-bottom: 5svh;
   }
 
   .hero__title {

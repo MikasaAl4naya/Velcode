@@ -5,6 +5,11 @@
    Стиль: премиальный минималистичный швейцарский digital-дизайн.
 ============================================================ */
 
+.split-text-root {
+  display: block;
+  position: relative;
+}
+
 .split-text-line-mask {
   display: block;
   overflow: hidden;
