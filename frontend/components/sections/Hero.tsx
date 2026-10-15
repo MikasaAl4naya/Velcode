@@ -5,6 +5,7 @@ import { useModal } from '@/hooks/useModal';
 import { HERO_TAGS } from '@/lib/siteData';
 import { SplitText } from '@/components/ui/SplitText';
 import { Tag } from '@/components/ui/Tag';
+import { HeroModel } from '@/components/ui/HeroModel';
 
 export function Hero() {
   const { openModal } = useModal();
@@ -46,17 +47,9 @@ export function Hero() {
       ref={heroRef}
     >
       <div className="hero__container">
-        {/* Фоновый торус: справа на всю высоту контейнера */}
+        {/* Фоновая 3D-модель: справа на всю высоту контейнера */}
         <div className="hero__bg-torus" ref={torusRef} aria-hidden="true">
-          <img
-            src="/assets/hero-abstract-torus.png"
-            alt="Велкод — разработка сайтов под ключ, реклама и автоматизация бизнеса"
-            title="Велкод: создание сайтов, чат-ботов и интеграция 1С в Иркутске"
-            className="hero__bg-torus-img"
-            width={700}
-            height={700}
-            fetchPriority="high"
-          />
+          <HeroModel />
         </div>
 
         {/* Верхняя часть: заголовки и кнопки */}

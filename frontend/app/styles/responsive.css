@@ -270,8 +270,8 @@
     transform: translate(-30%, 30%) scale(1.2);
   }
 
-  .hero__bg-torus-img {
-    object-position: center;
+  .hero-model-container {
+    overflow: visible;
   }
 
   /* Услуги: карточки стопкой на sticky (без scroll-snap магнита, чтобы скролл не застревал) */
