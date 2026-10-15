@@ -1,6 +1,4 @@
-'use client';
-
-import { useModal } from '@/hooks/useModal';
+import { notFound } from 'next/navigation';
 import { Header } from '@/components/sections/Header';
 import { Contacts } from '@/components/sections/Contacts';
 import { Footer } from '@/components/sections/Footer';
@@ -9,8 +7,58 @@ import { SplitText } from '@/components/ui/SplitText';
 import { Tag } from '@/components/ui/Tag';
 import { BrowserMockup } from '@/components/ui/BrowserMockup';
 
-export default function CasePage() {
-  const { openModal } = useModal();
+interface CaseItem {
+  id: number;
+  slug: string | null;
+  title: string;
+  description: string;
+  image_url: string | null;
+  hero_image_url: string | null;
+  site_url: string | null;
+  tags: string | null;
+}
+
+async function fetchCase(slug: string): Promise<CaseItem | null> {
+  const base =
+    process.env.INTERNAL_API_URL ||
+    process.env.NEXT_PUBLIC_API_URL ||
+    'http://localhost:8000';
+  try {
+    const res = await fetch(`${base}/api/portfolio/${slug}`, {
+      next: { revalidate: 60 },
+    });
+    if (!res.ok) return null;
+    return res.json();
+  } catch {
+    return null;
+  }
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: { slug: string };
+}) {
+  const item = await fetchCase(params.slug);
+  if (!item) return {};
+  return {
+    title: `${item.title} — Велкод`,
+    description: item.description || `Кейс студии Велкод: ${item.title}`,
+  };
+}
+
+export default async function CasePage({
+  params,
+}: {
+  params: { slug: string };
+}) {
+  const item = await fetchCase(params.slug);
+  if (!item) notFound();
+
+  const tags = (item!.tags ?? '')
+    .split(',')
+    .filter(Boolean)
+    .map((t) => t.trim());
 
   return (
     <>
@@ -22,59 +70,40 @@ export default function CasePage() {
               items={[
                 { label: 'Главная', href: '/' },
                 { label: 'Портфолио', href: '/portfolio' },
-                { label: 'Сайт-визитка для рестобара Trattoria Pomodoro', current: true },
+                { label: item!.title, current: true },
               ]}
             />
 
-            {/* H1 */}
             <h1 className="case-page__title">
-              <SplitText text="Сайт-визитка для рестобара" />
+              <SplitText text={item!.title} />
             </h1>
 
-            {/* Теги — сразу под заголовком */}
             <div className="case-page__tags">
-              <Tag>Концепт</Tag>
-              <Tag>Веб-дизайн</Tag>
+              {tags.map((tag, idx) => (
+                <Tag key={idx}>{tag}</Tag>
+              ))}
             </div>
 
-            {/* Лид-текст */}
-            <p className="case-page__lead">
-              Комплексный веб-сайт для рестобара «Trattoria». Главные задачи — передать уникальную атмосферу
-              заведения в цифровой среде, упростить пользовательский путь «выбор меню → бронирование столика» и
-              сократить потери от «быстрых» заявок-бронирований со звонка.
-            </p>
+            <p className="case-page__lead">{item!.description}</p>
 
-            {/* Hero-изображение (ноутбук) */}
-            <div className="case-page__hero-wrap">
-              <img
-                src="/assets/case-trattoria-hero.png"
-                alt="Кейс разработки сайта Trattoria Pomodoro — макет на ноутбуке"
-                title="Сайт Trattoria Pomodoro — студия Велкод"
-                className="case-page__hero-img"
-                loading="eager"
-              />
-            </div>
-
-            {/* «Что было сделано» — 2 колонки */}
-            <div className="case-page__what">
-              <h2 className="case-page__what-title">Что было сделано</h2>
-              <div className="case-page__what-body">
-                <p className="case-page__what-text">
-                  Мы разработали атмосферный визуальный стиль с акцентом на тёплую атмосферу, продуманную типографику, занялись съёмкой с атмосферными фотографиями, создали дружелюбную онлайн-систему меню с удобной интерактивностью, а также реализовали систему «умного» онлайн-бронирования.
-                </p>
-                <p className="case-page__what-text">
-                  В результате работы рестобар «Trattoria» получил не просто красивую визитку, а рабочий инструмент продаж.
-                </p>
-              </div>
-            </div>
-
-            {/* Браузерный мокап с скриншотом сайта */}
-            <div className="case-page__mockup-wrap">
-              <BrowserMockup url="trattoria.ru/">
+            {item!.hero_image_url && (
+              <div className="case-page__hero-wrap">
                 <img
-                  src="/assets/portfolio-site-preview-2.png"
-                  alt="Кейс Trattoria Pomodoro — интерфейс сайта в браузере"
-                  title="Интерфейс сайта Trattoria Pomodoro"
+                  src={item!.hero_image_url}
+                  alt={`${item!.title} — макет на ноутбуке`}
+                  title={`${item!.title} — студия Велкод`}
+                  className="case-page__hero-img"
+                  loading="eager"
+                />
+              </div>
+            )}
+
+            <div className="case-page__mockup-wrap">
+              <BrowserMockup url={item!.site_url || 'velcode.ru/'}>
+                <img
+                  src={item!.image_url || '/assets/case-placeholder.png'}
+                  alt={`${item!.title} — интерфейс сайта в браузере`}
+                  title={`Интерфейс сайта — ${item!.title}`}
                   loading="lazy"
                 />
               </BrowserMockup>

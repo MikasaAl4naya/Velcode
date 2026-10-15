@@ -76,6 +76,7 @@ class Portfolio(Base):
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[str] = mapped_column(Text, default="")
     image_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    hero_image_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
     site_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
     # Теги через запятую, например "Веб-разработка, Битрикс24"
     tags: Mapped[str | None] = mapped_column(String(500), nullable=True)

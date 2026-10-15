@@ -48,6 +48,7 @@ class PortfolioOut(BaseModel):
     title: str
     description: str
     image_url: str | None = None
+    hero_image_url: str | None = None
     site_url: str | None = None
     tags: str | None = None
     sort_order: int

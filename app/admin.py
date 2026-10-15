@@ -1,10 +1,57 @@
+import asyncio
+import re
+from pathlib import Path
+from uuid import uuid4
+
+from markupsafe import Markup
 from sqladmin import Admin, ModelView
 from sqladmin.authentication import AuthenticationBackend
 from starlette.requests import Request
+from wtforms import FileField
 
 from app.config import settings
 from app.database import engine
 from app.models import Category, Faq, Lead, Portfolio, Service
+
+UPLOADS_DIR = Path("uploads")
+
+# Russian → Latin transliteration table
+_TRANSLIT = {
+    'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd',
+    'е': 'e', 'ё': 'yo', 'ж': 'zh', 'з': 'z', 'и': 'i',
+    'й': 'j', 'к': 'k', 'л': 'l', 'м': 'm', 'н': 'n',
+    'о': 'o', 'п': 'p', 'р': 'r', 'с': 's', 'т': 't',
+    'у': 'u', 'ф': 'f', 'х': 'kh', 'ц': 'ts', 'ч': 'ch',
+    'ш': 'sh', 'щ': 'shch', 'ъ': '', 'ы': 'y', 'ь': '',
+    'э': 'e', 'ю': 'yu', 'я': 'ya',
+}
+
+
+def _slugify(text: str) -> str:
+    text = text.lower()
+    result = ''.join(_TRANSLIT.get(c, c) for c in text)
+    result = re.sub(r'[^a-z0-9]+', '-', result)
+    return result.strip('-')
+
+
+async def _save_upload(upload) -> str | None:
+    """Save an UploadFile/FileStorage to uploads dir, return relative URL."""
+    if upload is None:
+        return None
+    filename = getattr(upload, 'filename', '') or ''
+    if not filename:
+        return None
+    read = getattr(upload, 'read', None)
+    if read is None:
+        return None
+    content = await read() if asyncio.iscoroutinefunction(read) else read()
+    if not content:
+        return None
+    UPLOADS_DIR.mkdir(exist_ok=True)
+    suffix = Path(filename).suffix or '.png'
+    fname = f"{uuid4().hex}{suffix}"
+    (UPLOADS_DIR / fname).write_bytes(content)
+    return f"/uploads/{fname}"
 
 
 class AdminAuth(AuthenticationBackend):
@@ -26,17 +73,59 @@ class AdminAuth(AuthenticationBackend):
         return bool(request.session.get("authenticated"))
 
 
+def _img_thumb(url: str | None) -> str:
+    if not url:
+        return '—'
+    return Markup(f'<img src="{url}" style="height:40px;border-radius:4px">')
+
+
 class PortfolioAdmin(ModelView, model=Portfolio):
     name = "Кейс"
     name_plural = "Портфолио"
     icon = "fa-solid fa-briefcase"
-    column_list = [Portfolio.id, Portfolio.slug, Portfolio.title, Portfolio.tags, Portfolio.sort_order]
+
+    column_list = [Portfolio.id, Portfolio.title, Portfolio.image_url, Portfolio.tags, Portfolio.sort_order]
+    column_formatters = {Portfolio.image_url: lambda m, a: _img_thumb(m.image_url)}
     column_searchable_list = [Portfolio.title, Portfolio.slug]
     column_sortable_list = [Portfolio.sort_order, Portfolio.id]
+
     form_columns = [
-        Portfolio.slug, Portfolio.title, Portfolio.description,
-        Portfolio.image_url, Portfolio.site_url, Portfolio.tags, Portfolio.sort_order,
+        Portfolio.slug,
+        Portfolio.title,
+        Portfolio.description,
+        Portfolio.image_url,
+        Portfolio.hero_image_url,
+        Portfolio.site_url,
+        Portfolio.tags,
+        Portfolio.sort_order,
     ]
+    form_overrides = {
+        "image_url": FileField,
+        "hero_image_url": FileField,
+    }
+    column_labels = {
+        "slug": "URL-слаг (авто из названия, если пусто)",
+        "image_url": "Скриншот для браузер-мокапа",
+        "hero_image_url": "Изображение героя (ноутбук/устройство)",
+        "site_url": "URL в строке браузер-мокапа (напр. trattoria.ru/)",
+        "tags": "Теги (через запятую)",
+        "sort_order": "Порядок",
+    }
+
+    async def on_model_change(self, data: dict, model, is_created: bool) -> None:
+        # Handle file uploads
+        for field in ("image_url", "hero_image_url"):
+            url = await _save_upload(data.get(field))
+            if url:
+                data[field] = url
+            elif not is_created and model is not None:
+                data[field] = getattr(model, field, None)
+            else:
+                data.pop(field, None)
+
+        # Auto-generate slug from title
+        if not str(data.get("slug") or "").strip() and data.get("title"):
+            data["slug"] = _slugify(str(data["title"]))
 
 
 class ServiceAdmin(ModelView, model=Service):
