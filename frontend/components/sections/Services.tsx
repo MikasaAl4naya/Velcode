@@ -110,13 +110,12 @@ export function Services({ isStandalone = false, items }: ServicesProps) {
       return;
     }
 
-    track.style.transform = 'none';
     const cards = [...track.querySelectorAll('.service-card')] as HTMLElement[];
     if (cards.length === 0) return;
 
     const gap = parseFloat(getComputedStyle(track).columnGap) || 0;
     const gridRight = container.getBoundingClientRect().right - parseFloat(getComputedStyle(container).paddingRight);
-    const lastCardRight = cards[cards.length - 1].getBoundingClientRect().right;
+    const lastCardRight = cards[cards.length - 1].getBoundingClientRect().right + s.current;
 
     s.stickyTop = parseFloat(getComputedStyle(sticky).top) || 0;
     const cardStep = cards[0].offsetWidth + gap;
@@ -142,7 +141,7 @@ export function Services({ isStandalone = false, items }: ServicesProps) {
     window.addEventListener('load', measure);
 
     let resizeObserver: ResizeObserver | null = null;
-    if ('ResizeObserver' in window) {
+    if ('ResizeObserver' in window && containerRef.current) {
       let queued = false;
       resizeObserver = new ResizeObserver(() => {
         if (queued) return;
@@ -152,7 +151,7 @@ export function Services({ isStandalone = false, items }: ServicesProps) {
           measure();
         });
       });
-      resizeObserver.observe(document.body);
+      resizeObserver.observe(containerRef.current);
     }
 
     if (isStandalone) {
@@ -198,16 +197,9 @@ export function Services({ isStandalone = false, items }: ServicesProps) {
       const isShort = window.matchMedia('(max-height: 560px)').matches;
       if (s.hasCompleted || isMobile || isShort || s.maxShift <= 0) return null;
 
-      const advSection = document.querySelector('.advantages');
-      if (advSection) {
-        const advRect = advSection.getBoundingClientRect();
-        return window.scrollY + advRect.top - window.innerHeight;
-      }
-
       if (sectionRef.current) {
         const rect = sectionRef.current.getBoundingClientRect();
-        const lockTopY = window.scrollY + rect.top - s.stickyTop;
-        return lockTopY - 135;
+        return Math.round(window.scrollY + rect.top - s.stickyTop);
       }
 
       return null;
@@ -232,6 +224,13 @@ export function Services({ isStandalone = false, items }: ServicesProps) {
           setTarget(s.target + delta);
           return true;
         }
+      } else if (delta < 0 && s.target > 1) {
+        event.preventDefault();
+        if (typeof (window as any).__stopSmoothWheel === 'function') {
+          (window as any).__stopSmoothWheel();
+        }
+        setTarget(s.target + delta);
+        return true;
       }
 
       return false;
