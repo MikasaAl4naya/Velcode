@@ -184,8 +184,8 @@
   border-radius: 25px;
   background: linear-gradient(270deg, rgba(235, 242, 255, 0.65) 0%, rgba(255, 255, 255, 0.75) 100%);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
-  backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
   color: inherit;
   font: inherit;
   text-align: left;

@@ -394,8 +394,8 @@
   .modal__overlay {
     display: block;
     background: rgba(0, 0, 0, 0.45);
-    backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
   }
 
   .modal__panel {
