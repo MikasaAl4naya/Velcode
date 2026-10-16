@@ -139,15 +139,18 @@ export function Hero() {
               }
             >
               <span className="hero__card-thumb">
-                <img
-                  src="/assets/hero-preview-project.gif"
-                  alt="Разработка сайта под ключ от 36 000 рублей — пример проекта студии Велкод"
-                  title="Сайт под ключ от студии Велкод"
+                <video
                   className="hero__card-img"
                   width="110"
                   height="80"
-                  loading="lazy"
-                />
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  aria-label="Разработка сайта под ключ — пример проекта студии Велкод"
+                >
+                  <source src="/assets/hero-preview-project.mp4" type="video/mp4" />
+                </video>
               </span>
               <span className="hero__card-text">
                 <span className="hero__card-label">Сайт под ключ</span>
