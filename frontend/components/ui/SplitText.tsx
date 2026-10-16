@@ -103,7 +103,9 @@ export function SplitText({
       if (document.fonts.status === 'loaded') {
         computeLines();
       } else {
-        document.fonts.ready.then(computeLines);
+        document.fonts.ready.then(() => {
+          requestAnimationFrame(() => requestAnimationFrame(computeLines));
+        });
       }
     } else {
       computeLines();
