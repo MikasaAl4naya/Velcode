@@ -28,7 +28,7 @@ export function Advantages({ isStandalone = false }: AdvantagesProps) {
               <SplitText
                 text="выбрать нас"
                 className="advantages__title-line advantages__title-line--accent"
-                startDelay={0.22}
+                startDelay={0.01}
               />
             </h1>
           ) : (
@@ -41,7 +41,7 @@ export function Advantages({ isStandalone = false }: AdvantagesProps) {
               <SplitText
                 text="выбрать нас"
                 className="advantages__title-line advantages__title-line--accent"
-                startDelay={0.22}
+                startDelay={0.01}
               />
             </h2>
           )}

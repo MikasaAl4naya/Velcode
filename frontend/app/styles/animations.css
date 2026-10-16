@@ -1,16 +1,10 @@
 /* ============================================================
-   КИНЕТИЧЕСКАЯ ПОСТРОЧНАЯ АНИМАЦИЯ ЗАГОЛОВКОВ (LINE OVERFLOW REVEAL)
-   Строки плавно выходят снизу из-под overflow: hidden своего контейнера
-   без растяжения, без дёргания высоты строк.
-   Стиль: премиальный минималистичный швейцарский digital-дизайн.
+   АНИМАЦИЯ ПОЯВЛЕНИЯ ЗАГОЛОВКОВ ЦЕЛИКОМ СВЕРХУ (TITLE REVEAL FROM TOP)
+   Заголовок появляется целиком сверху единым блоком
 ============================================================ */
 
+.split-text-line-mask,
 .split-text-root {
-  display: block;
-  position: relative;
-}
-
-.split-text-line-mask {
   display: block;
   overflow: hidden;
   line-height: inherit;
@@ -27,7 +21,8 @@
   color: inherit;
 }
 
-.split-text-line-mask.is-visible .split-text-line-content {
+.split-text-line-mask.is-visible .split-text-line-content,
+.split-text-root.is-visible .split-text-line-content {
   animation: splitLineReveal 0.85s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 

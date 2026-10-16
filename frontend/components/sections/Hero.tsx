@@ -83,7 +83,7 @@ export function Hero() {
                 <SplitText
                   text="для вашего бизнеса"
                   className="hero__title-line"
-                  startDelay={0.24}
+                  startDelay={0.01}
                 />
               </h1>
               <p className="hero__description">

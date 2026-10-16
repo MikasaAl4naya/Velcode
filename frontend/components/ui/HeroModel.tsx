@@ -292,21 +292,19 @@ export function HeroModel({ className = '' }: Props) {
     let currentMouseY = 0;
 
     const onPointerMove = (e: PointerEvent) => {
-      if (!container) return;
-      const rect = container.getBoundingClientRect();
-      const cx = rect.left + rect.width * 0.5;
-      const cy = rect.top + rect.height * 0.5;
-      const radius = Math.min(rect.width, rect.height) * 0.5;
-      const dx = e.clientX - cx;
-      const dy = e.clientY - cy;
-      const dist = Math.hypot(dx, dy);
-      if (dist < radius * 1.15) {
-        targetMouseX = Math.max(-1, Math.min(1, dx / radius));
-        targetMouseY = Math.max(-1, Math.min(1, -dy / radius));
-      }
+      const w = window.innerWidth || 1;
+      const h = window.innerHeight || 1;
+      targetMouseX = Math.max(-1, Math.min(1, (e.clientX / w - 0.5) * 2));
+      targetMouseY = Math.max(-1, Math.min(1, -(e.clientY / h - 0.5) * 2));
+    };
+
+    const onPointerLeave = () => {
+      targetMouseX = 0;
+      targetMouseY = 0;
     };
 
     window.addEventListener('pointermove', onPointerMove, { passive: true });
+    window.addEventListener('pointerleave', onPointerLeave, { passive: true });
 
     const clock = new THREE.Clock();
     let animationFrameId: number;
@@ -315,12 +313,12 @@ export function HeroModel({ className = '' }: Props) {
       animationFrameId = requestAnimationFrame(animate);
       const t = clock.getElapsedTime();
 
-      currentMouseX += (targetMouseX - currentMouseX) * 0.025;
-      currentMouseY += (targetMouseY - currentMouseY) * 0.025;
+      currentMouseX += (targetMouseX - currentMouseX) * 0.014;
+      currentMouseY += (targetMouseY - currentMouseY) * 0.014;
 
-      const mouseTiltX = -currentMouseY * 0.12;
-      const mouseTiltY = currentMouseX * 0.15;
-      const mouseTiltZ = -currentMouseX * 0.04;
+      const mouseTiltX = -currentMouseY * 0.10;
+      const mouseTiltY = currentMouseX * 0.13;
+      const mouseTiltZ = -currentMouseX * 0.035;
 
       const wobX = (k: number) => Math.sin(k * 0.22) * 0.14 + Math.sin(k * 0.11) * 0.05;
       const wobY = (k: number) => Math.sin(k * 0.18 + 1.2) * 0.15 + Math.cos(k * 0.09) * 0.04;
@@ -335,8 +333,8 @@ export function HeroModel({ className = '' }: Props) {
       );
       mesh.quaternion.copy(baseQuat).multiply(wobbleQuat);
 
-      const parallaxX = currentMouseX * 0.016;
-      const parallaxY = currentMouseY * 0.016;
+      const parallaxX = currentMouseX * 0.013;
+      const parallaxY = currentMouseY * 0.013;
       mesh.position.y = 0.045 + Math.sin(t * 0.19) * 0.008 + parallaxY;
       mesh.position.x = -0.05 + (Math.cos(t * 0.15) - 1.0) * 0.008 + parallaxX;
 
@@ -349,6 +347,7 @@ export function HeroModel({ className = '' }: Props) {
       cancelAnimationFrame(animationFrameId);
       resizeObserver.disconnect();
       window.removeEventListener('pointermove', onPointerMove);
+      window.removeEventListener('pointerleave', onPointerLeave);
       if (renderer.domElement && container.contains(renderer.domElement)) {
         container.removeChild(renderer.domElement);
       }

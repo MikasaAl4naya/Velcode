@@ -40,6 +40,7 @@
 /* ---------- Hero-изображение (ноутбук) — по ширине сетки со стандартным скруглением ---------- */
 .case-page__hero-wrap {
   width: 100%;
+  aspect-ratio: 16 / 10;
   border-radius: var(--radius-section);
   overflow: hidden;
   background: #3c4a3e; /* цвет фона из фото если не загрузилось */
@@ -48,9 +49,10 @@
 
 .case-page__hero-img {
   width: 100%;
-  height: auto;
+  height: 100%;
   display: block;
   object-fit: cover;
+  object-position: center;
 }
 
 /* ---------- «Что было сделано» — 2 колонки ---------- */
@@ -86,6 +88,9 @@
 
 /* ---------- Браузерный мокап ---------- */
 .case-page__mockup-wrap {
+  width: 75%;
+  margin-left: auto;
+  margin-right: auto;
   margin-bottom: clamp(48px, 6vw, 80px);
   border-radius: 12px;
   overflow: hidden;
@@ -95,9 +100,9 @@
 .case-page__mockup-wrap .browser-mockup__content {
   position: relative;
   width: 100%;
-  aspect-ratio: 16 / 10;
-  min-height: 300px;
-  max-height: clamp(380px, 70vh, 720px);
+  aspect-ratio: 16 / 9;
+  min-height: 240px;
+  max-height: clamp(380px, 80svh, 720px);
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
@@ -127,6 +132,10 @@
 
 /* ---------- Адаптивные брейкпоинты ---------- */
 @media (max-width: 991.98px) {
+  .case-page__mockup-wrap {
+    width: 100%;
+  }
+
   .case-page__what {
     grid-template-columns: 1fr;
     gap: 20px;
@@ -134,6 +143,9 @@
 }
 
 @media (max-width: 767.98px) {
+  .case-page__mockup-wrap .browser-mockup__content {
+    min-height: auto;
+  }
   .case-page {
     padding-top: calc(var(--header-height) + var(--section-pad));
   }
