@@ -154,7 +154,7 @@ export function Hero() {
               </span>
               <span className="hero__card-text">
                 <span className="hero__card-label">Сайт под ключ</span>
-                <strong className="hero__card-price">от 36 000 ₽</strong>
+                <strong className="hero__card-price">от 30 000 ₽</strong>
               </span>
               <span className="hero__card-arrow">
                 <svg className="icon hero__card-icon" aria-hidden="true">
