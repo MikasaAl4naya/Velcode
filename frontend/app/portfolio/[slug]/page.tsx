@@ -16,6 +16,7 @@ interface CaseItem {
   hero_image_url: string | null;
   site_url: string | null;
   tags: string | null;
+  what_was_done: string | null;
 }
 
 async function fetchCase(slug: string): Promise<CaseItem | null> {
@@ -41,6 +42,7 @@ async function fetchCase(slug: string): Promise<CaseItem | null> {
       image_url: '/assets/case-example.png',
       site_url: 'trattoria.ru/',
       tags: 'Концепт, Веб-дизайн',
+      what_was_done: null,
     };
   }
   return null;
@@ -112,18 +114,16 @@ export default async function CasePage({
               </div>
             )}
 
-            {/* «Что было сделано» — 2 колонки */}
-            <div className="case-page__what">
-              <h2 className="case-page__what-title">Что было сделано</h2>
-              <div className="case-page__what-body">
-                <p className="case-page__what-text">
-                  Мы разработали атмосферный визуальный стиль с акцентом на тёплую атмосферу, продуманную типографику, занялись съёмкой с атмосферными фотографиями, создали дружелюбную онлайн-систему меню с удобной интерактивностью, а также реализовали систему «умного» онлайн-бронирования.
-                </p>
-                <p className="case-page__what-text">
-                  В результате работы рестобар «Trattoria» получил не просто красивую визитку, а рабочий инструмент продаж.
-                </p>
+            {item!.what_was_done && (
+              <div className="case-page__what">
+                <h2 className="case-page__what-title">Что было сделано</h2>
+                <div className="case-page__what-body">
+                  {item!.what_was_done.split(/\n\n+/).filter(Boolean).map((para, idx) => (
+                    <p key={idx} className="case-page__what-text">{para}</p>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
             <div className="case-page__mockup-wrap">
               <BrowserMockup url={item!.site_url || 'velcode.ru/'} scrollable>

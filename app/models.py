@@ -81,6 +81,7 @@ class Portfolio(Base):
     site_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
     # Теги через запятую, например "Веб-разработка, Битрикс24"
     tags: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    what_was_done: Mapped[str | None] = mapped_column(Text, nullable=True)
     show_on_main: Mapped[bool] = mapped_column(Boolean, default=False)
     sort_order: Mapped[int] = mapped_column(Integer, default=0)
 

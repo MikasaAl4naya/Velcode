@@ -166,6 +166,7 @@ class PortfolioAdmin(ModelView, model=Portfolio):
         Portfolio.slug,
         Portfolio.title,
         Portfolio.description,
+        Portfolio.what_was_done,
         Portfolio.image_url,
         Portfolio.hero_image_url,
         Portfolio.site_url,
@@ -179,6 +180,7 @@ class PortfolioAdmin(ModelView, model=Portfolio):
         "hero_image_url": "Фото на ноутбуке / устройстве — только на странице кейса (URL из «Загрузить изображение»)",
         "site_url": "URL в строке браузер-мокапа (напр. trattoria.ru/)",
         "tags": "Теги (через запятую)",
+        "what_was_done": "Что было сделано (абзацы через пустую строку)",
         "show_on_main": "Показывать на главной странице",
         "sort_order": "Порядок",
     }

@@ -52,6 +52,7 @@ class PortfolioOut(BaseModel):
     hero_image_url: str | None = None
     site_url: str | None = None
     tags: str | None = None
+    what_was_done: str | None = None
     show_on_main: bool = False
     sort_order: int
 
