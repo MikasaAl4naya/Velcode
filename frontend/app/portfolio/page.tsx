@@ -5,6 +5,7 @@ import { Footer } from '@/components/sections/Footer';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { Tag } from '@/components/ui/Tag';
 import { SplitText } from '@/components/ui/SplitText';
+import { FadeImage } from '@/components/ui/FadeImage';
 
 export const metadata = {
   title: 'Портфолио — Велкод',
@@ -63,10 +64,10 @@ export default async function PortfolioPage() {
                 <article key={item.id} className="portfolio-card">
                   <Link
                     href={item.slug ? `/portfolio/${item.slug}` : '#'}
-                    className="portfolio-card__preview"
+                    className="portfolio-card__preview img-skeleton"
                     aria-label={item.title}
                   >
-                    <img
+                    <FadeImage
                       src={item.image_url ?? '/assets/case-placeholder.png'}
                       alt={`${item.title} — разработка сайтов под ключ, веб-дизайн студии Велкод`}
                       title={`${item.title} — проект Велкод Иркутск`}

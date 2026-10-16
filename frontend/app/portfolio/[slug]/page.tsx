@@ -6,6 +6,7 @@ import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { SplitText } from '@/components/ui/SplitText';
 import { Tag } from '@/components/ui/Tag';
 import { BrowserMockup } from '@/components/ui/BrowserMockup';
+import { FadeImage } from '@/components/ui/FadeImage';
 
 interface CaseItem {
   id: number;
@@ -88,8 +89,8 @@ export default async function CasePage({
             <p className="case-page__lead">{item!.description}</p>
 
             {item!.hero_image_url && (
-              <div className="case-page__hero-wrap">
-                <img
+              <div className="case-page__hero-wrap img-skeleton">
+                <FadeImage
                   src={item!.hero_image_url}
                   alt={`${item!.title} — макет на ноутбуке`}
                   title={`${item!.title} — студия Велкод`}
@@ -112,7 +113,7 @@ export default async function CasePage({
 
             <div className="case-page__mockup-wrap">
               <BrowserMockup url={item!.site_url || 'velcode.ru/'} scrollable>
-                <img
+                <FadeImage
                   src={item!.image_url || '/assets/case-example.png'}
                   alt={`${item!.title} — интерфейс сайта в браузере`}
                   title={`Интерфейс сайта — ${item!.title}`}
