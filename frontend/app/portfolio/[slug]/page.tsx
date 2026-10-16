@@ -103,7 +103,7 @@ export default async function CasePage({
               <div className="case-page__what">
                 <h2 className="case-page__what-title">Что было сделано</h2>
                 <div className="case-page__what-body">
-                  {item!.what_was_done.split(/\n\n+/).filter(Boolean).map((para, idx) => (
+                  {item!.what_was_done.split(/(?:\r?\n){2,}/).filter(Boolean).map((para, idx) => (
                     <p key={idx} className="case-page__what-text">{para}</p>
                   ))}
                 </div>
