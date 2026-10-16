@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Script from 'next/script';
 import './globals.css';
 import { ModalProvider } from '@/components/ModalProvider';
 import { SvgSprite } from '@/components/ui/SvgSprite';
@@ -30,8 +31,15 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ru">
-      <head>
-        <script
+      <body className="page">
+        <SvgSprite />
+        <ModalProvider>
+          {children}
+          <CookieBanner />
+        </ModalProvider>
+        <Script
+          id="yandex-metrika"
+          strategy="afterInteractive"
           dangerouslySetInnerHTML={{
             __html: `(function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
 m[i].l=1*new Date();
@@ -46,13 +54,6 @@ ym(112272348,"init",{clickmap:true,trackLinks:true,accurateTrackBounce:true,webv
             <img src="https://mc.yandex.ru/watch/112272348" style={{position:'absolute',left:'-9999px'}} alt="" />
           </div>
         </noscript>
-      </head>
-      <body className="page">
-        <SvgSprite />
-        <ModalProvider>
-          {children}
-          <CookieBanner />
-        </ModalProvider>
       </body>
     </html>
   );
