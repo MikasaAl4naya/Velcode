@@ -40,7 +40,7 @@
 /* ---------- Hero-изображение (ноутбук) — по ширине сетки со стандартным скруглением ---------- */
 .case-page__hero-wrap {
   width: 100%;
-  aspect-ratio: 16 / 10;
+  aspect-ratio: 9 / 4;
   border-radius: var(--radius-section);
   overflow: hidden;
   background: #3c4a3e; /* цвет фона из фото если не загрузилось */
