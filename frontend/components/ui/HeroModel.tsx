@@ -360,7 +360,7 @@ export function HeroModel({ className = '' }: Props) {
   if (failed) {
     return (
       <img
-        src="/assets/hero-abstract-torus.png"
+        src="/assets/hero-abstract-torus.webp"
         alt=""
         aria-hidden="true"
         style={{ width: '100%', height: '100%', objectFit: 'contain', pointerEvents: 'none' }}
