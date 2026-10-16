@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 
 const vertexShader = `
@@ -209,6 +209,7 @@ interface Props {
 
 export function HeroModel({ className = '' }: Props) {
   const mountRef = useRef<HTMLDivElement>(null);
+  const [failed, setFailed] = useState(false);
 
   useEffect(() => {
     const container = mountRef.current;
@@ -231,6 +232,7 @@ export function HeroModel({ className = '' }: Props) {
         powerPreference: 'high-performance',
       });
     } catch {
+      setFailed(true);
       return;
     }
     renderer.setClearColor(0x000000, 0);
@@ -355,6 +357,17 @@ export function HeroModel({ className = '' }: Props) {
       material.dispose();
     };
   }, []);
+
+  if (failed) {
+    return (
+      <img
+        src="/assets/hero-abstract-torus.png"
+        alt=""
+        aria-hidden="true"
+        style={{ width: '100%', height: '100%', objectFit: 'contain', pointerEvents: 'none' }}
+      />
+    );
+  }
 
   return (
     <div
