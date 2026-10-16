@@ -99,7 +99,15 @@ export function SplitText({
       return;
     }
 
-    computeLines();
+    if (typeof document !== 'undefined' && document.fonts) {
+      if (document.fonts.status === 'loaded') {
+        computeLines();
+      } else {
+        document.fonts.ready.then(computeLines);
+      }
+    } else {
+      computeLines();
+    }
 
     let observer: IntersectionObserver | null = null;
 
@@ -147,10 +155,6 @@ export function SplitText({
         computeLines();
       });
       resizeObserver.observe(el);
-    }
-
-    if (typeof document !== 'undefined' && document.fonts) {
-      document.fonts.ready.then(computeLines);
     }
 
     return () => {
