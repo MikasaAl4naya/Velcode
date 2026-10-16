@@ -79,6 +79,7 @@
 
   display: flex;
   overflow: hidden;
+  aspect-ratio: 16 / 9;
 }
 
 .portfolio__slide {
