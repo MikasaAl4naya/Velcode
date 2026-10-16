@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { PORTFOLIO_DATA } from '@/lib/siteData';
 import { SplitText } from '@/components/ui/SplitText';
 import { BrowserMockup } from '@/components/ui/BrowserMockup';
 
@@ -18,9 +17,9 @@ interface Props {
 }
 
 export function Portfolio({ items }: Props) {
-  const data = items && items.length > 0 ? items : PORTFOLIO_DATA;
+  const data = items && items.length > 0 ? items : [];
   const sectionRef = useRef<HTMLElement>(null);
-  const [currentUrl, setCurrentUrl] = useState(data[0].url);
+  const [currentUrl, setCurrentUrl] = useState(data[0]?.url ?? 'velcode.ru/');
 
   useEffect(() => {
     const stack = sectionRef.current ? sectionRef.current.querySelector('#portfolioStack') : null;

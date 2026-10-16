@@ -5,7 +5,6 @@ import { Footer } from '@/components/sections/Footer';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { Tag } from '@/components/ui/Tag';
 import { SplitText } from '@/components/ui/SplitText';
-import { PORTFOLIO_PAGE_ITEMS } from '@/lib/siteData';
 
 export const metadata = {
   title: 'Портфолио — Велкод',
@@ -35,16 +34,7 @@ async function fetchPortfolio(): Promise<PortfolioItem[]> {
 }
 
 export default async function PortfolioPage() {
-  const fetchedItems = await fetchPortfolio();
-  const items: PortfolioItem[] = fetchedItems.length > 0
-    ? fetchedItems
-    : PORTFOLIO_PAGE_ITEMS.map((item, idx) => ({
-        id: item.id || idx,
-        slug: item.link.replace('/portfolio/', '').replace('/case', 'trattoria-pomodoro'),
-        title: item.title,
-        image_url: item.img,
-        tags: item.tags.join(', '),
-      }));
+  const items: PortfolioItem[] = await fetchPortfolio();
 
   return (
     <>

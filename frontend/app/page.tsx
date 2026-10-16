@@ -6,8 +6,7 @@ import { Portfolio, PortfolioItem } from '@/components/sections/Portfolio';
 import { Contacts } from '@/components/sections/Contacts';
 import { Footer } from '@/components/sections/Footer';
 import { SmoothWheelProvider } from '@/components/SmoothWheelProvider';
-import type { ServiceData } from '@/lib/siteData';
-import { SERVICES_DATA } from '@/lib/siteData';
+import { fetchServices } from '@/lib/fetchServices';
 
 const API_BASE =
   process.env.INTERNAL_API_URL ||
@@ -32,35 +31,6 @@ async function fetchPortfolioItems(): Promise<PortfolioItem[]> {
   }
 }
 
-async function fetchServices(): Promise<ServiceData[]> {
-  try {
-    const res = await fetch(`${API_BASE}/api/services`, { cache: 'no-store' });
-    if (!res.ok) return SERVICES_DATA;
-    const data: Array<{
-      id: number;
-      title: string;
-      description: string;
-      price_full: number;
-      unit: string;
-      is_featured: boolean;
-      sort_order: number;
-    }> = await res.json();
-    if (!data.length) return SERVICES_DATA;
-    return data.map((item, idx) => ({
-      num: String(idx + 1).padStart(2, '0'),
-      name: item.title,
-      desc: item.description,
-      price: `от ${item.price_full.toLocaleString('ru-RU')} ₽`,
-      unit: item.unit,
-      theme: item.is_featured ? 'blue-grad' : 'dark',
-      badgeTheme: item.is_featured ? 'blue-grad' : 'dark',
-      btnClass: item.is_featured ? 'btn--card-white' : 'btn--card-blue',
-      decor: item.is_featured,
-    }));
-  } catch {
-    return SERVICES_DATA;
-  }
-}
 
 export default async function Page() {
   const [portfolioItems, servicesItems] = await Promise.all([

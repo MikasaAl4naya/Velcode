@@ -28,22 +28,7 @@ async function fetchCase(slug: string): Promise<CaseItem | null> {
     const res = await fetch(`${base}/api/portfolio/${slug}`, { cache: 'no-store' });
     if (res.ok) return await res.json();
   } catch {
-    // fallback below
-  }
-
-  if (slug === 'case' || slug === 'trattoria-pomodoro' || slug === 'trattoria') {
-    return {
-      id: 1,
-      slug: 'case',
-      title: 'Сайт-визитка для рестобара Trattoria Pomodoro',
-      description:
-        'Комплексный веб-сайт для рестобара «Trattoria». Главные задачи — передать уникальную атмосферу заведения в цифровой среде, упростить пользовательский путь «выбор меню → бронирование столика» и сократить потери от «быстрых» заявок-бронирований со звонка.',
-      hero_image_url: '/assets/case-trattoria-hero.png',
-      image_url: '/assets/case-example.png',
-      site_url: 'trattoria.ru/',
-      tags: 'Концепт, Веб-дизайн',
-      what_was_done: null,
-    };
+    // network error
   }
   return null;
 }

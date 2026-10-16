@@ -100,61 +100,6 @@ export const ADVANTAGES_DATA = [
   },
 ];
 
-export const PORTFOLIO_DATA = [
-  {
-    title: 'Кейс Trattoria Pomodoro',
-    img: '/assets/case-trattoria.png',
-    url: 'velcode.ru/',
-    link: '/portfolio/case',
-  },
-  {
-    title: 'Кейс интернет-магазин спорт-товаров',
-    img: '/assets/case-sport.png',
-    url: 'velcode.ru/',
-    link: '/portfolio/case',
-  },
-  {
-    title: 'Кейс интеграция Битрикс24 и 1С',
-    img: '/assets/case-bitrix.png',
-    url: 'velcode.ru/',
-    link: '/portfolio/case',
-  },
-];
-
-export const PORTFOLIO_PAGE_ITEMS = [
-  {
-    id: 'case-1',
-    title: 'Сайт-визитка для рестобара',
-    img: '/assets/case-trattoria.png',
-    tags: ['Веб-дизайн'],
-    link: '/portfolio/case',
-    empty: false,
-  },
-  {
-    id: 'case-2',
-    title: 'Сайт для магазина спорт-товаров',
-    img: '/assets/case-sport.png',
-    tags: ['Веб-дизайн'],
-    link: '/portfolio/case',
-    empty: false,
-  },
-  {
-    id: 'case-3',
-    title: 'Модуль интеграции Битрикс24 и 1С:Предприятие',
-    img: '/assets/case-bitrix.png',
-    tags: ['Интеграции с 1С и Битрикс24'],
-    link: '/portfolio/case',
-    empty: false,
-  },
-  {
-    id: 'case-4',
-    title: 'Новый проект в разработке',
-    img: '/assets/case-placeholder.svg',
-    tags: ['В процессе'],
-    link: '#',
-    empty: true,
-  },
-];
 
 export const HERO_TAGS: string[][] = [
   ['Разработка сайтов', 'Веб-дизайн', 'Внедрение ИИ'],
