@@ -16,6 +16,7 @@ export async function fetchServices(): Promise<ServiceData[]> {
       price_full: number;
       unit: string;
       is_featured: boolean;
+      image_url: string | null;
     }> = await res.json();
     if (!data.length) return SERVICES_DATA;
     return data.map((item, idx) => ({
@@ -27,7 +28,7 @@ export async function fetchServices(): Promise<ServiceData[]> {
       theme: item.is_featured ? 'blue-grad' : 'dark',
       badgeTheme: item.is_featured ? 'blue-grad' : 'dark',
       btnClass: item.is_featured ? 'btn--card-white' : 'btn--card-blue',
-      decor: item.is_featured,
+      decor: Boolean(item.image_url),
     }));
   } catch {
     return SERVICES_DATA;
