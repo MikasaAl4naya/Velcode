@@ -10,7 +10,7 @@ from starlette.responses import HTMLResponse
 
 from app.config import settings
 from app.database import engine
-from app.models import Portfolio, Service
+from app.models import Lead, Portfolio, Service
 
 UPLOADS_DIR = Path("uploads")
 
@@ -152,6 +152,30 @@ class UploadView(BaseView):
         return HTMLResponse(html)
 
 
+class LeadAdmin(ModelView, model=Lead):
+    name = "Заявка"
+    name_plural = "Заявки"
+    icon = "fa-solid fa-envelope"
+
+    column_list = [Lead.id, Lead.name, Lead.phone, Lead.question, Lead.source, Lead.created_at]
+    column_sortable_list = [Lead.id, Lead.created_at]
+    column_searchable_list = [Lead.name, Lead.phone]
+    column_default_sort = [(Lead.created_at, True)]
+
+    column_labels = {
+        "id": "ID",
+        "name": "Имя",
+        "phone": "Телефон",
+        "question": "Вопрос",
+        "source": "Источник",
+        "created_at": "Дата",
+    }
+
+    can_create = False
+    can_edit = False
+    can_delete = True
+
+
 class PortfolioAdmin(ModelView, model=Portfolio):
     name = "Кейс"
     name_plural = "Портфолио"
@@ -220,6 +244,7 @@ class ServiceAdmin(ModelView, model=Service):
 def create_admin(app) -> Admin:
     auth = AdminAuth(secret_key=settings.admin_secret_key)
     admin = Admin(app=app, engine=engine, authentication_backend=auth, title="Велкод — Admin")
+    admin.add_view(LeadAdmin)
     admin.add_view(PortfolioAdmin)
     admin.add_view(ServiceAdmin)
     admin.add_base_view(UploadView)
