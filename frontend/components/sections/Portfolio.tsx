@@ -95,20 +95,10 @@ export function Portfolio({ items }: Props) {
     const onVisibility = () => setPaused('hidden', document.hidden);
     document.addEventListener('visibilitychange', onVisibility);
 
-    const onPointerEnter = () => setPaused('hover', true);
-    const onPointerLeave = () => setPaused('hover', false);
-
-    if (window.matchMedia('(hover: hover)').matches) {
-      (stack as Element).addEventListener('pointerenter', onPointerEnter);
-      (stack as Element).addEventListener('pointerleave', onPointerLeave);
-    }
-
     return () => {
       halt();
       if (observer) observer.disconnect();
       document.removeEventListener('visibilitychange', onVisibility);
-      (stack as Element).removeEventListener('pointerenter', onPointerEnter);
-      (stack as Element).removeEventListener('pointerleave', onPointerLeave);
     };
   }, []);
 
