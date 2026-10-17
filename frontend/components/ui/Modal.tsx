@@ -124,6 +124,7 @@ export function Modal() {
             theme="light"
             submitLabel="Отправить"
             submitButtonClass="btn--modal"
+            source={service ? (service.name || service.title || 'service') : 'contact_form'}
           />
         </div>
       </div>

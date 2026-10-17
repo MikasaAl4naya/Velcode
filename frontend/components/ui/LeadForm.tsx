@@ -33,6 +33,7 @@ type LeadFormProps = {
   isLarge?: boolean;
   submitLabel?: string;
   submitButtonClass?: string;
+  source?: string;
   onSuccess?: (data: any) => void;
 };
 
@@ -42,6 +43,7 @@ export function LeadForm({
   isLarge = false,
   submitLabel = 'Отправить',
   submitButtonClass = 'btn--modal',
+  source = 'contact_form',
   onSuccess,
 }: LeadFormProps) {
   const { openSuccessModal } = useModal();
@@ -102,6 +104,7 @@ export function LeadForm({
           phone: formData.phone,
           question: formData.question,
           consent: formData.consent,
+          source,
         }),
       });
 
