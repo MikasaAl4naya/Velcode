@@ -1,7 +1,8 @@
 import { LeadForm } from '@/components/ui/LeadForm';
 import { SocialLinks } from '@/components/ui/SocialLinks';
-import { COMPANY_CONFIG } from '@/lib/company';
+import { ContactChannels } from '@/components/ui/ContactChannels';
 import { SplitText } from '@/components/ui/SplitText';
+
 
 type ContactsProps = {
   isStandalone?: boolean;
@@ -31,14 +32,7 @@ export function Contacts({ isStandalone = false }: ContactsProps) {
 
             <SocialLinks className="contacts__social-list" itemClassName="contacts__social-item" />
 
-            <div className="contacts__channels">
-              <a href={`tel:${COMPANY_CONFIG.phoneLink}`} className="contacts__channel-link">
-                {COMPANY_CONFIG.phone}
-              </a>
-              <a href={`mailto:${COMPANY_CONFIG.email}`} className="contacts__channel-link">
-                {COMPANY_CONFIG.email}
-              </a>
-            </div>
+            <ContactChannels className="contacts__channels" linkClassName="contacts__channel-link" />
           </div>
 
           <div className="contacts__form-wrap">

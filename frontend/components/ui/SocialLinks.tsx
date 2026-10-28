@@ -1,4 +1,7 @@
+'use client';
+
 import { COMPANY_CONFIG } from '@/lib/company';
+import { ymGoal } from '@/lib/ym';
 
 type SocialLinksProps = {
   className?: string;
@@ -15,6 +18,7 @@ export function SocialLinks({ className = '', itemClassName = '' }: SocialLinksP
         className={itemClassName}
         aria-label="MAX чат-бот"
         title="Написать в MAX"
+        onClick={() => ymGoal('click_max')}
       >
         <svg className="icon icon--max" aria-hidden="true">
           <use href="#icon-max" />
@@ -27,6 +31,7 @@ export function SocialLinks({ className = '', itemClassName = '' }: SocialLinksP
         className={itemClassName}
         aria-label="Telegram"
         title="Написать в Telegram"
+        onClick={() => ymGoal('click_telegram')}
       >
         <svg className="icon icon--telegram" aria-hidden="true">
           <use href="#icon-telegram" />

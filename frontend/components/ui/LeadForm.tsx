@@ -3,10 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useModal } from '@/hooks/useModal';
-
-declare global {
-  function ym(id: number, action: string, goal: string): void;
-}
+import { ymGoal } from '@/lib/ym';
 
 function formatPhone(value: string): string {
   let digits = value.replace(/\D/g, '');
@@ -109,7 +106,7 @@ export function LeadForm({
       });
 
       if (res.ok) {
-        if (typeof ym !== 'undefined') ym(112272348, 'reachGoal', 'form_send');
+        ymGoal('form_send');
         setFormData({ name: '', phone: '', question: '', consent: false });
         setSubmitted(false);
         setTouched({ name: false, phone: false, consent: false });
@@ -117,7 +114,7 @@ export function LeadForm({
         if (onSuccess) onSuccess(formData);
       }
     } catch {
-      if (typeof ym !== 'undefined') ym(112272348, 'reachGoal', 'form_send');
+      ymGoal('form_send');
       setFormData({ name: '', phone: '', question: '', consent: false });
       setSubmitted(false);
       setTouched({ name: false, phone: false, consent: false });

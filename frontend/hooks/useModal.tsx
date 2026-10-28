@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import type { ServiceData } from '@/lib/siteData';
+import { ymGoal } from '@/lib/ym';
 
 type ModalService = ServiceData | null;
 
@@ -26,6 +27,7 @@ export function ModalProvider({ children }: { children: React.ReactNode }) {
   const [isSuccessOpen, setIsSuccessOpen] = useState(false);
 
   const openModal = useCallback((service: ModalService = null) => {
+    ymGoal('open_service_modal');
     setModalState({
       isOpen: true,
       service,
