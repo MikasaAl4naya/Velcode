@@ -23,19 +23,20 @@ npm ci
 echo "=== Frontend: сборка ==="
 NODE_OPTIONS='--max-old-space-size=1536' npm run build
 
-# standalone-сервер требует статику и public рядом с собой
-mkdir -p .next/standalone/.next/static
-cp -r .next/static/. .next/standalone/.next/static/
-cp -r public/. .next/standalone/public/ 2>/dev/null || true
-# favicon из app/ — Next.js кладёт его в .next/server, копируем в public
-cp app/favicon.ico .next/standalone/public/favicon.ico 2>/dev/null || true
+# Next.js кладёт server.js в standalone/frontend/ — копируем статику туда же
+mkdir -p .next/standalone/frontend/.next/static
+cp -r .next/static/. .next/standalone/frontend/.next/static/
+cp -r public/. .next/standalone/frontend/public/ 2>/dev/null || true
+cp app/favicon.ico .next/standalone/frontend/public/favicon.ico 2>/dev/null || true
 cd ..
 
+# Всегда обновляем systemd файлы из репозитория
+sudo cp deploy/velcode-backend.service  /etc/systemd/system/
+sudo cp deploy/velcode-frontend.service /etc/systemd/system/
+sudo systemctl daemon-reload
+
 if [ "$FIRST_RUN" = "--first-run" ]; then
-    echo "=== Первый запуск: установка сервисов ==="
-    sudo cp deploy/velcode-backend.service  /etc/systemd/system/
-    sudo cp deploy/velcode-frontend.service /etc/systemd/system/
-    sudo systemctl daemon-reload
+    echo "=== Первый запуск: включение сервисов ==="
     sudo systemctl enable velcode-backend velcode-frontend
 fi
 
