@@ -23,12 +23,6 @@ npm ci
 echo "=== Frontend: сборка ==="
 NODE_OPTIONS='--max-old-space-size=1536' npm run build
 
-# Next.js создаёт standalone/frontend/ — флэттеним в standalone/
-# чтобы systemd мог запустить node server.js из WorkingDirectory=standalone/
-if [ -d ".next/standalone/frontend" ]; then
-    cp -r .next/standalone/frontend/. .next/standalone/
-fi
-
 # standalone-сервер требует статику и public рядом с собой
 mkdir -p .next/standalone/.next/static
 cp -r .next/static/. .next/standalone/.next/static/

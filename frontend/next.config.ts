@@ -1,9 +1,9 @@
+import path from 'path'
 import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
-  // Standalone output bundles everything needed to run the server —
-  // copy .next/standalone to production and start with `node server.js`.
   output: 'standalone',
+  outputFileTracingRoot: path.join(__dirname, '..'),
 
   images: {
     remotePatterns: [
