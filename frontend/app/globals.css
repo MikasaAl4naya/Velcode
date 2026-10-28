@@ -1,0 +1,36 @@
+/* Euclid Circular A fonts */
+@import './styles/fonts.css';
+
+/* CSS tokens and global resets */
+@import './styles/variables.css';
+
+/* Base/shared styles: .btn, .icon, .tag */
+@import './styles/base.css';
+
+/* Section styles */
+@import './styles/header.css';
+@import './styles/hero.css';
+@import './styles/services.css';
+@import './styles/advantages.css';
+@import './styles/portfolio.css';
+@import './styles/contacts.css';
+@import './styles/footer.css';
+
+/* UI components */
+@import './styles/lead-form.css';
+@import './styles/modal.css';
+
+/* Sub-pages */
+@import './styles/subpage.css';
+@import './styles/portfolio-page.css';
+@import './styles/case-page.css';
+@import './styles/legal-page.css';
+@import './styles/not-found.css';
+
+/* Animations & extra components */
+@import './styles/animations.css';
+@import './styles/breadcrumbs.css';
+@import './styles/browser-mockup.css';
+
+/* Responsive overrides — must be last */
+@import './styles/responsive.css';

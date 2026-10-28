@@ -1,0 +1,11 @@
+.env
+.env.production
+*.db
+__pycache__/
+.venv/
+.pytest_cache/
+*.pyc
+frontend/.next/
+frontend/node_modules/
+frontend/.env.local
+frontend/.env.production

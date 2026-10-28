@@ -1,0 +1,107 @@
+/* ============================================================
+   LEGAL PAGES (Privacy, Consent, Cookies)
+============================================================ */
+
+.legal-page {
+  padding-top: calc(var(--header-offset) + clamp(30px, 4vw, 55px));
+  padding-bottom: var(--section-pad);
+}
+
+.legal-page__title {
+  color: var(--color-dark);
+  font-size: var(--fs-h2);
+  font-weight: 500;
+  line-height: 1.15;
+  letter-spacing: -1.2px;
+  margin-top: 0;
+  margin-bottom: clamp(28px, 3.5vw, 44px);
+}
+
+.legal-page__body {
+  color: var(--color-dark);
+  font-size: 18px;
+  line-height: 1.7;
+  word-wrap: break-word;
+}
+
+.legal-page__body strong {
+  color: var(--color-dark);
+  font-weight: 600;
+}
+
+.legal-page__body a {
+  color: var(--color-blue-accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color var(--transition-base);
+}
+
+.legal-page__body a:hover {
+  color: var(--color-accent);
+}
+
+/* Обычная стандартная таблица без скруглений и без цветного фона у колонки */
+.legal-page__table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  margin-block: 32px;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+}
+
+.legal-page__table {
+  width: 100%;
+  min-width: 600px;
+  border-collapse: collapse;
+  border: 1px solid var(--color-border);
+  font-size: 18px;
+  line-height: 1.6;
+}
+
+.legal-page__table td {
+  padding: 16px 20px;
+  vertical-align: top;
+  border: 1px solid var(--color-border);
+  background: transparent;
+  color: var(--color-dark);
+}
+
+.legal-page__table td:first-child {
+  width: 32%;
+  font-weight: 500;
+  background: transparent;
+  color: var(--color-dark);
+  border: 1px solid var(--color-border);
+}
+
+.legal-page__table td:last-child {
+  color: var(--color-dark);
+}
+
+/* Адаптив для мобильных устройств */
+@media (max-width: 767.98px) {
+  .legal-page {
+    padding-top: calc(var(--header-height) + var(--section-pad));
+  }
+
+  .legal-page__title {
+    font-size: 26px;
+    letter-spacing: -0.6px;
+    line-height: 1.2;
+    margin-bottom: 24px;
+  }
+
+  .legal-page__body {
+    font-size: 16px;
+    line-height: 1.62;
+  }
+
+  .legal-page__table {
+    font-size: 15px;
+  }
+
+  .legal-page__table td {
+    padding: 12px 14px;
+  }
+}

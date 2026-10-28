@@ -1,0 +1,20 @@
+[Unit]
+Description=Velcode FastAPI Backend
+After=network.target
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/velcode
+EnvironmentFile=/var/www/velcode/.env
+ExecStart=/var/www/velcode/venv/bin/uvicorn app.main:app \
+    --host 127.0.0.1 \
+    --port 8000 \
+    --workers 1
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

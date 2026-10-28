@@ -1,0 +1,79 @@
+/* ============================================================
+   АНИМАЦИЯ ПОЯВЛЕНИЯ ЗАГОЛОВКОВ ЦЕЛИКОМ СВЕРХУ (TITLE REVEAL FROM TOP)
+   Заголовок появляется целиком сверху единым блоком
+============================================================ */
+
+.split-text-line-mask,
+.split-text-root {
+  display: block;
+  overflow: hidden;
+  line-height: inherit;
+  vertical-align: bottom;
+  padding-bottom: 0.08em;
+  margin-bottom: -0.08em;
+}
+
+.split-text-line-content {
+  display: block;
+  transform: translate3d(0, -115%, 0);
+  opacity: 0;
+  will-change: transform, opacity;
+  color: inherit;
+}
+
+.split-text-line-mask.is-visible .split-text-line-content,
+.split-text-root.is-visible .split-text-line-content {
+  animation: splitLineReveal 0.85s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes splitLineReveal {
+  0% {
+    transform: translate3d(0, -115%, 0);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate3d(0, 0, 0);
+    opacity: 1;
+  }
+}
+
+/* Обратная совместимость для старых классов если где-то встретятся */
+.split-text {
+  display: inline-block;
+  overflow: hidden;
+}
+
+.split-text.is-visible .split-char {
+  animation: splitLineReveal 0.85s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .split-text-line-content,
+  .split-char {
+    transform: none !important;
+    opacity: 1 !important;
+    animation: none !important;
+  }
+}
+
+/* ============================================================
+   SKELETON SHIMMER — фон контейнера пока картинка грузится
+============================================================ */
+
+.img-skeleton {
+  background: linear-gradient(90deg, #f0f2f7 25%, #e4e7ef 50%, #f0f2f7 75%);
+  background-size: 200% 100%;
+  animation: imgShimmer 1.5s ease infinite;
+}
+
+@keyframes imgShimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .img-skeleton { animation: none; }
+}

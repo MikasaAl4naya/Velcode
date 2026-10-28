@@ -1,0 +1,202 @@
+/* ============================================================
+   CASE PAGE (Шаблон страницы кейса)
+============================================================ */
+
+.case-page {
+  padding-top: calc(var(--header-offset) + clamp(30px, 4vw, 55px));
+  padding-bottom: 0;
+}
+
+/* ---------- Заголовок ---------- */
+.case-page__title {
+  color: var(--color-dark);
+  font-size: var(--fs-h2);
+  font-weight: 500;
+  line-height: 1.08;
+  letter-spacing: -1.2px;
+  margin: 0 0 clamp(20px, 2vw, 32px);
+}
+
+/* ---------- Теги — сразу под заголовком ---------- */
+.case-page__tags {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 0;
+  row-gap: 8px;
+ }
+
+/* ---------- Лид-текст ---------- */
+.case-page__lead {
+    max-width: 1200px;
+    color: var(--color-muted);
+    font-size: clamp(14px, 1.1vw, 17px);
+    font-weight: 400;
+    line-height: 1.6;
+    padding-top: var(--section-pad);
+}
+
+.case-page__container--no-mockup .case-page__lead {
+    padding-top: var(--content-gap);
+}
+
+.case-what-col {
+    padding-top: 15px;
+}
+
+.case-page__container--no-mockup .case-what-col {
+    padding-top: 0;
+}
+
+/* ---------- Hero-изображение ---------- */
+.case-page__hero-wrap {
+  width: 100%;
+  max-width: 2048px;
+  margin-inline: auto;
+  aspect-ratio: 9 / 4;
+  border-radius: 0;
+  overflow: hidden;
+  background: #3c4a3e;
+  margin-top: clamp(20px, 2.5vw, 30px);
+}
+
+@media (min-width: 2049px) {
+  .case-page__hero-wrap {
+    border-radius: var(--radius-section);
+  }
+}
+
+.case-page__hero-img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  object-position: center;
+}
+
+/* ---------- Контентная часть (Что сделано + Мокап) ---------- */
+.case-content-flex {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--layout-gap);
+    padding-block: var(--section-pad);
+    width: 100%;
+}
+
+.case-desc-col {
+    flex: 1;
+}
+
+.case-what-col {
+    flex: 1;
+}
+
+.case-page__container--no-mockup .case-desc-col,
+.case-page__container--no-mockup .case-what-col {
+    flex: 1;
+}
+
+/* При наличии мокапа (default) */
+.case-mockup-col {
+    flex: 0 0 66.666%;
+    min-width: 0;
+}
+
+.case-page__what {
+  display: flex;
+  flex-direction: column;
+  gap: var(--content-gap);
+}
+
+.case-page__what-title {
+  color: var(--color-dark);
+  font-size: clamp(22px, 2vw, 32px);
+  font-weight: 500;
+  letter-spacing: -0.5px;
+  line-height: 1.15;
+  margin: 0;
+}
+
+.case-page__what-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.case-page__what-text {
+  color: var(--color-muted);
+  font-size: clamp(14px, 1.1vw, 16px);
+  line-height: 1.7;
+  margin: 0;
+}
+
+/* Стили для кнопки внутри what-col */
+.case-what-col .btn {
+  align-self: flex-start;
+}
+
+@media (max-width: 575.98px) {
+  .case-what-col .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* ---------- Браузерный мокап ---------- */
+.case-page__mockup-wrap {
+  width: 100%;
+  margin-bottom: 0;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.05);
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.case-page__mockup-wrap .browser-mockup__content {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.case-page__mockup-wrap .browser-mockup__content::-webkit-scrollbar {
+  display: none !important;
+}
+
+.case-page__mockup-wrap .browser-mockup__content img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* ---------- Адаптивные брейкпоинты ---------- */
+@media (max-width: 991.98px) {
+    .case-content-flex {
+        flex-direction: column;
+        gap: 30px;
+    }
+  
+  .case-what-col, 
+  .case-mockup-col {
+    flex: 0 0 100%;
+    width: 100%;
+  }
+  .case-what-col {
+    padding-top: 0;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .case-page {
+    padding-top: calc(var(--header-height) + var(--section-pad));
+  }
+
+  .case-page__title {
+    font-size: 28px;
+    letter-spacing: -0.6px;
+    line-height: 1.15;
+  }
+}
