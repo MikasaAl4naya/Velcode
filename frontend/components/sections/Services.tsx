@@ -162,6 +162,7 @@ export function Services({ isStandalone = false, items }: ServicesProps) {
 
   useEffect(() => {
     measure();
+    const timer = setTimeout(measure, 100);
     window.addEventListener('resize', measure);
     window.addEventListener('load', measure);
 
@@ -237,24 +238,9 @@ export function Services({ isStandalone = false, items }: ServicesProps) {
       touchDirection = null;
     };
 
-    if (isStandalone) {
-      window.addEventListener('touchstart', handleTouchStart, { passive: true });
-      window.addEventListener('touchmove', handleTouchMove, { passive: false });
-      window.addEventListener('touchend', handleTouchEnd, { passive: true });
-      window.addEventListener('touchcancel', handleTouchEnd, { passive: true });
+    // Убрали ранний return для isStandalone, регистрируем события для всех
 
-      return () => {
-        window.removeEventListener('resize', measure);
-        window.removeEventListener('load', measure);
-        if (resizeObserver) resizeObserver.disconnect();
-        window.removeEventListener('touchstart', handleTouchStart);
-        window.removeEventListener('touchmove', handleTouchMove);
-        window.removeEventListener('touchend', handleTouchEnd);
-        window.removeEventListener('touchcancel', handleTouchEnd);
-      };
-    }
-
-    // Global wheel hooks for main page scroll integration
+    // Wheel hooks
     (window as any).__getServicesLockY = () => {
       const s = stateRef.current;
       const isMobile = window.matchMedia('(max-width: 767.98px)').matches;
@@ -340,9 +326,8 @@ export function Services({ isStandalone = false, items }: ServicesProps) {
 
     const handleMouseDown = (event: MouseEvent) => {
       const s = stateRef.current;
-      const isMobile = window.matchMedia('(max-width: 767.98px)').matches;
-      const isShort = window.matchMedia('(max-height: 560px)').matches;
-      if (isMobile || isShort || s.maxShift <= 0) return;
+      
+      if (s.maxShift <= 0) return;
       if (event.button !== 0) return; // только левая кнопка мыши
 
       isMouseDown = true;
@@ -381,33 +366,38 @@ export function Services({ isStandalone = false, items }: ServicesProps) {
       }
     };
 
+    // Привязываем все события
     const sectionEl = sectionRef.current;
-    if (sectionEl) {
+    if (sectionEl && !isStandalone) {
       sectionEl.addEventListener('wheel', handleSectionWheel, { passive: false });
     }
 
     const trackWrapperEl = trackRef.current?.parentElement;
     if (trackWrapperEl) {
       trackWrapperEl.addEventListener('mousedown', handleMouseDown);
-      window.addEventListener('mousemove', handleMouseMove);
-      window.addEventListener('mouseup', handleMouseUp);
+      trackWrapperEl.addEventListener('mousemove', handleMouseMove);
+      trackWrapperEl.addEventListener('mouseup', handleMouseUp);
+      trackWrapperEl.addEventListener('mouseleave', handleMouseUp);
       trackWrapperEl.addEventListener('click', handleClickCapture, true);
     }
 
+    // Touch events
     window.addEventListener('touchstart', handleTouchStart, { passive: true });
     window.addEventListener('touchmove', handleTouchMove, { passive: false });
     window.addEventListener('touchend', handleTouchEnd, { passive: true });
     window.addEventListener('touchcancel', handleTouchEnd, { passive: true });
 
     return () => {
+      clearTimeout(timer);
       window.removeEventListener('resize', measure);
       window.removeEventListener('load', measure);
       if (resizeObserver) resizeObserver.disconnect();
       if (sectionEl) sectionEl.removeEventListener('wheel', handleSectionWheel);
       if (trackWrapperEl) {
         trackWrapperEl.removeEventListener('mousedown', handleMouseDown);
-        window.removeEventListener('mousemove', handleMouseMove);
-        window.removeEventListener('mouseup', handleMouseUp);
+        trackWrapperEl.removeEventListener('mousemove', handleMouseMove);
+        trackWrapperEl.removeEventListener('mouseup', handleMouseUp);
+        trackWrapperEl.removeEventListener('mouseleave', handleMouseUp);
         trackWrapperEl.removeEventListener('click', handleClickCapture, true);
       }
       window.removeEventListener('touchstart', handleTouchStart);
