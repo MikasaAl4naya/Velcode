@@ -1,4 +1,5 @@
 import re
+from datetime import datetime
 from pathlib import Path
 from uuid import uuid4
 
@@ -6,7 +7,7 @@ from markupsafe import Markup
 from sqladmin import Admin, BaseView, ModelView, expose
 from sqladmin.authentication import AuthenticationBackend
 from starlette.requests import Request
-from starlette.responses import HTMLResponse
+from starlette.responses import HTMLResponse, JSONResponse
 
 from app.config import settings
 from app.database import engine
@@ -152,6 +153,95 @@ class UploadView(BaseView):
         return HTMLResponse(html)
 
 
+class UploadsManagerView(BaseView):
+    name = "Управление загрузками"
+    icon = "fa-solid fa-folder-open"
+
+    @expose("/uploads-manager", methods=["GET"])
+    async def uploads_page(self, request: Request) -> HTMLResponse:
+        files = []
+        if UPLOADS_DIR.exists():
+            for f in sorted(UPLOADS_DIR.iterdir(), key=lambda x: x.stat().st_mtime, reverse=True):
+                if f.is_file():
+                    stat = f.stat()
+                    size_kb = stat.st_size / 1024
+                    mtime = datetime.fromtimestamp(stat.st_mtime).strftime("%d.%m.%Y %H:%M")
+                    files.append({"name": f.name, "size": f"{size_kb:.1f} КБ", "mtime": mtime, "url": f"/uploads/{f.name}"})
+
+        rows = ""
+        for f in files:
+            ext = f["name"].rsplit(".", 1)[-1].lower() if "." in f["name"] else ""
+            is_img = ext in ("jpg", "jpeg", "png", "gif", "webp", "svg", "avif")
+            thumb = f'<img src="{f["url"]}" style="height:36px;border-radius:4px;object-fit:cover;vertical-align:middle">' if is_img else "—"
+            rows += f"""
+            <tr>
+                <td style="text-align:center">{thumb}</td>
+                <td><code style="font-size:12px">{f["name"]}</code></td>
+                <td>{f["size"]}</td>
+                <td>{f["mtime"]}</td>
+                <td>
+                    <a href="{f["url"]}" target="_blank" style="color:#4f46e5;margin-right:8px">Открыть</a>
+                    <button onclick="deleteFile('{f["name"]}')" style="background:#dc2626;color:#fff;border:none;border-radius:4px;padding:4px 10px;cursor:pointer;font-size:13px">Удалить</button>
+                </td>
+            </tr>"""
+
+        html = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="utf-8">
+            <title>Загрузки — Велкод Admin</title>
+            <style>
+                body {{ font-family: sans-serif; max-width: 960px; margin: 40px auto; padding: 0 20px; }}
+                h1 {{ font-size: 22px; margin-bottom: 8px; }}
+                .count {{ color: #6b7280; margin-bottom: 24px; font-size: 14px; }}
+                table {{ width: 100%; border-collapse: collapse; }}
+                th {{ text-align: left; padding: 10px 12px; background: #f3f4f6; font-size: 13px; border-bottom: 2px solid #e5e7eb; }}
+                td {{ padding: 8px 12px; border-bottom: 1px solid #e5e7eb; font-size: 13px; vertical-align: middle; }}
+                tr:hover {{ background: #fafafa; }}
+                .back {{ display: inline-block; margin-bottom: 20px; color: #4f46e5; text-decoration: none; }}
+                .empty {{ color: #9ca3af; margin-top: 40px; text-align: center; }}
+            </style>
+        </head>
+        <body>
+            <a href="/admin" class="back">← Назад в админку</a>
+            <h1>Управление загрузками</h1>
+            <p class="count">Файлов: {len(files)}</p>
+            {"" if files else '<p class="empty">Папка uploads пуста</p>'}
+            {"<table><thead><tr><th>Превью</th><th>Имя файла</th><th>Размер</th><th>Дата</th><th>Действия</th></tr></thead><tbody>" + rows + "</tbody></table>" if files else ""}
+            <script>
+            async function deleteFile(name) {{
+                if (!confirm('Удалить файл ' + name + '?')) return;
+                const r = await fetch('/admin/uploads-delete', {{
+                    method: 'POST',
+                    headers: {{'Content-Type': 'application/json'}},
+                    body: JSON.stringify({{name}})
+                }});
+                if (r.ok) location.reload();
+                else alert('Ошибка удаления');
+            }}
+            </script>
+        </body>
+        </html>
+        """
+        return HTMLResponse(html)
+
+    @expose("/uploads-delete", methods=["POST"])
+    async def delete_file(self, request: Request) -> JSONResponse:
+        try:
+            data = await request.json()
+            name = data.get("name", "")
+            if not name or "/" in name or "\\" in name or name.startswith("."):
+                return JSONResponse({"error": "invalid name"}, status_code=400)
+            target = UPLOADS_DIR / name
+            if not target.exists() or not target.is_file():
+                return JSONResponse({"error": "not found"}, status_code=404)
+            target.unlink()
+            return JSONResponse({"ok": True})
+        except Exception:
+            return JSONResponse({"error": "server error"}, status_code=500)
+
+
 class LeadAdmin(ModelView, model=Lead):
     name = "Заявка"
     name_plural = "Заявки"
@@ -248,4 +338,5 @@ def create_admin(app) -> Admin:
     admin.add_view(PortfolioAdmin)
     admin.add_view(ServiceAdmin)
     admin.add_base_view(UploadView)
+    admin.add_base_view(UploadsManagerView)
     return admin
