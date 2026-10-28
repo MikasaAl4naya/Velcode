@@ -67,6 +67,30 @@ class Faq(Base):
     sort_order: Mapped[int] = mapped_column(Integer, default=0)
 
 
+portfolio_tag = Table(
+    "portfolio_tag",
+    Base.metadata,
+    Column("portfolio_id", ForeignKey("portfolio.id"), primary_key=True),
+    Column("tag_id", ForeignKey("tags.id"), primary_key=True),
+)
+
+
+class Tag(Base):
+    """Тег для кейсов портфолио."""
+
+    __tablename__ = "tags"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    name: Mapped[str] = mapped_column(String(100), nullable=False, unique=True)
+
+    portfolios: Mapped[list["Portfolio"]] = relationship(
+        secondary=portfolio_tag, back_populates="tags_list"
+    )
+
+    def __str__(self) -> str:
+        return self.name
+
+
 class Portfolio(Base):
     """Кейс/проект для раздела Портфолио."""
 
@@ -79,11 +103,15 @@ class Portfolio(Base):
     image_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
     hero_image_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
     site_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
-    # Теги через запятую, например "Веб-разработка, Битрикс24"
+    # Строка-кэш тегов для API (автозаполняется из tags_list при сохранении в админке)
     tags: Mapped[str | None] = mapped_column(String(500), nullable=True)
     what_was_done: Mapped[str | None] = mapped_column(Text, nullable=True)
     show_on_main: Mapped[bool] = mapped_column(Boolean, default=False)
     sort_order: Mapped[int] = mapped_column(Integer, default=0)
+
+    tags_list: Mapped[list["Tag"]] = relationship(
+        secondary=portfolio_tag, back_populates="portfolios"
+    )
 
 
 class Lead(Base):

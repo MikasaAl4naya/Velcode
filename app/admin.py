@@ -11,7 +11,7 @@ from starlette.responses import HTMLResponse, JSONResponse
 
 from app.config import settings
 from app.database import engine
-from app.models import Lead, Portfolio, Service
+from app.models import Lead, Portfolio, Service, Tag
 
 UPLOADS_DIR = Path("uploads")
 
@@ -104,9 +104,19 @@ class UploadView(BaseView):
             <style>
                 body {{ font-family: sans-serif; max-width: 600px; margin: 60px auto; padding: 0 20px; }}
                 h1 {{ font-size: 22px; margin-bottom: 24px; }}
-                .form-group {{ margin-bottom: 16px; }}
-                input[type=file] {{ display: block; margin-bottom: 12px; }}
+                .drop-zone {{
+                    border: 2px dashed #a5b4fc; border-radius: 12px; padding: 48px 24px;
+                    text-align: center; cursor: pointer; background: #f8f8ff;
+                    transition: background .2s, border-color .2s; margin-bottom: 16px;
+                }}
+                .drop-zone.dragover {{ background: #eef2ff; border-color: #4f46e5; }}
+                .drop-zone__icon {{ font-size: 40px; margin-bottom: 12px; }}
+                .drop-zone__text {{ color: #6b7280; font-size: 15px; }}
+                .drop-zone__text b {{ color: #4f46e5; }}
+                .drop-zone__filename {{ margin-top: 10px; font-size: 13px; color: #4f46e5; font-weight: 600; }}
+                input[type=file] {{ display: none; }}
                 button {{ padding: 10px 24px; background: #4f46e5; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 15px; }}
+                button:disabled {{ opacity: .5; cursor: default; }}
                 .result {{ margin-top: 24px; padding: 16px; background: #f0fdf4; border: 1px solid #86efac; border-radius: 8px; }}
                 #url-field {{ display: block; width: 100%; font-size: 14px; margin: 8px 0 10px; padding: 8px; border-radius: 4px; border: 1px solid #d1fae5; background: #fff; box-sizing: border-box; cursor: text; }}
                 .preview {{ max-width: 100%; max-height: 200px; margin-top: 12px; border-radius: 6px; }}
@@ -117,15 +127,51 @@ class UploadView(BaseView):
         <body>
             <a href="/admin" class="back">← Назад в админку</a>
             <h1>Загрузить изображение</h1>
-            <form method="post" enctype="multipart/form-data">
-                <div class="form-group">
-                    <input type="file" name="file" accept="image/*">
+            <form method="post" enctype="multipart/form-data" id="upload-form">
+                <input type="file" name="file" id="file-input" accept="image/*">
+                <div class="drop-zone" id="drop-zone">
+                    <div class="drop-zone__icon">🖼️</div>
+                    <div class="drop-zone__text">Перетащите файл сюда<br>или <b>нажмите для выбора</b></div>
+                    <div class="drop-zone__filename" id="filename"></div>
                 </div>
-                <button type="submit">Загрузить</button>
+                <button type="submit" id="submit-btn" disabled>Загрузить</button>
             </form>
             {"" if not error else f'<div class="error">{error}</div>'}
             {result_block}
             <script>
+            var dropZone = document.getElementById('drop-zone');
+            var fileInput = document.getElementById('file-input');
+            var submitBtn = document.getElementById('submit-btn');
+            var filenameEl = document.getElementById('filename');
+
+            dropZone.addEventListener('click', function() {{ fileInput.click(); }});
+
+            dropZone.addEventListener('dragover', function(e) {{
+                e.preventDefault();
+                dropZone.classList.add('dragover');
+            }});
+            dropZone.addEventListener('dragleave', function() {{
+                dropZone.classList.remove('dragover');
+            }});
+            dropZone.addEventListener('drop', function(e) {{
+                e.preventDefault();
+                dropZone.classList.remove('dragover');
+                var files = e.dataTransfer.files;
+                if (files.length) setFile(files[0]);
+            }});
+
+            fileInput.addEventListener('change', function() {{
+                if (fileInput.files.length) setFile(fileInput.files[0]);
+            }});
+
+            function setFile(file) {{
+                var dt = new DataTransfer();
+                dt.items.add(file);
+                fileInput.files = dt.files;
+                filenameEl.textContent = file.name;
+                submitBtn.disabled = false;
+            }}
+
             function copyUrl() {{
                 var field = document.getElementById('url-field');
                 var btn = document.getElementById('copy-btn');
@@ -266,6 +312,18 @@ class LeadAdmin(ModelView, model=Lead):
     can_delete = True
 
 
+class TagAdmin(ModelView, model=Tag):
+    name = "Тег"
+    name_plural = "Теги"
+    icon = "fa-solid fa-tag"
+
+    column_list = [Tag.id, Tag.name]
+    column_searchable_list = [Tag.name]
+    column_labels = {"id": "ID", "name": "Название"}
+
+    form_columns = [Tag.name]
+
+
 class PortfolioAdmin(ModelView, model=Portfolio):
     name = "Кейс"
     name_plural = "Портфолио"
@@ -284,7 +342,7 @@ class PortfolioAdmin(ModelView, model=Portfolio):
         Portfolio.image_url,
         Portfolio.hero_image_url,
         Portfolio.site_url,
-        Portfolio.tags,
+        Portfolio.tags_list,
         Portfolio.show_on_main,
         Portfolio.sort_order,
     ]
@@ -293,7 +351,7 @@ class PortfolioAdmin(ModelView, model=Portfolio):
         "image_url": "Картинка кейса — карточка + браузер-мокап (URL из «Загрузить изображение»)",
         "hero_image_url": "Фото на ноутбуке / устройстве — только на странице кейса (URL из «Загрузить изображение»)",
         "site_url": "URL в строке браузер-мокапа (напр. trattoria.ru/)",
-        "tags": "Теги (через запятую)",
+        "tags_list": "Теги",
         "what_was_done": "Что было сделано (абзацы через пустую строку)",
         "show_on_main": "Показывать на главной странице",
         "sort_order": "Порядок",
@@ -302,6 +360,8 @@ class PortfolioAdmin(ModelView, model=Portfolio):
     async def on_model_change(self, data: dict, model, is_created: bool, request: Request) -> None:
         if not str(data.get("slug") or "").strip() and data.get("title"):
             data["slug"] = _slugify(str(data["title"]))
+        tag_objs = data.get("tags_list") or []
+        data["tags"] = ", ".join(t.name for t in tag_objs)
 
 
 class ServiceAdmin(ModelView, model=Service):
@@ -336,6 +396,7 @@ def create_admin(app) -> Admin:
     admin = Admin(app=app, engine=engine, authentication_backend=auth, title="Велкод — Admin")
     admin.add_view(LeadAdmin)
     admin.add_view(PortfolioAdmin)
+    admin.add_view(TagAdmin)
     admin.add_view(ServiceAdmin)
     admin.add_base_view(UploadView)
     admin.add_base_view(UploadsManagerView)
