@@ -361,7 +361,9 @@ class PortfolioAdmin(ModelView, model=Portfolio):
         if not str(data.get("slug") or "").strip() and data.get("title"):
             data["slug"] = _slugify(str(data["title"]))
         tag_objs = data.get("tags_list") or []
-        data["tags"] = ", ".join(t.name for t in tag_objs)
+        names = [t if isinstance(t, str) else t.name for t in tag_objs]
+        if names:
+            data["tags"] = ", ".join(names)
 
 
 class ServiceAdmin(ModelView, model=Service):
