@@ -363,10 +363,10 @@ class PortfolioAdmin(ModelView, model=Portfolio):
 
     async def after_model_change(self, data: dict, model, is_created: bool, request: Request) -> None:
         from sqlalchemy import select, update as sa_update
-        from app.database import AsyncSessionFactory
+        from app.database import AsyncSessionLocal
         from app.models import Tag, portfolio_tag
 
-        async with AsyncSessionFactory() as session:
+        async with AsyncSessionLocal() as session:
             result = await session.execute(
                 select(Tag.name)
                 .join(portfolio_tag, Tag.id == portfolio_tag.c.tag_id)
