@@ -360,10 +360,24 @@ class PortfolioAdmin(ModelView, model=Portfolio):
     async def on_model_change(self, data: dict, model, is_created: bool, request: Request) -> None:
         if not str(data.get("slug") or "").strip() and data.get("title"):
             data["slug"] = _slugify(str(data["title"]))
-        tag_objs = data.get("tags_list") or []
-        names = [t if isinstance(t, str) else t.name for t in tag_objs]
-        if names:
-            data["tags"] = ", ".join(names)
+
+    async def after_model_change(self, data: dict, model, is_created: bool, request: Request) -> None:
+        from sqlalchemy import select, update as sa_update
+        from app.database import AsyncSessionFactory
+        from app.models import Tag, portfolio_tag
+
+        async with AsyncSessionFactory() as session:
+            result = await session.execute(
+                select(Tag.name)
+                .join(portfolio_tag, Tag.id == portfolio_tag.c.tag_id)
+                .where(portfolio_tag.c.portfolio_id == model.id)
+                .order_by(Tag.name)
+            )
+            tag_names = sorted([row[0] for row in result.all()])
+            await session.execute(
+                sa_update(Portfolio).where(Portfolio.id == model.id).values(tags=", ".join(tag_names))
+            )
+            await session.commit()
 
 
 class ServiceAdmin(ModelView, model=Service):
