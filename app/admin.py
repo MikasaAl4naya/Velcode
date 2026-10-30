@@ -127,22 +127,22 @@ class UploadView(BaseView):
         <body>
             <a href="/admin" class="back">← Назад в админку</a>
             <h1>Загрузить изображение</h1>
-            <form method="post" enctype="multipart/form-data" id="upload-form">
-                <input type="file" name="file" id="file-input" accept="image/*">
-                <div class="drop-zone" id="drop-zone">
-                    <div class="drop-zone__icon">🖼️</div>
-                    <div class="drop-zone__text">Перетащите файл сюда<br>или <b>нажмите для выбора</b></div>
-                    <div class="drop-zone__filename" id="filename"></div>
-                </div>
-                <button type="submit" id="submit-btn" disabled>Загрузить</button>
-            </form>
-            {"" if not error else f'<div class="error">{error}</div>'}
+            <input type="file" name="file" id="file-input" accept="image/*" style="display:none">
+            <div class="drop-zone" id="drop-zone">
+                <div class="drop-zone__icon">🖼️</div>
+                <div class="drop-zone__text">Перетащите файл сюда<br>или <b>нажмите для выбора</b></div>
+                <div class="drop-zone__filename" id="filename"></div>
+            </div>
+            <button type="button" id="submit-btn" disabled>Загрузить</button>
+            <div id="error-block" style="display:none" class="error"></div>
             {result_block}
             <script>
             var dropZone = document.getElementById('drop-zone');
             var fileInput = document.getElementById('file-input');
             var submitBtn = document.getElementById('submit-btn');
             var filenameEl = document.getElementById('filename');
+            var errorBlock = document.getElementById('error-block');
+            var currentFile = null;
 
             dropZone.addEventListener('click', function() {{ fileInput.click(); }});
 
@@ -165,11 +165,57 @@ class UploadView(BaseView):
             }});
 
             function setFile(file) {{
-                var dt = new DataTransfer();
-                dt.items.add(file);
-                fileInput.files = dt.files;
+                currentFile = file;
                 filenameEl.textContent = file.name;
                 submitBtn.disabled = false;
+                errorBlock.style.display = 'none';
+            }}
+
+            submitBtn.addEventListener('click', async function() {{
+                if (!currentFile) return;
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Загружаю...';
+                var fd = new FormData();
+                fd.append('file', currentFile);
+                try {{
+                    var resp = await fetch('/admin/upload', {{ method: 'POST', body: fd }});
+                    var html = await resp.text();
+                    var parser = new DOMParser();
+                    var doc = parser.parseFromString(html, 'text/html');
+                    var urlField = doc.getElementById('url-field');
+                    if (urlField) {{
+                        showResult(urlField.value, currentFile);
+                    }} else {{
+                        var errEl = doc.querySelector('.error');
+                        showError(errEl ? errEl.textContent : 'Ошибка загрузки');
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = 'Загрузить';
+                    }}
+                }} catch(e) {{
+                    showError('Ошибка сети');
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Загрузить';
+                }}
+            }});
+
+            function showResult(url, file) {{
+                var ext = file.name.split('.').pop().toLowerCase();
+                var isImg = ['jpg','jpeg','png','gif','webp','svg','avif'].includes(ext);
+                document.querySelector('.drop-zone').style.display = 'none';
+                submitBtn.style.display = 'none';
+                var div = document.createElement('div');
+                div.className = 'result';
+                div.innerHTML = '<strong>Готово! Скопируйте URL в поле формы:</strong>' +
+                    '<input type="text" id="url-field" readonly value="' + url + '" onclick="this.select()">' +
+                    '<button onclick="copyUrl()" type="button" id="copy-btn">Копировать</button>' +
+                    (isImg ? '<br><img src="' + url + '" class="preview" alt="preview">' : '') +
+                    '<br><br><a href="/admin/upload" style="color:#4f46e5">← Загрузить ещё</a>';
+                document.body.appendChild(div);
+            }}
+
+            function showError(msg) {{
+                errorBlock.textContent = msg;
+                errorBlock.style.display = 'block';
             }}
 
             function copyUrl() {{
