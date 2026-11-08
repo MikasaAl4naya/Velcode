@@ -73,7 +73,12 @@ export function Header({ currentPath = '/' }: HeaderProps) {
             );
           })}
 
-          <SocialLinks className="header__nav-socials" itemClassName="header__social" />
+          <SocialLinks
+            className="header__nav-socials"
+            itemClassName="header__social"
+            source="header"
+            idPrefix="header-nav"
+          />
         </nav>
 
         <div className="header__actions">
@@ -88,7 +93,12 @@ export function Header({ currentPath = '/' }: HeaderProps) {
             Оставить заявку
           </button>
 
-          <SocialLinks className="header__socials" itemClassName="header__social" />
+          <SocialLinks
+            className="header__socials"
+            itemClassName="header__social"
+            source="header"
+            idPrefix="header"
+          />
 
           <button
             className="header__burger"

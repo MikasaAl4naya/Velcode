@@ -30,9 +30,19 @@ export function Contacts({ isStandalone = false }: ContactsProps) {
               Остались вопросы? Свяжитесь с нами<br />любым удобным способом
             </p>
 
-            <SocialLinks className="contacts__social-list" itemClassName="contacts__social-item" />
+            <SocialLinks
+              className="contacts__social-list"
+              itemClassName="contacts__social-item"
+              source="contacts"
+              idPrefix="contacts"
+            />
 
-            <ContactChannels className="contacts__channels" linkClassName="contacts__channel-link" />
+            <ContactChannels
+              className="contacts__channels"
+              linkClassName="contacts__channel-link"
+              source="contacts"
+              idPrefix="contacts"
+            />
           </div>
 
           <div className="contacts__form-wrap">

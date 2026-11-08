@@ -6,22 +6,31 @@ import { ymGoal } from '@/lib/ym';
 type ContactChannelsProps = {
   className?: string;
   linkClassName?: string;
+  source?: string;
+  idPrefix?: string;
 };
 
-export function ContactChannels({ className = '', linkClassName = '' }: ContactChannelsProps) {
+export function ContactChannels({
+  className = '',
+  linkClassName = '',
+  source = 'contacts',
+  idPrefix = 'contacts',
+}: ContactChannelsProps) {
   return (
     <div className={className}>
       <a
+        id={`${idPrefix}-phone`}
         href={`tel:${COMPANY_CONFIG.phoneLink}`}
         className={linkClassName}
-        onClick={() => ymGoal('click_phone')}
+        onClick={() => ymGoal(`${source}_click_phone`)}
       >
         {COMPANY_CONFIG.phone}
       </a>
       <a
+        id={`${idPrefix}-email`}
         href={`mailto:${COMPANY_CONFIG.email}`}
         className={linkClassName}
-        onClick={() => ymGoal('click_email')}
+        onClick={() => ymGoal(`${source}_click_email`)}
       >
         {COMPANY_CONFIG.email}
       </a>
