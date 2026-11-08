@@ -97,7 +97,7 @@ export function Hero() {
                 className="btn btn--primary-lg hero__button"
                 onClick={() => openModal()}
               >
-                Получить консультацию
+                Получить бесплатную консультацию
               </button>
               <a href="#services" className="btn btn--service-link hero__button">
                 <span className="btn__round-icon">

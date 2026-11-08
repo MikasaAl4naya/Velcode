@@ -42,7 +42,7 @@ export function Contacts({ isStandalone = false }: ContactsProps) {
                   Оставьте заявку на бесплатную консультацию
                 </p>
                 <p className="contacts__form-subheading">
-                  Изучим текущую ситуацию, покажем слабые места и подскажем, как их закрыть.
+                  Изучим текущую ситуацию, покажем слабые места и подскажем, как их закрыть
                 </p>
               </div>
               <svg className="contacts__form-arrow" viewBox="0 0 24 24" aria-hidden="true">
@@ -55,6 +55,8 @@ export function Contacts({ isStandalone = false }: ContactsProps) {
               isLarge={true}
               submitLabel="Отправить"
               submitButtonClass="btn--submit"
+              source="contact_form"
+              goalName="contacts_lead_submit"
             />
           </div>
         </div>

@@ -31,6 +31,7 @@ type LeadFormProps = {
   submitLabel?: string;
   submitButtonClass?: string;
   source?: string;
+  goalName?: string;
   onSuccess?: (data: any) => void;
 };
 
@@ -41,6 +42,7 @@ export function LeadForm({
   submitLabel = 'Отправить',
   submitButtonClass = 'btn--modal',
   source = 'contact_form',
+  goalName = 'lead_submit',
   onSuccess,
 }: LeadFormProps) {
   const { openSuccessModal } = useModal();
@@ -106,7 +108,7 @@ export function LeadForm({
       });
 
       if (res.ok) {
-        ymGoal('form_send');
+        if (goalName) ymGoal(goalName);
         setFormData({ name: '', phone: '', question: '', consent: false });
         setSubmitted(false);
         setTouched({ name: false, phone: false, consent: false });
@@ -114,7 +116,7 @@ export function LeadForm({
         if (onSuccess) onSuccess(formData);
       }
     } catch {
-      ymGoal('form_send');
+      if (goalName) ymGoal(goalName);
       setFormData({ name: '', phone: '', question: '', consent: false });
       setSubmitted(false);
       setTouched({ name: false, phone: false, consent: false });

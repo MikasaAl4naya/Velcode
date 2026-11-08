@@ -116,7 +116,7 @@ export function Modal() {
             <h2 className="modal__title" id="leadModalTitle">
               Оставьте заявку
             </h2>
-            <p className="modal__subtitle">Мы обязательно свяжемся с вами</p>
+            <p className="modal__subtitle">Бесплатно проконсультируем и подберем для вас оптимальное решение</p>
           </div>
 
           <LeadForm
@@ -124,7 +124,8 @@ export function Modal() {
             theme="light"
             submitLabel="Отправить"
             submitButtonClass="btn--modal"
-            source={service ? (service.name || service.title || 'service') : 'contact_form'}
+            source={service ? (service.name || service.title || 'service') : 'modal_form'}
+            goalName="modal_lead_submit"
           />
         </div>
       </div>
