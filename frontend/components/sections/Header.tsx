@@ -55,7 +55,14 @@ export function Header({ currentPath = '/' }: HeaderProps) {
           className="header__logo"
           onClick={() => { if (pathname === '/') window.scrollTo({ top: 0, behavior: 'smooth' }); }}
         >
-          {COMPANY_CONFIG.brandName}
+          <img
+            src="/assets/logo.svg"
+            alt={COMPANY_CONFIG.brandName}
+            className="header__logo-img"
+            width="32"
+            height="20"
+          />
+          <span className="header__logo-text">{COMPANY_CONFIG.brandName}</span>
         </Link>
 
         <nav className="header__nav" id="headerNav" ref={navRef} aria-label="Основная навигация">

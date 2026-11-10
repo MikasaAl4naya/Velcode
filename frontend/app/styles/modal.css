@@ -148,7 +148,7 @@
   position: absolute;
   z-index: -1;
   inset: 0;
-  background: url('/assets/card-abstract-model.png') no-repeat -175% 250% / 120% auto;
+  background: url('/assets/card-abstract-model.png') no-repeat -175% 250% / 130% auto;
   pointer-events: none;
   opacity: 0.8;
 }

@@ -21,11 +21,28 @@
 }
 
 .header__logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
   margin-right: auto;
   font-size: 36px;
   font-weight: 300;
   line-height: 1;
-  letter-spacing: -0.72px;
+  letter-spacing: -0.02em;
+}
+
+.header__logo-img {
+  display: block;
+  height: 0.55em;
+  width: auto;
+  aspect-ratio: 39 / 24;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.header__logo-text {
+  display: inline-block;
+  transform: translateY(-0.11em);
 }
 
 .header__nav {
