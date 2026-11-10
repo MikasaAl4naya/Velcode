@@ -19,7 +19,7 @@ venv/bin/alembic upgrade head
 
 echo "=== Frontend: зависимости ==="
 cd frontend
-npm ci
+npm ci || (rm -rf node_modules && npm ci)
 echo "=== Frontend: сборка ==="
 NODE_OPTIONS='--max-old-space-size=1536' npm run build
 
