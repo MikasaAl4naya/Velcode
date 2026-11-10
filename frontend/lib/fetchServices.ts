@@ -12,6 +12,7 @@ export async function fetchServices(): Promise<ServiceData[]> {
     const data: Array<{
       id: number;
       title: string;
+      short_title: string | null;
       description: string;
       price_full: number;
       unit: string;
@@ -22,6 +23,7 @@ export async function fetchServices(): Promise<ServiceData[]> {
     return data.map((item, idx) => ({
       num: String(idx + 1).padStart(2, '0'),
       name: item.title,
+      short_title: item.short_title ?? undefined,
       desc: item.description,
       price: `от ${item.price_full.toLocaleString('ru-RU')} ₽`,
       unit: item.unit,

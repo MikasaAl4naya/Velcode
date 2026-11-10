@@ -42,6 +42,7 @@ class Service(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     title: Mapped[str] = mapped_column(String(255), nullable=False)
+    short_title: Mapped[str | None] = mapped_column(String(100), nullable=True)
     description: Mapped[str] = mapped_column(Text, default="")
     price_full: Mapped[int] = mapped_column(Integer, nullable=False)
     price_discount: Mapped[int | None] = mapped_column(Integer, nullable=True)

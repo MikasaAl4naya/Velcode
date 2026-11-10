@@ -153,6 +153,24 @@
   max-width: 500px;
 }
 
+/* Тег-кнопка в герое — выглядит как обычный тег, но кликабельна */
+.hero__tag-btn {
+  cursor: pointer;
+  border: none;
+  background: inherit;
+  font: inherit;
+  color: inherit;
+  padding: inherit;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+@media (hover: hover) {
+  .hero__tag-btn:hover {
+    background-color: var(--color-blue-pill);
+    color: #ffffff;
+  }
+}
+
 .hero__floating-card {
   display: flex;
   flex-direction: column;

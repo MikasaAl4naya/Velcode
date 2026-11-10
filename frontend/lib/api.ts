@@ -8,6 +8,7 @@ export type Category = {
 export type Service = {
   id: number
   title: string
+  short_title: string | null
   description: string
   price_full: number
   price_discount: number | null

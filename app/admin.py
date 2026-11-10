@@ -379,12 +379,13 @@ class ServiceAdmin(ModelView, model=Service):
     name_plural = "Услуги"
     icon = "fa-solid fa-list"
 
-    column_list = [Service.id, Service.title, Service.price_full, Service.is_featured, Service.sort_order]
+    column_list = [Service.id, Service.title, Service.short_title, Service.price_full, Service.is_featured, Service.sort_order]
     column_sortable_list = [Service.sort_order, Service.id]
     column_searchable_list = [Service.title]
 
     form_columns = [
         Service.title,
+        Service.short_title,
         Service.description,
         Service.price_full,
         Service.is_featured,
@@ -393,6 +394,7 @@ class ServiceAdmin(ModelView, model=Service):
     ]
     column_labels = {
         "title": "Название",
+        "short_title": "Сокращённое название (для плашки на главной)",
         "description": "Описание",
         "price_full": "Цена (₽)",
         "is_featured": "Фиолетовая карточка",

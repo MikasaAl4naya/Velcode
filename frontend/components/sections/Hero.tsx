@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useModal } from '@/hooks/useModal';
-import { HERO_TAGS } from '@/lib/siteData';
+import { HERO_TAGS, type ServiceData } from '@/lib/siteData';
 import { SplitText } from '@/components/ui/SplitText';
 import { Tag } from '@/components/ui/Tag';
 
@@ -12,11 +12,22 @@ const HeroModel = dynamic(
   { ssr: false }
 );
 
-export function Hero() {
+type HeroProps = {
+  services?: ServiceData[];
+};
+
+export function Hero({ services }: HeroProps) {
   const { openModal } = useModal();
   const heroRef = useRef<HTMLElement>(null);
   const torusRef = useRef<HTMLDivElement>(null);
   const [isTabletRatio, setIsTabletRatio] = useState(false);
+
+  // Формируем теги из услуг с short_title, либо из захардкоженных HERO_TAGS
+  const serviceTags = services
+    ?.filter((s) => s.short_title)
+    .map((s) => ({ label: s.short_title!, service: s }));
+
+  const hasDynamicTags = serviceTags && serviceTags.length > 0;
 
   useEffect(() => {
     const checkClearance = () => {
@@ -114,9 +125,20 @@ export function Hero() {
         {/* Нижняя единая линия: теги слева и карточка по одной оси */}
         <div className="hero__bottom-row">
           <div className="hero__tags">
-            {HERO_TAGS.map((tag) => (
-              <Tag key={tag}>{tag}</Tag>
-            ))}
+            {hasDynamicTags
+              ? serviceTags.map((tag) => (
+                  <Tag
+                    key={tag.label}
+                    as="button"
+                    className="hero__tag-btn"
+                    onClick={() => openModal(tag.service)}
+                  >
+                    {tag.label}
+                  </Tag>
+                ))
+              : HERO_TAGS.map((tag) => (
+                  <Tag key={tag}>{tag}</Tag>
+                ))}
           </div>
 
           <div className="hero__floating-card">

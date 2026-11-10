@@ -22,6 +22,7 @@ class ServiceOut(BaseModel):
 
     id: int
     title: str
+    short_title: str | None = None
     description: str
     price_full: int
     price_discount: int | None = None

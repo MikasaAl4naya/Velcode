@@ -2,6 +2,7 @@ export type ServiceData = {
   num: string;
   name?: string;
   title?: string;
+  short_title?: string;
   price?: string;
   unit?: string;
   theme: string;

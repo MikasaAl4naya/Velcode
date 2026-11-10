@@ -42,7 +42,7 @@ export default async function Page() {
     <SmoothWheelProvider>
       <Header currentPath="/" />
       <main className="page__main">
-        <Hero />
+        <Hero services={servicesItems} />
         <Services items={servicesItems} />
         <Advantages />
         <Portfolio items={portfolioItems} />
