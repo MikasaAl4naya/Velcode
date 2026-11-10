@@ -114,12 +114,8 @@ export function Hero() {
         {/* Нижняя единая линия: теги слева и карточка по одной оси */}
         <div className="hero__bottom-row">
           <div className="hero__tags">
-            {HERO_TAGS.map((row, idx) => (
-              <div key={idx} className="hero__tags-row">
-                {row.map((tag) => (
-                  <Tag key={tag}>{tag}</Tag>
-                ))}
-              </div>
+            {HERO_TAGS.map((tag) => (
+              <Tag key={tag}>{tag}</Tag>
             ))}
           </div>
 

@@ -147,12 +147,10 @@
 
 .hero__tags {
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
+  column-gap: 0;
   row-gap: 8px;
-}
-
-.hero__tags-row {
-  display: flex;
+  max-width: 500px;
 }
 
 .hero__floating-card {
