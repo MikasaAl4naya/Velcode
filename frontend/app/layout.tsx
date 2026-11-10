@@ -63,14 +63,6 @@ const schemaGraph = {
       email: COMPANY_CONFIG.email,
       telephone: COMPANY_CONFIG.phone,
       priceRange: '₽₽',
-      address: {
-        '@type': 'PostalAddress',
-        streetAddress: 'ул. Баррикад, д. 60/6, кв./офис 23',
-        addressLocality: 'Иркутск',
-        addressRegion: 'Иркутская область',
-        postalCode: '664019',
-        addressCountry: 'RU',
-      },
       sameAs: [
         COMPANY_CONFIG.telegramBot,
       ],
