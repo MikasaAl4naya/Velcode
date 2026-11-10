@@ -197,8 +197,22 @@ class UploadsManagerView(BaseView):
     name = "Управление загрузками"
     icon = "fa-solid fa-folder-open"
 
-    @expose("/uploads-manager", methods=["GET"])
-    async def uploads_page(self, request: Request) -> HTMLResponse:
+    @expose("/uploads-manager", methods=["GET", "POST"])
+    async def uploads_manager(self, request: Request) -> HTMLResponse | JSONResponse:
+        if request.method == "POST":
+            try:
+                data = await request.json()
+                name = data.get("name", "")
+                if not name or "/" in name or "\\" in name or name.startswith("."):
+                    return JSONResponse({"error": "invalid name"}, status_code=400)
+                target = UPLOADS_DIR / name
+                if not target.exists() or not target.is_file():
+                    return JSONResponse({"error": "not found"}, status_code=404)
+                target.unlink()
+                return JSONResponse({"ok": True})
+            except Exception:
+                return JSONResponse({"error": "server error"}, status_code=500)
+
         files = []
         if UPLOADS_DIR.exists():
             for f in sorted(UPLOADS_DIR.iterdir(), key=lambda x: x.stat().st_mtime, reverse=True):
@@ -234,11 +248,13 @@ class UploadsManagerView(BaseView):
             <style>
                 body {{ font-family: sans-serif; max-width: 960px; margin: 40px auto; padding: 0 20px; }}
                 h1 {{ font-size: 22px; margin-bottom: 8px; }}
-                .count {{ color: #6b7280; margin-bottom: 24px; font-size: 14px; }}
+                .top-bar {{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }}
+                .count {{ color: #6b7280; font-size: 14px; margin: 0; }}
                 table {{ width: 100%; border-collapse: collapse; }}
                 th {{ text-align: left; padding: 10px 12px; background: #f3f4f6; font-size: 13px; border-bottom: 2px solid #e5e7eb; }}
                 td {{ padding: 8px 12px; border-bottom: 1px solid #e5e7eb; font-size: 13px; vertical-align: middle; }}
                 tr:hover {{ background: #fafafa; }}
+                .btn-link {{ display: inline-block; padding: 6px 14px; background: #4f46e5; color: #fff; text-decoration: none; border-radius: 6px; font-size: 13px; }}
                 .back {{ display: inline-block; margin-bottom: 20px; color: #4f46e5; text-decoration: none; }}
                 .empty {{ color: #9ca3af; margin-top: 40px; text-align: center; }}
             </style>
@@ -246,13 +262,16 @@ class UploadsManagerView(BaseView):
         <body>
             <a href="/admin" class="back">← Назад в админку</a>
             <h1>Управление загрузками</h1>
-            <p class="count">Файлов: {len(files)}</p>
+            <div class="top-bar">
+                <p class="count">Файлов: {len(files)}</p>
+                <a href="/admin/upload" class="btn-link">+ Загрузить изображение</a>
+            </div>
             {"" if files else '<p class="empty">Папка uploads пуста</p>'}
             {"<table><thead><tr><th>Превью</th><th>Имя файла</th><th>Размер</th><th>Дата</th><th>Действия</th></tr></thead><tbody>" + rows + "</tbody></table>" if files else ""}
             <script>
             async function deleteFile(name) {{
                 if (!confirm('Удалить файл ' + name + '?')) return;
-                const r = await fetch('/admin/uploads-delete', {{
+                const r = await fetch('/admin/uploads-manager', {{
                     method: 'POST',
                     headers: {{'Content-Type': 'application/json'}},
                     body: JSON.stringify({{name}})
@@ -265,21 +284,6 @@ class UploadsManagerView(BaseView):
         </html>
         """
         return HTMLResponse(html)
-
-    @expose("/uploads-delete", methods=["POST"])
-    async def delete_file(self, request: Request) -> JSONResponse:
-        try:
-            data = await request.json()
-            name = data.get("name", "")
-            if not name or "/" in name or "\\" in name or name.startswith("."):
-                return JSONResponse({"error": "invalid name"}, status_code=400)
-            target = UPLOADS_DIR / name
-            if not target.exists() or not target.is_file():
-                return JSONResponse({"error": "not found"}, status_code=404)
-            target.unlink()
-            return JSONResponse({"ok": True})
-        except Exception:
-            return JSONResponse({"error": "server error"}, status_code=500)
 
 
 class LeadAdmin(ModelView, model=Lead):
