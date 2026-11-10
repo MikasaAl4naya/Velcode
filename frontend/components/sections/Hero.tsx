@@ -130,15 +130,32 @@ export function Hero({ services }: HeroProps) {
                   <Tag
                     key={tag.label}
                     as="button"
+                    type="button"
                     className="hero__tag-btn"
                     onClick={() => openModal(tag.service)}
                   >
                     {tag.label}
                   </Tag>
                 ))
-              : HERO_TAGS.map((tag) => (
-                  <Tag key={tag}>{tag}</Tag>
-                ))}
+              : HERO_TAGS.map((tag) => {
+                  const matchedService = services?.find(
+                    (s) =>
+                      s.short_title === tag ||
+                      s.name?.toLowerCase().includes(tag.toLowerCase()) ||
+                      tag.toLowerCase().includes(s.name?.toLowerCase() || '')
+                  );
+                  return (
+                    <Tag
+                      key={tag}
+                      as="button"
+                      type="button"
+                      className="hero__tag-btn"
+                      onClick={() => openModal(matchedService || null)}
+                    >
+                      {tag}
+                    </Tag>
+                  );
+                })}
           </div>
 
           <div className="hero__floating-card">

@@ -154,19 +154,22 @@
 }
 
 /* Тег-кнопка в герое — выглядит как обычный тег, но кликабельна */
+button.tag,
 .hero__tag-btn {
   cursor: pointer;
-  border: none;
-  background: inherit;
-  font: inherit;
-  color: inherit;
-  padding: inherit;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 300;
+  line-height: 1;
+  text-align: center;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 
 @media (hover: hover) {
+  button.tag:hover,
   .hero__tag-btn:hover {
     background-color: var(--color-blue-pill);
+    border-color: var(--color-blue-pill);
     color: #ffffff;
   }
 }
