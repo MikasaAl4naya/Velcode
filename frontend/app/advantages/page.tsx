@@ -1,12 +1,16 @@
+import type { Metadata } from 'next';
 import { Header } from '@/components/sections/Header';
 import { Advantages } from '@/components/sections/Advantages';
 import { Contacts } from '@/components/sections/Contacts';
 import { Footer } from '@/components/sections/Footer';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 
-export const metadata = {
+export const metadata: Metadata = {
   title: 'Преимущества — Велкод',
   description: 'Почему стоит выбрать студию Велкод для разработки сайта и автоматизации бизнеса.',
+  alternates: {
+    canonical: '/advantages',
+  },
 };
 
 export default function AdvantagesPage() {

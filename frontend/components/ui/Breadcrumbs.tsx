@@ -13,8 +13,24 @@ type BreadcrumbsProps = {
 export function Breadcrumbs({ items = [] }: BreadcrumbsProps) {
   if (!items || items.length === 0) return null;
 
+  const breadcrumbJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: items.map((item, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name: item.label,
+      item: item.href ? `https://velcode.ru${item.href}` : undefined,
+    })),
+  };
+
   return (
-    <nav className="breadcrumbs" aria-label="Хлебные крошки">
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
+      <nav className="breadcrumbs" aria-label="Хлебные крошки">
       {items.map((item, index) => {
         const isLast = item.current || index === items.length - 1;
 
@@ -37,6 +53,7 @@ export function Breadcrumbs({ items = [] }: BreadcrumbsProps) {
           </div>
         );
       })}
-    </nav>
+      </nav>
+    </>
   );
 }

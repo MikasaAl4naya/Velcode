@@ -4,8 +4,13 @@ import './globals.css';
 import { ModalProvider } from '@/components/ModalProvider';
 import { SvgSprite } from '@/components/ui/SvgSprite';
 import { CookieBanner } from '@/components/ui/CookieBanner';
+import { COMPANY_CONFIG } from '@/lib/company';
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://velcode.ru'),
+  alternates: {
+    canonical: '/',
+  },
   icons: {
     icon: [
       { url: '/favicon.ico' },
@@ -25,12 +30,82 @@ export const metadata: Metadata = {
     url: 'https://velcode.ru',
     locale: 'ru_RU',
     type: 'website',
+    siteName: 'Велкод',
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'Велкод — разработка сайтов и автоматизация бизнеса',
+      },
+    ],
   },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Велкод — разработка сайтов и автоматизация бизнеса',
+    description:
+      'Разработка сайтов под ключ, настройка рекламы и автоматизация бизнеса в Иркутске.',
+    images: ['/og-image.png'],
+  },
+};
+
+const schemaGraph = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': ['Organization', 'ProfessionalService'],
+      '@id': 'https://velcode.ru/#organization',
+      name: COMPANY_CONFIG.brandName,
+      legalName: COMPANY_CONFIG.ipFullName,
+      url: 'https://velcode.ru',
+      logo: 'https://velcode.ru/apple-touch-icon.png',
+      image: 'https://velcode.ru/apple-touch-icon.png',
+      email: COMPANY_CONFIG.email,
+      telephone: COMPANY_CONFIG.phone,
+      priceRange: '₽₽',
+      address: {
+        '@type': 'PostalAddress',
+        streetAddress: 'ул. Баррикад, д. 60/6, кв./офис 23',
+        addressLocality: 'Иркутск',
+        addressRegion: 'Иркутская область',
+        postalCode: '664019',
+        addressCountry: 'RU',
+      },
+      sameAs: [
+        COMPANY_CONFIG.telegramBot,
+      ],
+      contactPoint: {
+        '@type': 'ContactPoint',
+        telephone: COMPANY_CONFIG.phone,
+        contactType: 'customer service',
+        areaServed: 'RU',
+        availableLanguage: 'Russian',
+      },
+    },
+    {
+      '@type': 'WebSite',
+      '@id': 'https://velcode.ru/#website',
+      url: 'https://velcode.ru',
+      name: 'Велкод — разработка сайтов и автоматизация бизнеса',
+      description:
+        'Разработка сайтов под ключ, реклама и автоматизация бизнеса в Иркутске. Битрикс24, 1С, чат-боты и ИИ.',
+      publisher: {
+        '@id': 'https://velcode.ru/#organization',
+      },
+      inLanguage: 'ru-RU',
+    },
+  ],
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ru">
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaGraph) }}
+        />
+      </head>
       <body className="page">
         <SvgSprite />
         <ModalProvider>

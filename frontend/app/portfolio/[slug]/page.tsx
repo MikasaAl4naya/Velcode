@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { Header } from '@/components/sections/Header';
 import { Contacts } from '@/components/sections/Contacts';
@@ -39,13 +40,28 @@ export async function generateMetadata({
   params,
 }: {
   params: Promise<{ slug: string }>;
-}) {
+}): Promise<Metadata> {
   const { slug } = await params;
   const item = await fetchCase(slug);
   if (!item) return {};
+  const caseImage = item.hero_image_url || item.image_url || '/og-image.png';
   return {
     title: `${item.title} — Велкод`,
     description: item.description || `Кейс студии Велкод: ${item.title}`,
+    alternates: {
+      canonical: `/portfolio/${slug}`,
+    },
+    openGraph: {
+      title: `${item.title} — Велкод`,
+      description: item.description || `Кейс студии Велкод: ${item.title}`,
+      url: `/portfolio/${slug}`,
+      images: [
+        {
+          url: caseImage,
+          alt: item.title,
+        },
+      ],
+    },
   };
 }
 

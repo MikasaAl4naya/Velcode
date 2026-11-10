@@ -26,9 +26,11 @@ export type FaqItem = {
 
 export type PortfolioItem = {
   id: number
+  slug?: string | null
   title: string
   description: string
   image_url: string | null
+  hero_image_url?: string | null
   site_url: string | null
   tags: string | null
   sort_order: number

@@ -1,11 +1,15 @@
+import type { Metadata } from 'next';
 import { Header } from '@/components/sections/Header';
 import { Contacts } from '@/components/sections/Contacts';
 import { Footer } from '@/components/sections/Footer';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 
-export const metadata = {
+export const metadata: Metadata = {
   title: 'Контакты — Велкод',
   description: 'Свяжитесь со студией Велкод. Телефон, email, Telegram, MAX.',
+  alternates: {
+    canonical: '/contacts',
+  },
 };
 
 export default function ContactsPage() {

@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Header } from '@/components/sections/Header';
 import { Contacts } from '@/components/sections/Contacts';
@@ -7,9 +8,12 @@ import { Tag } from '@/components/ui/Tag';
 import { SplitText } from '@/components/ui/SplitText';
 import { FadeImage } from '@/components/ui/FadeImage';
 
-export const metadata = {
+export const metadata: Metadata = {
   title: 'Портфолио — Велкод',
   description: 'Примеры выполненных проектов студии Велкод: сайты, интеграции, чат-боты.',
+  alternates: {
+    canonical: '/portfolio',
+  },
 };
 
 interface PortfolioItem {
