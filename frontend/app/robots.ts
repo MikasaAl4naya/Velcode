@@ -12,10 +12,8 @@ export default function robots(): MetadataRoute.Robots {
         '/privacy',
         '/consent',
         '/cookies',
-        '/404',
       ],
     },
     sitemap: 'https://velcode.ru/sitemap.xml',
-    host: 'https://velcode.ru',
   };
 }

@@ -55,7 +55,7 @@ const schemaGraph = {
     {
       '@type': ['Organization', 'ProfessionalService'],
       '@id': 'https://velcode.ru/#organization',
-      name: COMPANY_CONFIG.brandName,
+      name: 'Велкод',
       legalName: COMPANY_CONFIG.ipFullName,
       url: 'https://velcode.ru',
       logo: 'https://velcode.ru/apple-touch-icon.png',
@@ -63,6 +63,26 @@ const schemaGraph = {
       email: COMPANY_CONFIG.email,
       telephone: COMPANY_CONFIG.phone,
       priceRange: '₽₽',
+      address: {
+        '@type': 'PostalAddress',
+        addressLocality: 'Иркутск',
+        addressRegion: 'Иркутская область',
+        addressCountry: 'RU',
+      },
+      openingHoursSpecification: [
+        {
+          '@type': 'OpeningHoursSpecification',
+          dayOfWeek: [
+            'Monday',
+            'Tuesday',
+            'Wednesday',
+            'Thursday',
+            'Friday',
+          ],
+          opens: '10:00',
+          closes: '18:00',
+        },
+      ],
       sameAs: [
         COMPANY_CONFIG.telegramBot,
       ],

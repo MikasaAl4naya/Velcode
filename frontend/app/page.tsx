@@ -13,9 +13,11 @@ const API_BASE =
   process.env.NEXT_PUBLIC_API_URL ||
   'http://127.0.0.1:8000';
 
+export const revalidate = 3600;
+
 async function fetchPortfolioItems(): Promise<PortfolioItem[]> {
   try {
-    const res = await fetch(`${API_BASE}/api/portfolio?main=true`, { cache: 'no-store' });
+    const res = await fetch(`${API_BASE}/api/portfolio?main=true`, { next: { revalidate: 3600 } });
     if (!res.ok) return [];
     const data = await res.json();
     return data

@@ -64,7 +64,7 @@ async function apiFetch(path: string, init?: RequestInit) {
 
 export async function getCategories(): Promise<Category[]> {
   try {
-    const res = await apiFetch('/api/categories', { cache: 'no-store' })
+    const res = await apiFetch('/api/categories', { next: { revalidate: 3600 } })
     if (!res.ok) return []
     return res.json()
   } catch {
@@ -74,7 +74,7 @@ export async function getCategories(): Promise<Category[]> {
 
 export async function getServices(): Promise<Service[]> {
   try {
-    const res = await apiFetch('/api/services', { cache: 'no-store' })
+    const res = await apiFetch('/api/services', { next: { revalidate: 3600 } })
     if (!res.ok) return []
     return res.json()
   } catch {
@@ -84,7 +84,7 @@ export async function getServices(): Promise<Service[]> {
 
 export async function getFaq(): Promise<FaqItem[]> {
   try {
-    const res = await apiFetch('/api/faq', { cache: 'no-store' })
+    const res = await apiFetch('/api/faq', { next: { revalidate: 3600 } })
     if (!res.ok) return []
     return res.json()
   } catch {
@@ -94,7 +94,7 @@ export async function getFaq(): Promise<FaqItem[]> {
 
 export async function getPortfolio(): Promise<PortfolioItem[]> {
   try {
-    const res = await apiFetch('/api/portfolio', { cache: 'no-store' })
+    const res = await apiFetch('/api/portfolio', { next: { revalidate: 3600 } })
     if (!res.ok) return []
     return res.json()
   } catch {

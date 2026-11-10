@@ -7,7 +7,7 @@ const API_BASE =
 
 export async function fetchServices(): Promise<ServiceData[]> {
   try {
-    const res = await fetch(`${API_BASE}/api/services`, { cache: 'no-store' });
+    const res = await fetch(`${API_BASE}/api/services`, { next: { revalidate: 3600 } });
     if (!res.ok) return SERVICES_DATA;
     const data: Array<{
       id: number;
