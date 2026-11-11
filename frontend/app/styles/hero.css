@@ -150,7 +150,7 @@
   flex-wrap: wrap;
   column-gap: 0;
   row-gap: 8px;
-  max-width: 500px;
+  max-width: 560px;
 }
 
 /* Тег-кнопка в герое — выглядит как обычный тег, но кликабельна */
