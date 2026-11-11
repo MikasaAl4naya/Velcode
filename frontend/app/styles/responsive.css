@@ -23,6 +23,19 @@
   .advantages__row-head {
     width: 35%;
   }
+
+   /* Hero: плашку убираем, теги на всю ширину */
+  .hero__info {
+    width: 100%;
+  }
+
+  .hero__floating-card {
+    display: none;
+  }
+
+  .hero__tags {
+    width: 100%;
+  }
 }
 
 /* ---------- LG (< 992px: Планшеты) ---------- */
@@ -85,19 +98,6 @@
     opacity: 1;
     transform: none;
     transition-delay: 0.1s;
-  }
-
-  /* Hero: плашку убираем, теги на всю ширину */
-  .hero__info {
-    width: 100%;
-  }
-
-  .hero__floating-card {
-    display: none;
-  }
-
-  .hero__tags {
-    width: 100%;
   }
 
 
