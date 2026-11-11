@@ -13,8 +13,8 @@ export const COMPANY_CONFIG = {
   email: 'velcode@inbox.ru',
   phone: '+7 (924) 534 51 82',
   phoneLink: '+79245345182',
-  telegramBot: 'https://t.me/VelcodeBot',
-  maxBot: 'https://max.ru/id381914585931_bot',
+  telegramBot: 'https://t.me/VelcodeIRK',
+  maxBot: 'https://max.ru/u/f9LHodD0cOIXsNCHlykOi9hpG3Q_0_ZRaXPmYzt9Yz_UgBRgZXjmEQBJXWg',
   defaultSiteHost: 'velcode.ru',
 };
 
