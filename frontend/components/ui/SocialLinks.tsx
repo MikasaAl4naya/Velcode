@@ -24,7 +24,7 @@ export function SocialLinks({
         target="_blank"
         rel="noopener noreferrer"
         className={itemClassName}
-        aria-label="MAX чат-бот"
+        aria-label="MAX"
         title="Написать в MAX"
         onClick={() => ymGoal(`${source}_click_max`)}
       >
