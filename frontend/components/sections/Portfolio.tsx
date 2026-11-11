@@ -137,7 +137,7 @@ export function Portfolio({ items }: Props) {
             <SplitText text="Наши кейсы" />
           </h2>
           <p className="portfolio__description">
-            Мы предлагаем широкий спектр digital-услуг: от создания чат-ботов до сложных сайтов с интеграциями 1С и Битрикс.
+            Сайты, интеграции, 1C и Битрикс24, автоматизация, ИИ, аналитика. Показываем, как идея превращается в систему.
           </p>
           <Link href="/portfolio" className="btn btn--service-link portfolio__more">
             <span className="btn__round-icon">
