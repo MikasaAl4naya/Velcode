@@ -43,6 +43,9 @@ export type LeadCreate = {
   question?: string
   source?: string
   consent: boolean
+  website?: string
+  js_token?: string
+  form_opened_at?: number
 }
 
 // Server components use INTERNAL_API_URL (direct to FastAPI, never exposed to browser).

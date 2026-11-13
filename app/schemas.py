@@ -67,6 +67,10 @@ class LeadCreate(BaseModel):
     source: str = "contact_form"
     # Согласие с политикой обработки персональных данных — обязательный чекбокс на фронте
     consent: bool
+    # Защита от спама (Honeypot + JS-токен + тайминг, как в vangerrf)
+    website: str | None = None
+    js_token: str | None = None
+    form_opened_at: float | int | None = None
 
     @field_validator("name")
     @classmethod

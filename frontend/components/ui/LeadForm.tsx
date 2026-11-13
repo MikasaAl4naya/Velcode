@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useModal } from '@/hooks/useModal';
 import { ymGoal } from '@/lib/ym';
@@ -53,6 +53,14 @@ export function LeadForm({
     consent: false,
   });
 
+  // Защита от спама (как в vangerrf): honeypot и время открытия формы
+  const [website, setWebsite] = useState('');
+  const formOpenedAtRef = useRef<number>(0);
+
+  useEffect(() => {
+    formOpenedAtRef.current = Math.floor(Date.now() / 1000);
+  }, []);
+
   const [touched, setTouched] = useState({
     name: false,
     phone: false,
@@ -95,6 +103,7 @@ export function LeadForm({
     setIsSubmitting(true);
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? '';
+      const openedAt = formOpenedAtRef.current || Math.floor(Date.now() / 1000);
       const res = await fetch(`${apiUrl}/api/v1/leads`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -104,12 +113,17 @@ export function LeadForm({
           question: formData.question,
           consent: formData.consent,
           source,
+          website,
+          js_token: 'front_js_passed',
+          form_opened_at: openedAt,
         }),
       });
 
       if (res.ok) {
         if (goalName) ymGoal(goalName);
         setFormData({ name: '', phone: '', question: '', consent: false });
+        setWebsite('');
+        formOpenedAtRef.current = Math.floor(Date.now() / 1000);
         setSubmitted(false);
         setTouched({ name: false, phone: false, consent: false });
         if (openSuccessModal) openSuccessModal();
@@ -118,6 +132,8 @@ export function LeadForm({
     } catch {
       if (goalName) ymGoal(goalName);
       setFormData({ name: '', phone: '', question: '', consent: false });
+      setWebsite('');
+      formOpenedAtRef.current = Math.floor(Date.now() / 1000);
       setSubmitted(false);
       setTouched({ name: false, phone: false, consent: false });
       if (openSuccessModal) openSuccessModal();
@@ -134,6 +150,32 @@ export function LeadForm({
 
   return (
     <form id={id} className={formClasses} onSubmit={handleSubmit} noValidate>
+      {/* Honeypot поле (vangerrf): скрыто от реальных пользователей, боты его заполняют */}
+      <div
+        style={{
+          position: 'absolute',
+          left: '-9999px',
+          top: '-9999px',
+          opacity: 0,
+          height: 0,
+          width: 0,
+          overflow: 'hidden',
+          pointerEvents: 'none',
+        }}
+        aria-hidden="true"
+      >
+        <label htmlFor={`${id || 'leadForm'}-website`}>Website</label>
+        <input
+          id={`${id || 'leadForm'}-website`}
+          type="text"
+          name="website"
+          value={website}
+          onChange={(e) => setWebsite(e.target.value)}
+          tabIndex={-1}
+          autoComplete="off"
+        />
+      </div>
+
       <div className="lead-form__fields">
         <label className={`lead-form__field ${isNameValid ? 'is-valid' : ''} ${showNameError ? 'is-invalid' : ''}`}>
           <input
