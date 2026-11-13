@@ -337,6 +337,7 @@ class PortfolioAdmin(ModelView, model=Portfolio):
         Portfolio.title,
         Portfolio.description,
         Portfolio.what_was_done,
+        Portfolio.screenshots,
         Portfolio.image_url,
         Portfolio.hero_image_url,
         Portfolio.site_url,
@@ -351,6 +352,7 @@ class PortfolioAdmin(ModelView, model=Portfolio):
         "site_url": "URL в строке браузер-мокапа (напр. trattoria.ru/)",
         "tags_list": "Теги",
         "what_was_done": "Что было сделано (абзацы через пустую строку)",
+        "screenshots": "Скриншоты проекта (по одному URL на строку, неограниченно)",
         "show_on_main": "Показывать на главной странице",
         "sort_order": "Порядок",
     }

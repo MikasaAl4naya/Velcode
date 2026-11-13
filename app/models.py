@@ -107,6 +107,7 @@ class Portfolio(Base):
     # Строка-кэш тегов для API (автозаполняется из tags_list при сохранении в админке)
     tags: Mapped[str | None] = mapped_column(String(500), nullable=True)
     what_was_done: Mapped[str | None] = mapped_column(Text, nullable=True)
+    screenshots: Mapped[str | None] = mapped_column(Text, nullable=True)
     show_on_main: Mapped[bool] = mapped_column(Boolean, default=False)
     sort_order: Mapped[int] = mapped_column(Integer, default=0)
 

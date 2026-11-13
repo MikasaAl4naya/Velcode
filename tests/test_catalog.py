@@ -63,4 +63,29 @@ async def test_portfolio_list(client, db_session):
     body = response.json()
     assert len(body) == 2
     assert body[0]["title"] == "Сайт А"
+    assert body[0]["screenshots"] == []
     assert body[1]["site_url"] == "https://example.com"
+
+
+@pytest.mark.asyncio
+async def test_portfolio_screenshots_parsed_as_list(client, db_session):
+    async with db_session() as session:
+        item = Portfolio(
+            slug="test-case",
+            title="Кейс со скриншотами",
+            description="Описание",
+            screenshots="/uploads/screen1.png\n/uploads/screen2.png\n/uploads/screen3.png",
+            sort_order=1,
+        )
+        session.add(item)
+        await session.commit()
+
+    response = await client.get("/api/portfolio/test-case")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["title"] == "Кейс со скриншотами"
+    assert data["screenshots"] == [
+        "/uploads/screen1.png",
+        "/uploads/screen2.png",
+        "/uploads/screen3.png",
+    ]

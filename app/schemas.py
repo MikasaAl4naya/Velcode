@@ -54,8 +54,31 @@ class PortfolioOut(BaseModel):
     site_url: str | None = None
     tags: str | None = None
     what_was_done: str | None = None
+    screenshots: list[str] = []
     show_on_main: bool = False
     sort_order: int
+
+    @field_validator("screenshots", mode="before")
+    @classmethod
+    def parse_screenshots(cls, v: object) -> list[str]:
+        if not v:
+            return []
+        if isinstance(v, list):
+            return [str(x).strip() for x in v if str(x).strip()]
+        if isinstance(v, str):
+            raw = v.strip()
+            if not raw:
+                return []
+            if raw.startswith("[") and raw.endswith("]"):
+                try:
+                    import json
+                    parsed = json.loads(raw)
+                    if isinstance(parsed, list):
+                        return [str(x).strip() for x in parsed if str(x).strip()]
+                except Exception:
+                    pass
+            return [line.strip() for line in raw.splitlines() if line.strip()]
+        return []
 
 
 # ---------- Заявки ----------

@@ -20,6 +20,7 @@ interface CaseItem {
   site_url: string | null;
   tags: string | null;
   what_was_done: string | null;
+  screenshots?: string[];
 }
 
 async function fetchCase(slug: string): Promise<CaseItem | null> {

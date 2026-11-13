@@ -34,6 +34,7 @@ export type PortfolioItem = {
   hero_image_url?: string | null
   site_url: string | null
   tags: string | null
+  screenshots?: string[]
   sort_order: number
 }
 
