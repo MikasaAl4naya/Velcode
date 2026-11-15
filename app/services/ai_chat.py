@@ -125,6 +125,14 @@ class AiChatService:
             parts.append("### Контакты:\n" + contacts_str)
         return "\n".join(parts)
 
+    def reload_kb(self) -> None:
+        """Сбрасывает кэш и принудительно перечитывает базу знаний с диска."""
+        self._bm25 = None
+        self._chunks = []
+        self._core_summary = ""
+        self._cached_prompt = None
+        self._ensure_kb_index()
+
     def _ensure_kb_index(self) -> None:
         if self._bm25 is not None and self._chunks:
             return

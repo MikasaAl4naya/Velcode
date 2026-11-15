@@ -350,6 +350,13 @@ async def rebuild_knowledge_base(
         with open(md_file, "w", encoding="utf-8") as f:
             f.write(md_content)
 
+    # Принудительно инвалидируем кэш в сервисе ИИ, чтобы он сразу подхватил новые чанки без перезапуска
+    try:
+        from app.services.ai_chat import ai_chat_service
+        ai_chat_service.reload_kb()
+    except Exception as e:
+        print(f"  [AI] Не удалось сбросить in-memory кэш ai_chat_service: {e}")
+
     return {
         "services_count": len(data["services"]),
         "projects_count": len(data["projects"]),
