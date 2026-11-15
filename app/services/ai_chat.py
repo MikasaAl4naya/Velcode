@@ -167,10 +167,6 @@ class AiChatService:
                         if formatted_phone or clean_name:
                             prefill = ChatPrefill(phone=formatted_phone, name=clean_name)
 
-                    lower_text = text.lower()
-                    if any(k in lower_text for k in ["форму ниже", "форма открыта", "форма заявки открыта"]):
-                        show_lead_form = True
-
                     actions: list[ChatAction] = []
                     if show_lead_form:
                         actions = []
