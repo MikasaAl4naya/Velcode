@@ -33,7 +33,6 @@ const STORAGE_MSGS_KEY = 'velcode_ai_chat_messages_v1';
 const STORAGE_OPEN_KEY = 'velcode_ai_chat_open_v1';
 const STORAGE_TOPIC_KEY = 'velcode_ai_chat_topic_v1';
 const STORAGE_PROFILE_KEY = 'velcode_ai_chat_profile_v1';
-const STORAGE_DEBUG_KEY = 'velcode_ai_debug_mode';
 const MAX_INPUT_LENGTH = 300;
 
 /**
@@ -83,7 +82,6 @@ export function AiChatWidget() {
   const [userProfile, setUserProfile] = useState<{ name?: string; phone?: string }>({});
   const [leadSent, setLeadSent] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
-  const [isDebugMode, setIsDebugMode] = useState(false);
   const [faqList, setFaqList] = useState<FaqItem[]>([]);
 
   const chatBodyRef = useRef<HTMLDivElement>(null);
@@ -110,29 +108,9 @@ export function AiChatWidget() {
       ? faqList.slice(0, 3).map((f) => f.question)
       : DEFAULT_FREQUENT_QUESTIONS;
 
-  // Восстановление истории чата, состояния открытости и проверка режима дебага (?ai_debug=1)
+  // Восстановление истории чата и состояния открытости
   useEffect(() => {
     try {
-      const urlParams = new URLSearchParams(window.location.search);
-      const debugParam = urlParams.get('ai_debug') ?? urlParams.get('debug_ai');
-
-      let debugActive = false;
-      if (debugParam === '1' || debugParam === 'true') {
-        localStorage.setItem(STORAGE_DEBUG_KEY, '1');
-        debugActive = true;
-      } else if (debugParam === '0' || debugParam === 'false') {
-        localStorage.removeItem(STORAGE_DEBUG_KEY);
-        debugActive = false;
-      } else {
-        debugActive = localStorage.getItem(STORAGE_DEBUG_KEY) === '1';
-      }
-
-      setIsDebugMode(debugActive);
-
-      if (!debugActive) {
-        return;
-      }
-
       const savedMsgs = localStorage.getItem(STORAGE_MSGS_KEY);
       if (savedMsgs) {
         const parsed = JSON.parse(savedMsgs);
@@ -377,8 +355,8 @@ export function AiChatWidget() {
     setMessages((prev) => [...prev, successMsg]);
   };
 
-  // Виджет рендерится ТОЛЬКО если активирован режим дебага (?ai_debug=1)
-  if (!isMounted || !isDebugMode) {
+  // Виджет рендерится всегда после монтирования в браузере
+  if (!isMounted) {
     return null;
   }
 

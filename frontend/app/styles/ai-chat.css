@@ -5,19 +5,19 @@
 /* ---------- Плавающая кнопка вызова (лаунчер) ---------- */
 .ai-widget-launcher {
   position: fixed;
-  bottom: 24px;
-  right: 24px;
+  bottom: 28px;
+  right: 28px;
   z-index: 990;
   display: flex;
   align-items: center;
-  gap: 10px;
-  height: 52px;
-  padding: 0 20px 0 12px;
+  gap: 12px;
+  height: 60px;
+  padding: 0 24px 0 14px;
   background: var(--color-dark, #171819);
   color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: var(--radius-btn, 9999px);
-  box-shadow: 0 10px 28px -4px rgba(23, 24, 25, 0.28), 0 4px 12px rgba(83, 102, 164, 0.25);
+  box-shadow: 0 12px 32px -4px rgba(23, 24, 25, 0.32), 0 6px 18px rgba(125, 152, 240, 0.28);
   cursor: pointer;
   transition: transform 0.25s var(--ease-out, ease), box-shadow 0.25s ease, background-color 0.25s ease;
   user-select: none;
@@ -25,8 +25,8 @@
 }
 
 .ai-widget-launcher:hover {
-  transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 14px 32px -4px rgba(23, 24, 25, 0.35), 0 6px 16px rgba(125, 152, 240, 0.35);
+  transform: translateY(-3px) scale(1.03);
+  box-shadow: 0 16px 36px -4px rgba(23, 24, 25, 0.4), 0 8px 24px rgba(125, 152, 240, 0.42);
   background: #202224;
 }
 
@@ -36,18 +36,18 @@
 
 .ai-widget-launcher__orb {
   position: relative;
-  width: 28px;
-  height: 28px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
   background: radial-gradient(circle at 35% 35%, #ffffff 0%, #f0f3ff 25%, #a4b6f4 60%, #7d98f0 85%, #5366a4 100%);
-  box-shadow: 0 0 12px rgba(125, 152, 240, 0.55);
+  box-shadow: 0 0 14px rgba(125, 152, 240, 0.65);
   animation: ai-orb-glow 3s ease-in-out infinite alternate;
   flex-shrink: 0;
 }
 
 .ai-widget-launcher__text {
-  font-size: 15px;
-  font-weight: 500;
+  font-size: 16px;
+  font-weight: 600;
   letter-spacing: -0.01em;
 }
 
@@ -655,6 +655,12 @@
     right: 16px;
     height: 48px;
     padding: 0 16px 0 10px;
+    gap: 10px;
+  }
+
+  .ai-widget-launcher__orb {
+    width: 26px;
+    height: 26px;
   }
 
   .ai-widget-launcher__text {
