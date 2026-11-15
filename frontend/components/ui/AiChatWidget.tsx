@@ -225,10 +225,20 @@ export function AiChatWidget() {
       sender: 'user',
       text: cappedText,
     };
-    // Очищаем кнопки действий из всех предыдущих сообщений (если пользователь проигнорировал их и пишет дальше)
-    const sanitizedPrevious = messages.map((m) =>
-      m.actions && m.actions.length > 0 ? { ...m, actions: undefined } : m
-    );
+
+    // Если предыдущая заявка уже была отправлена, а пользователь пишет дальше — начинаем новый чистый диалог
+    const baseMessages = leadSent ? [] : messages;
+    if (leadSent) {
+      setLeadSent(false);
+      setChatTopic('');
+    }
+
+    // Очищаем кнопки действий и показ формы из всех предыдущих сообщений (если пользователь пишет дальше)
+    const sanitizedPrevious = baseMessages.map((m) => ({
+      ...m,
+      actions: undefined,
+      showLeadForm: false,
+    }));
     const nextMessages = [...sanitizedPrevious, userMsg];
     setMessages(nextMessages);
     setIsTyping(true);
@@ -534,12 +544,25 @@ export function AiChatWidget() {
     }
   };
 
+  const handleResetChat = () => {
+    setMessages([]);
+    setChatTopic('');
+    setLeadSent(false);
+    setInputText('');
+    try {
+      localStorage.removeItem(STORAGE_MSGS_KEY);
+      localStorage.removeItem(STORAGE_TOPIC_KEY);
+    } catch {
+      // ignore
+    }
+  };
+
   const handleLeadSuccess = (data: { name: string; phone: string }) => {
     setLeadSent(true);
     const successMsg: Message = {
       id: `bot-done-${Date.now()}`,
       sender: 'assistant',
-      text: `Спасибо${data.name ? ', ' + data.name : ''}! Ваша заявка успешно принята. Специалист перезвонит вам по номеру ${data.phone} в рабочее время (Пн-Пт с 10:00 до 18:00). Чат завершен.`,
+      text: `Спасибо${data.name ? ', ' + data.name : ''}! Ваша заявка успешно принята. Специалист свяжется с вами по номеру ${data.phone} в рабочее время (Пн-Пт с 10:00 до 18:00).`,
     };
     setMessages((prev) => [...prev, successMsg]);
   };
@@ -578,21 +601,39 @@ export function AiChatWidget() {
           role="dialog"
           aria-label="Чат с ИИ-консультантом Велкод"
         >
-          {/* Шапка чата с заголовком и крестиком закрытия */}
+          {/* Шапка чата с заголовком, кнопкой очистки и крестиком закрытия */}
           <header className="ai-chat-header">
             <span className="ai-chat-header__title">ИИ-консультант</span>
-            <button
-              type="button"
-              className="ai-chat-header__btn ai-chat-header__btn--close"
-              onClick={handleToggle}
-              title="Закрыть чат"
-              aria-label="Закрыть чат"
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="18" y1="6" x2="6" y2="18" />
-                <line x1="6" y1="6" x2="18" y2="18" />
-              </svg>
-            </button>
+            <div className="ai-chat-header__actions">
+              {messages.length > 0 && (
+                <button
+                  type="button"
+                  className="ai-chat-header__btn"
+                  onClick={handleResetChat}
+                  title="Начать новый диалог"
+                  aria-label="Начать новый диалог"
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+                    <path d="M21 3v5h-5" />
+                    <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+                    <path d="M8 16H3v5" />
+                  </svg>
+                </button>
+              )}
+              <button
+                type="button"
+                className="ai-chat-header__btn ai-chat-header__btn--close"
+                onClick={handleToggle}
+                title="Закрыть чат"
+                aria-label="Закрыть чат"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </div>
           </header>
 
           {/* Тело чата */}
@@ -640,7 +681,7 @@ export function AiChatWidget() {
                       <div className="ai-msg__text">{renderMessageContent(msg.text)}</div>
 
                       {/* Полноценная форма LeadForm со скрытым вопросом, плавающими лейблами и согласием на обработку ПД */}
-                      {msg.showLeadForm && !leadSent && (
+                      {msg.showLeadForm && !leadSent && idx === messages.length - 1 && (
                         <div className="ai-msg__lead-wrapper" style={{ width: '100%' }}>
                           <LeadForm
                             id={`chat-lead-${msg.id}`}
@@ -678,6 +719,28 @@ export function AiChatWidget() {
                     </div>
                   </div>
                 ))}
+
+                {/* Карточка завершения диалога после успешной отправки заявки */}
+                {leadSent && (
+                  <div className="ai-lead-completed-card">
+                    <div className="ai-lead-completed-badge">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                      <span>Заявка успешно отправлена</span>
+                    </div>
+                    <p className="ai-lead-completed-text">
+                      Менеджер получил ваши контакты и свяжется с вами. Хотите обсудить другой проект или задать вопрос?
+                    </p>
+                    <button
+                      type="button"
+                      className="btn btn--primary-lg ai-lead-restart-btn"
+                      onClick={handleResetChat}
+                    >
+                      <span>Начать новый диалог</span>
+                    </button>
+                  </div>
+                )}
 
                 {/* Индикатор набора текста */}
                 {isTyping && (

@@ -75,15 +75,35 @@ def _is_152_fz_query(text: str) -> bool:
 
 def _detect_topic(text: str, current_topic: str | None = None) -> str:
     q = text.lower()
-    # Приветствия / подтверждения не меняют уже установленную тему
-    if current_topic and any(w in q for w in ["привет", "здравствуй", "добрый", "спасибо", "ясно", "понял", "хорошо", "ок"]):
-        return current_topic
 
+    # 1. Если тема уже есть — проверяем дополнения и уточнения
+    if current_topic and current_topic != "Консультация по услугам":
+        t_low = current_topic.lower()
+        if any(w in q for w in ["со своим дизайн", "свой дизайн", "своим макет", "готовый дизайн", "свой макет"]):
+            if "дизайн" not in t_low:
+                return f"{current_topic} со своим дизайном"
+        if any(w in q for w in ["1с", "1c"]) and "1с" not in t_low:
+            return f"{current_topic} с 1С"
+        if any(w in q for w in ["битрикс", "bitrix"]) and "битрикс" not in t_low:
+            return f"{current_topic} с Битрикс24"
+        if any(w in q for w in ["каталог", "товары", "корзин"]) and "каталог" not in t_low and "магазин" not in t_low:
+            return f"{current_topic} с каталогом"
+        if any(w in q for w in ["срочно", "быстро"]) and "срочно" not in t_low:
+            return f"{current_topic} (срочно)"
+        # Приветствия / подтверждения не меняют уже установленную тему
+        if any(w in q for w in ["привет", "здравствуй", "добрый", "спасибо", "ясно", "понял", "хорошо", "ок"]):
+            return current_topic
+
+    # 2. Первичное определение темы по ключевым словам
     if any(w in q for w in ["магазин", "каталог", "корзин", "товар", "e-commerce"]):
         if any(w in q for w in ["1с", "1c"]):
             return "Интернет-магазин с интеграцией 1С"
+        if any(w in q for w in ["со своим дизайн", "свой дизайн"]):
+            return "Интернет-магазин со своим дизайном"
         return "Разработка интернет-магазина"
     if any(w in q for w in ["лендинг", "одностранич"]):
+        if any(w in q for w in ["со своим дизайн", "свой дизайн"]):
+            return "Лендинг со своим дизайном"
         return "Разработка лендинга"
     if any(w in q for w in ["корпоратив", "визитк"]):
         return "Корпоративный сайт"
@@ -105,8 +125,10 @@ def _detect_topic(text: str, current_topic: str | None = None) -> str:
         return "Кастомная веб-разработка и интеграции"
     if any(w in q for w in ["гарант", "договор"]):
         return "Вопрос по договору и гарантиям"
-    if any(w in q for w in ["стоим", "цен", "сколько", "расчет", "прайс"]):
-        return "Расчет стоимости разработки"
+    if any(w in q for w in ["стоим", "цен", "сколько", "расчет", "прайс", "под ключ"]):
+        if any(w in q for w in ["со своим дизайн", "свой дизайн"]):
+            return "Разработка под ключ со своим дизайном"
+        return "Разработка сайта под ключ"
 
     return current_topic or "Консультация по услугам"
 
