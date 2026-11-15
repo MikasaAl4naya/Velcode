@@ -96,14 +96,34 @@ class AiChatService:
         self._cached_prompt: str | None = None
         self._chunks: list[dict[str, Any]] = []
         self._bm25: SimpleBM25 | None = None
-        self._core_summary: str = (
-            "### Основные направления услуг Велкод\n"
-            "1. Веб-разработка: сайты под ключ от лендингов до веб-сервисов (Next.js, React, TypeScript, FastAPI). Базовая цена: от 36 000 ₽. Ссылка: [Услуги](/services).\n"
-            "2. Создание и внедрение ИИ-ассистентов: умные чат-виджеты, боты и автономные агенты для сайтов. Базовая цена: от 36 000 ₽. Ссылка: [Услуги](/services).\n"
-            "3. Интеграции с 1С и Битрикс24: синхронизация каталогов, заказов, клиентов и остатков. Базовая цена: от 36 000 ₽. Ссылка: [Услуги](/services).\n"
-            "4. Реклама и продвижение: Яндекс Директ, таргет, сквозная аналитика. Базовая цена: от 36 000 ₽. Ссылка: [Услуги](/services).\n"
-            "Контакты: телефон +7 (924) 534 51 82, Telegram @VelcodeIRK, email info@velcode.ru."
-        )
+        self._core_summary: str = ""
+
+    def _build_core_summary(self) -> str:
+        service_lines: list[str] = []
+        for c in self._chunks:
+            if c.get("category") == "service":
+                title = c.get("title", "")
+                url = c.get("url", "/services")
+                meta = c.get("metadata", {})
+                price = meta.get("price")
+                unit = meta.get("unit", "за проект")
+                price_str = f" от {price:,} ₽ {unit}".replace(",", " ") if price else ""
+                content = c.get("content", "")
+                desc = ""
+                for line in content.splitlines():
+                    if line.startswith("Описание: "):
+                        desc = line.replace("Описание: ", "").strip()
+                        break
+                service_lines.append(f"- {title} ([Услуги]({url})){f':{price_str}' if price_str else ''}. {desc}")
+
+        contacts_chunk = next((c for c in self._chunks if c.get("category") == "contacts"), None)
+        contacts_str = contacts_chunk.get("content", "") if contacts_chunk else ""
+
+        parts = ["### Основные направления услуг:"]
+        parts.extend(service_lines)
+        if contacts_str:
+            parts.append("### Контакты:\n" + contacts_str)
+        return "\n".join(parts)
 
     def _ensure_kb_index(self) -> None:
         if self._bm25 is not None and self._chunks:
@@ -121,6 +141,7 @@ class AiChatService:
                 text = f"{c.get('title', '')} {c.get('category', '')} {c.get('content', '')}"
                 doc_tokens.append(_tokenize(text))
             self._bm25 = SimpleBM25(doc_tokens)
+            self._core_summary = self._build_core_summary()
         except Exception as e:
             logger.warning(f"Не удалось инициализировать RAG индекс базы знаний: {e}")
 
