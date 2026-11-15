@@ -152,6 +152,7 @@ class ChatRequest(BaseModel):
     message: str
     topic: str | None = None
     history: list[ChatMessage] = []
+    prefill: ChatPrefill | None = None
 
 
 class ChatResponse(BaseModel):

@@ -249,7 +249,7 @@ export function AiChatWidget() {
         text: m.text,
       }));
 
-      const apiResponse = await sendChatMessage(text, historyPayload, chatTopic);
+      const apiResponse = await sendChatMessage(text, historyPayload, chatTopic, userProfile);
       if (apiResponse && apiResponse.text) {
         if (apiResponse.topic) {
           setChatTopic(apiResponse.topic);

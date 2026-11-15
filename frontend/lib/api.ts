@@ -144,13 +144,14 @@ export type ChatApiResponse = {
 export async function sendChatMessage(
   message: string,
   history: Array<{ role: string; text: string }> = [],
-  topic?: string | null
+  topic?: string | null,
+  prefill?: { name?: string | null; phone?: string | null } | null
 ): Promise<ChatApiResponse | null> {
   try {
     const res = await apiFetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message, history, topic }),
+      body: JSON.stringify({ message, history, topic, prefill }),
     })
     if (!res.ok) return null
     return await res.json()

@@ -85,7 +85,11 @@ class AiChatService:
         )
 
     async def ask(
-        self, message: str, history: list[ChatMessage] | None = None, topic: str | None = None
+        self,
+        message: str,
+        history: list[ChatMessage] | None = None,
+        topic: str | None = None,
+        existing_prefill: ChatPrefill | None = None,
     ) -> ChatResponse:
         api_key = self._get_api_key()
         if not api_key:
@@ -95,6 +99,13 @@ class AiChatService:
         kb_summary = self._load_knowledge_base_summary()
 
         topic_context = f"\nТЕКУЩАЯ ТЕМА ДИАЛОГА: {topic}\n" if topic else ""
+        client_context = []
+        if existing_prefill:
+            if existing_prefill.name:
+                client_context.append(f"Имя клиента: {existing_prefill.name}")
+            if existing_prefill.phone:
+                client_context.append(f"Телефон клиента: {existing_prefill.phone}")
+        client_context_str = f"\nИЗВЕСТНЫЕ ДАННЫЕ КЛИЕНТА: {', '.join(client_context)}\n" if client_context else ""
 
         full_system_prompt = (
             f"{system_prompt}\n\n"
@@ -102,6 +113,7 @@ class AiChatService:
             f"{kb_summary}\n"
             f"-----------------------------------\n"
             f"{topic_context}"
+            f"{client_context_str}"
         )
 
         recent_history = history[-6:] if history else []
@@ -179,6 +191,15 @@ class AiChatService:
                         formatted_phone = _format_russian_phone(clean_phone) if clean_phone else None
                         if formatted_phone or clean_name:
                             prefill = ChatPrefill(phone=formatted_phone, name=clean_name)
+
+                    if existing_prefill:
+                        if not prefill:
+                            prefill = existing_prefill
+                        else:
+                            prefill = ChatPrefill(
+                                name=prefill.name or existing_prefill.name,
+                                phone=prefill.phone or existing_prefill.phone,
+                            )
 
                     actions: list[ChatAction] = []
                     if show_lead_form:
