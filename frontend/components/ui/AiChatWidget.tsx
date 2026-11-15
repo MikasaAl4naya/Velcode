@@ -32,6 +32,7 @@ const DEFAULT_FREQUENT_QUESTIONS = [
 const STORAGE_MSGS_KEY = 'velcode_ai_chat_messages_v1';
 const STORAGE_OPEN_KEY = 'velcode_ai_chat_open_v1';
 const STORAGE_TOPIC_KEY = 'velcode_ai_chat_topic_v1';
+const STORAGE_PROFILE_KEY = 'velcode_ai_chat_profile_v1';
 const STORAGE_DEBUG_KEY = 'velcode_ai_debug_mode';
 const MAX_INPUT_LENGTH = 300;
 
@@ -146,6 +147,17 @@ export function AiChatWidget() {
       if (savedTopic) {
         setChatTopic(savedTopic);
       }
+      const savedProfile = localStorage.getItem(STORAGE_PROFILE_KEY);
+      if (savedProfile) {
+        try {
+          const parsedProf = JSON.parse(savedProfile);
+          if (parsedProf && typeof parsedProf === 'object') {
+            setUserProfile(parsedProf);
+          }
+        } catch {
+          // ignore
+        }
+      }
       const savedOpen = localStorage.getItem(STORAGE_OPEN_KEY);
       if (savedOpen === 'true') {
         setIsOpen(true);
@@ -157,7 +169,7 @@ export function AiChatWidget() {
     }
   }, []);
 
-  // Синхронизация сообщений с localStorage
+  // Синхронизация сообщений и профиля с localStorage
   useEffect(() => {
     if (!isMounted) return;
     try {
@@ -166,10 +178,13 @@ export function AiChatWidget() {
       if (chatTopic) {
         localStorage.setItem(STORAGE_TOPIC_KEY, chatTopic);
       }
+      if (userProfile && (userProfile.name || userProfile.phone)) {
+        localStorage.setItem(STORAGE_PROFILE_KEY, JSON.stringify(userProfile));
+      }
     } catch {
       // ignore
     }
-  }, [messages, isOpen, chatTopic, isMounted]);
+  }, [messages, isOpen, chatTopic, userProfile, isMounted]);
 
   // Прокрутка чата строго внутри тела сообщений
   useEffect(() => {
@@ -239,12 +254,26 @@ export function AiChatWidget() {
         if (apiResponse.topic) {
           setChatTopic(apiResponse.topic);
         }
-        if (apiResponse.prefill) {
-          setUserProfile((prev) => ({
-            name: apiResponse.prefill?.name || prev.name,
-            phone: apiResponse.prefill?.phone || prev.phone,
-          }));
+
+        let detectedName = apiResponse.prefill?.name || null;
+        if (!detectedName) {
+          const introMatch = text.match(/(?:меня\s+([А-ЯЁа-яё]+)\s+зовут|зовут\s+([А-ЯЁа-яё]+)|^я\s+([А-ЯЁа-яё]+)\b)/i);
+          const found = introMatch ? (introMatch[1] || introMatch[2] || introMatch[3]) : null;
+          if (found && found.length >= 2) {
+            detectedName = found.charAt(0).toUpperCase() + found.slice(1);
+          }
         }
+
+        const updatedPrefill = {
+          name: detectedName || userProfile.name || null,
+          phone: apiResponse.prefill?.phone || userProfile.phone || null,
+        };
+
+        setUserProfile((prev) => ({
+          name: detectedName || prev.name,
+          phone: apiResponse.prefill?.phone || prev.phone,
+        }));
+
         setMessages((prev) => [
           ...prev,
           {
@@ -253,7 +282,7 @@ export function AiChatWidget() {
             text: apiResponse.text,
             actions: apiResponse.show_lead_form ? [] : apiResponse.actions,
             showLeadForm: apiResponse.show_lead_form,
-            prefill: apiResponse.prefill,
+            prefill: updatedPrefill,
           },
         ]);
         setIsTyping(false);
@@ -309,6 +338,10 @@ export function AiChatWidget() {
         sender: 'assistant',
         text: 'Заполните, пожалуйста, форму ниже — специалист свяжется с вами в рабочее время:',
         showLeadForm: true,
+        prefill: {
+          name: userProfile.name || null,
+          phone: userProfile.phone || null,
+        },
       };
       setMessages((prev) => [
         ...prev.map((m) => (m.id === messageId ? { ...m, actions: undefined } : m)),
@@ -327,6 +360,7 @@ export function AiChatWidget() {
     try {
       localStorage.removeItem(STORAGE_MSGS_KEY);
       localStorage.removeItem(STORAGE_TOPIC_KEY);
+      localStorage.removeItem(STORAGE_PROFILE_KEY);
     } catch {
       // ignore
     }
