@@ -185,6 +185,19 @@ class AiChatService:
             or os.getenv("GEMINI_API_KEY", "")
         ).strip()
 
+    @staticmethod
+    def _auto_format_links(text: str) -> str:
+        # Убираем случайный markdown жирный шрифт/курсив от модели (** или __), но сохраняем ссылки
+        text = re.sub(r'\*\*([^*]+)\*\*', r'\1', text)
+        text = re.sub(r'__([^_]+)__', r'\1', text)
+        # Превращаем любые случайные голые ссылки в валидные markdown-ссылки
+        text = re.sub(r'(?<!\()(?<!\[)(/portfolio/[a-zA-Z0-9_-]+)', r'[Кейс в портфолио](\1)', text)
+        text = re.sub(r'(?<!\()(?<!\[)(/contacts)(?![a-zA-Z0-9_/-])', r'[Контакты](/contacts)', text)
+        text = re.sub(r'(?<!\()(?<!\[)(/portfolio)(?![a-zA-Z0-9_/-])', r'[Портфолио](/portfolio)', text)
+        text = re.sub(r'(?<!\()(?<!\[)(/services)(?![a-zA-Z0-9_/-])', r'[Услуги](/services)', text)
+        text = re.sub(r'(?<!\()(?<!\[)(/faq)(?![a-zA-Z0-9_/-])', r'[FAQ](/faq)', text)
+        return text
+
     def _fallback_response(self, topic: str | None = None) -> ChatResponse:
         """Резервный ответ на случай сетевого сбоя или временной недоступности модели."""
         return ChatResponse(
@@ -280,6 +293,7 @@ class AiChatService:
                 try:
                     parsed = json.loads(clean_json_str)
                     text = str(parsed.get("text", "")).strip()
+                    text = self._auto_format_links(text)
                     show_lead_form = bool(parsed.get("show_lead_form", False))
                     effective_topic = str(parsed.get("topic") or topic or "Консультация по услугам").strip()
 
