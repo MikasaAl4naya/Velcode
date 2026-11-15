@@ -29,21 +29,6 @@ const DEFAULT_FREQUENT_QUESTIONS = [
   'Какие вы даете гарантии на работу',
 ];
 
-const DEFAULT_QUESTION_ANSWERS: Record<string, { text: string; actionLabel: string }> = {
-  'сколько стоит разработка под ключ': {
-    text: 'Стоимость разработки под ключ рассчитывается индивидуально: лендинги — от 30 000 ₽, корпоративные сайты — от 50 000 ₽, интернет-магазины и веб-сервисы — от 90 000 ₽. В стоимость входят аналитика, дизайн, адаптивная вёрстка, интеграции и базовая оптимизация. Смета и сроки фиксируются в договоре.',
-    actionLabel: 'Оставить заявку',
-  },
-  'какие услуги вы предоставляете': {
-    text: 'Велкод предоставляет комплексную веб-разработку и автоматизацию: создание сайтов и сервисов (Next.js, React, FastAPI), внедрение Битрикс24 и 1С, разработку ИИ-ассистентов и чат-ботов, а также рекламу и SEO-продвижение.\n\nВсе направления подробно описаны на [странице услуг](/services).',
-    actionLabel: 'Обсудить проект',
-  },
-  'какие вы даете гарантии на работу': {
-    text: 'Мы работаем строго по официальному договору (ИП Манилат В. П.), где четко зафиксированы смета, этапы и сроки. Предоставляем 60 дней бесплатной гарантийной поддержки на весь разработанный код и работоспособность проекта после сдачи.\n\nПодробнее о нашем подходе читайте в [разделе преимуществ](/advantages).',
-    actionLabel: 'Оставить заявку',
-  },
-};
-
 const STORAGE_MSGS_KEY = 'velcode_ai_chat_messages_v1';
 const STORAGE_OPEN_KEY = 'velcode_ai_chat_open_v1';
 const STORAGE_TOPIC_KEY = 'velcode_ai_chat_topic_v1';
@@ -88,44 +73,6 @@ function renderMessageContent(text: string) {
   return parts;
 }
 
-function extractClientName(text: string): string | null {
-  const stopWords = new Set([
-    'мой', 'мое', 'моё', 'телефон', 'номер', 'номером', 'заявку', 'заявка', 'заявки',
-    'оставь', 'оставьте', 'отправь', 'отправьте', 'заполни', 'заполните',
-    'привет', 'здравствуйте', 'добрый', 'день', 'вечер', 'тут', 'здесь',
-    'просто', 'свяжитесь', 'напишите', 'позвоните', 'перезвоните', 'набери', 'наберите',
-    'жду', 'звонка', 'связь', 'связи', 'для', 'вот', 'это', 'давай', 'хочу',
-    'клиент', 'пользователь', 'человек', 'заказчик', 'нет', 'да', 'ок', 'ага',
-    'пожалуйста', 'спасибо', 'согласен', 'согласна', 'знаю', 'знает', 'знать', 'помню', 'думаю'
-  ]);
-
-  // 1. Шаблоны с явным представлением
-  const explicitMatch = text.match(/(?:меня\s+зовут|мое\s+имя|моё\s+имя|имя[:\s]+)\s*([А-ЯЁа-яёA-Za-z]+(?:\s+[А-ЯЁа-яёA-Za-z]+)?)/i);
-  if (explicitMatch && explicitMatch[1]) {
-    const words = explicitMatch[1]
-      .split(/\s+/)
-      .filter((w) => !stopWords.has(w.toLowerCase()) && w.length >= 2 && /^[а-яёa-z]+$/i.test(w))
-      .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase());
-    if (words.length > 0) {
-      return words.slice(0, 2).join(' ');
-    }
-  }
-
-  // 2. Выделение имени при наличии телефона
-  const withoutPhone = text.replace(/(?:\+?7|8)[\s\-\(]*\d{3}[\s\-\)]*\d{3}[\s\-]*\d{2}[\s\-]*\d{2}|\b(?:\+?7|8)?\d{10}\b/g, ' ');
-  const cleanWords = withoutPhone
-    .replace(/[^\w\sа-яё]/gi, ' ')
-    .split(/\s+/)
-    .filter((w) => !stopWords.has(w.toLowerCase()) && w.length >= 2 && /^[а-яёa-z]+$/i.test(w))
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase());
-
-  if (cleanWords.length >= 1 && cleanWords.length <= 2) {
-    return cleanWords.join(' ');
-  }
-
-  return null;
-}
-
 export function AiChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [inputText, setInputText] = useState('');
@@ -165,7 +112,6 @@ export function AiChatWidget() {
   // Восстановление истории чата, состояния открытости и проверка режима дебага (?ai_debug=1)
   useEffect(() => {
     try {
-      // Проверяем URL параметр (как в Яндекс Метрике: ?ai_debug=1 включает, ?ai_debug=0 отключает)
       const urlParams = new URLSearchParams(window.location.search);
       const debugParam = urlParams.get('ai_debug') ?? urlParams.get('debug_ai');
 
@@ -182,7 +128,6 @@ export function AiChatWidget() {
 
       setIsDebugMode(debugActive);
 
-      // Если дебаг режим не активирован — не загружаем историю и не показываем виджет
       if (!debugActive) {
         return;
       }
@@ -226,7 +171,7 @@ export function AiChatWidget() {
     }
   }, [messages, isOpen, chatTopic, isMounted]);
 
-  // Прокрутка чата строго внутри тела сообщений (без смещения родительских блоков)
+  // Прокрутка чата строго внутри тела сообщений
   useEffect(() => {
     if (isOpen && chatBodyRef.current) {
       chatBodyRef.current.scrollTo({
@@ -273,27 +218,7 @@ export function AiChatWidget() {
       setUserProfile({});
     }
 
-    // Сохраняем имя или телефон из сообщения пользователя в профиль сессии
-    const directPhone = text.match(/(?:\+?7|8)[\s\-\(]*(\d{3})[\s\-\)]*(\d{3})[\s\-]*(\d{2})[\s\-]*(\d{2})|\b(?:\+?7|8)?(\d{10})\b/);
-    const directName = extractClientName(text);
-    if (directPhone || directName) {
-      setUserProfile((prev) => {
-        let formattedPhone = prev.phone;
-        if (directPhone) {
-          const raw = directPhone[0].replace(/\D/g, '');
-          const clean = raw.length === 10 ? '7' + raw : (raw[0] === '8' ? '7' + raw.slice(1) : raw);
-          if (clean.length === 11) {
-            formattedPhone = `+7 (${clean.slice(1, 4)}) ${clean.slice(4, 7)}-${clean.slice(7, 9)}-${clean.slice(9, 11)}`;
-          }
-        }
-        return {
-          name: directName || prev.name,
-          phone: formattedPhone || prev.phone,
-        };
-      });
-    }
-
-    // Очищаем кнопки действий и показ формы из всех предыдущих сообщений (если пользователь пишет дальше)
+    // Очищаем кнопки действий и показ формы из всех предыдущих сообщений
     const sanitizedPrevious = baseMessages.map((m) => ({
       ...m,
       actions: undefined,
@@ -303,31 +228,6 @@ export function AiChatWidget() {
     setMessages(nextMessages);
     setIsTyping(true);
 
-    const trimmed = cappedText.trim().toLowerCase();
-
-    // Fast Path: точное совпадение с вопросами FAQ из базы данных (0 мс задержки, без запроса к LLM)
-    const matchedFaq = faqList.find(
-      (item) => item.question.trim().toLowerCase() === trimmed
-    );
-    if (matchedFaq) {
-      setTimeout(() => {
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: `bot-${Date.now()}`,
-            sender: 'assistant',
-            text: matchedFaq.answer,
-            actions: [
-              { label: 'Оставить заявку', actionKey: 'show_lead_form', primary: true },
-            ],
-          },
-        ]);
-        setIsTyping(false);
-      }, 350);
-      return;
-    }
-
-    // Запрос к живому ИИ-эндпоинту бэкенда (/api/chat)
     try {
       const historyPayload = nextMessages.slice(-5, -1).map((m) => ({
         role: m.sender,
@@ -360,21 +260,20 @@ export function AiChatWidget() {
         return;
       }
     } catch {
-      // Игнорируем сетевые сбои и переходим на локальный фоллбек
+      // Игнорируем сетевые сбои и переходим на вежливый фоллбек
     }
 
-    // Фоллбек, если бэкенд недоступен или токен не задан
-    setTimeout(() => {
-      const botResponse = generateLocalBotResponse(text);
-      if (botResponse.prefill) {
-        setUserProfile((prev) => ({
-          name: botResponse.prefill?.name || prev.name,
-          phone: botResponse.prefill?.phone || prev.phone,
-        }));
-      }
-      setMessages((prev) => [...prev, botResponse]);
-      setIsTyping(false);
-    }, 400);
+    // Резервный ответ при недоступности сети
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: `bot-${Date.now()}`,
+        sender: 'assistant',
+        text: 'Извините, сервис онлайн-ответов временно недоступен. Вы можете оставить заявку ниже или связаться с нами по телефону +7 (924) 534 51 82 или в Telegram @VelcodeIRK — наш специалист свяжется с вами в течение 15 минут.',
+        showLeadForm: true,
+      },
+    ]);
+    setIsTyping(false);
   };
 
   const handleInputSubmit = (e: React.FormEvent) => {
@@ -386,227 +285,13 @@ export function AiChatWidget() {
   };
 
   const handleSelectQuestion = (question: string) => {
-    setChatTopic(question);
     addUserMessage(question);
-  };
-
-  const generateLocalBotResponse = (query: string): Message => {
-    const trimmed = query.trim().toLowerCase();
-
-    // 0. Вопрос про 152-ФЗ / согласие
-    const is152Fz = [
-      'сам не можешь', 'почему сам', 'зачем галк', 'зачем нажимать',
-      'зачем подтвержд', 'отправь сам', 'сам заполни', 'сам отправь',
-      'почему я должен', 'не хочу нажимать', 'зачем соглас', 'зачем галочк',
-      'почему не можешь сам', 'че сам не можешь'
-    ].some((p) => trimmed.includes(p));
-    if (is152Fz) {
-      return {
-        id: `bot-${Date.now()}`,
-        sender: 'assistant',
-        text: 'Согласно Федеральному закону № 152-ФЗ «О персональных данных», мы не имеем права собирать и отправлять ваши контактные данные без вашего личного прямого согласия. Поэтому вам необходимо подтвердить согласие галочкой и нажать кнопку отправки самостоятельно — это требование закона для защиты ваших персональных данных.',
-        showLeadForm: true,
-      };
-    }
-
-    // 0.1 Передан номер телефона
-    const phoneMatch = query.match(/(?:\+?7|8)[\s\-\(]*(\d{3})[\s\-\)]*(\d{3})[\s\-]*(\d{2})[\s\-]*(\d{2})|\b(?:\+?7|8)?(\d{10})\b/);
-    if (phoneMatch) {
-      const rawDigits = phoneMatch[0].replace(/\D/g, '');
-      const cleanDigits = rawDigits.length === 10 ? '7' + rawDigits : (rawDigits[0] === '8' ? '7' + rawDigits.slice(1) : rawDigits);
-      const formattedPhone = cleanDigits.length === 11 
-        ? `+7 (${cleanDigits.slice(1, 4)}) ${cleanDigits.slice(4, 7)}-${cleanDigits.slice(7, 9)}-${cleanDigits.slice(9, 11)}`
-        : phoneMatch[0];
-
-      const extractedName = extractClientName(query);
-      const responseText = extractedName
-        ? `Отлично, ${extractedName}! Я открыл форму заявки ниже и уже заполнил ваши данные (${formattedPhone}). Пожалуйста, подтвердите согласие на обработку персональных данных и нажмите кнопку «Отправить».`
-        : `Отлично! Я открыл форму заявки ниже и уже заполнил поле с вашим номером (${formattedPhone}). Пожалуйста, укажите ваше имя, подтвердите согласие на обработку персональных данных и нажмите «Отправить».`;
-
-      return {
-        id: `bot-${Date.now()}`,
-        sender: 'assistant',
-        text: responseText,
-        showLeadForm: true,
-        prefill: { phone: formattedPhone, name: extractedName || undefined },
-      };
-    }
-
-    // 0.2 Короткие / неясные реплики без сути вопроса («нет», «не знаю», «ок», «ага» и т.д.)
-    const vaguePhrases = [
-      'нет', 'не', 'неа', 'ноу', 'no',
-      'хз', 'не знаю', 'не уверена', 'не уверен', 'без понятия',
-      'ок', 'ладно', 'ясно', 'понял', 'понятно', 'ага', 'угу', 'ну', 'хм', 'эм', 'мм',
-      'ну ок', 'да нет', 'да не', 'не знаю даже', 'ничего', 'ниче',
-      'что', 'че', 'чё', 'и', 'и что', 'и че', 'а'
-    ];
-    const cleanQuery = trimmed.replace(/[^\w\sа-яё]/gi, '').trim();
-    if (vaguePhrases.includes(cleanQuery) || (cleanQuery.length <= 2 && !/^\d+$/.test(cleanQuery))) {
-      return {
-        id: `bot-${Date.now()}`,
-        sender: 'assistant',
-        text: 'Не совсем понимаю вас. Хотите оставить заявку и уточнить все детали у нашего менеджера?',
-        actions: [
-          { label: 'Связаться с менеджером', actionKey: 'show_lead_form', primary: true },
-        ],
-      };
-    }
-
-    // 1. Проверяем точное совпадение с вопросами FAQ из базы данных
-    const matchedFaq = faqList.find(
-      (item) => item.question.trim().toLowerCase() === trimmed
-    );
-    if (matchedFaq) {
-      return {
-        id: `bot-${Date.now()}`,
-        sender: 'assistant',
-        text: matchedFaq.answer,
-        actions: [
-          { label: 'Оставить заявку', actionKey: 'show_lead_form', primary: true },
-        ],
-      };
-    }
-
-    // 2. Фоллбек по точным дефолтным вопросам
-    if (DEFAULT_QUESTION_ANSWERS[trimmed]) {
-      const fixed = DEFAULT_QUESTION_ANSWERS[trimmed];
-      return {
-        id: `bot-${Date.now()}`,
-        sender: 'assistant',
-        text: fixed.text,
-        actions: [
-          { label: fixed.actionLabel, actionKey: 'show_lead_form', primary: true },
-        ],
-      };
-    }
-
-    const q = trimmed;
-
-    // 1. Сколько стоит разработка под ключ / расчет / цены
-    if (
-      q.includes('стоим') ||
-      q.includes('цен') ||
-      q.includes('сколько') ||
-      q.includes('расчет') ||
-      q.includes('прайс') ||
-      q.includes('тариф') ||
-      q.includes('бюджет') ||
-      q.includes('под ключ')
-    ) {
-      return {
-        id: `bot-${Date.now()}`,
-        sender: 'assistant',
-        text: 'Стоимость разработки под ключ рассчитывается индивидуально: лендинги — от 30 000 ₽, корпоративные сайты — от 50 000 ₽, интернет-магазины и веб-сервисы — от 90 000 ₽. В стоимость входят аналитика, дизайн, адаптивная вёрстка, интеграции и базовая оптимизация. Смета и сроки фиксируются в договоре.',
-        actions: [
-          { label: 'Оставить заявку', actionKey: 'show_lead_form', primary: true },
-        ],
-      };
-    }
-
-    // 2. Какие вы даете гарантии на работу
-    if (
-      q.includes('гарант') ||
-      q.includes('договор') ||
-      q.includes('надежн') ||
-      q.includes('правк') ||
-      q.includes('ответственност')
-    ) {
-      return {
-        id: `bot-${Date.now()}`,
-        sender: 'assistant',
-        text: 'Мы работаем строго по официальному договору (ИП Манилат В. П.), где четко зафиксированы смета, этапы и сроки. Предоставляем 60 дней бесплатной гарантийной поддержки на весь разработанный код и работоспособность проекта после сдачи.\n\nПодробнее о нашем подходе читайте в [разделе преимуществ](/advantages).',
-        actions: [
-          { label: 'Оставить заявку', actionKey: 'show_lead_form', primary: true },
-        ],
-      };
-    }
-
-    // 3. Какие услуги вы предоставляете
-    if (
-      q.includes('услуг') ||
-      q.includes('стек') ||
-      q.includes('технолог') ||
-      q.includes('что дел') ||
-      q.includes('предоставля') ||
-      q.includes('направлен')
-    ) {
-      return {
-        id: `bot-${Date.now()}`,
-        sender: 'assistant',
-        text: 'Велкод предоставляет комплексную веб-разработку и автоматизацию: создание сайтов и сервисов (Next.js, React, FastAPI), внедрение Битрикс24 и 1С, разработку ИИ-ассистентов и чат-ботов, а также рекламу и SEO-продвижение.\n\nВсе направления подробно описаны на [странице услуг](/services).',
-        actions: [
-          { label: 'Обсудить проект', actionKey: 'show_lead_form', primary: true },
-        ],
-      };
-    }
-
-    // 4. Примеры выполненных кейсов / портфолио
-    if (
-      q.includes('кейс') ||
-      q.includes('портфолио') ||
-      q.includes('пример') ||
-      q.includes('выполнен') ||
-      (q.includes('покаж') && (q.includes('работ') || q.includes('проект') || q.includes('сайт'))) ||
-      (q.includes('посмотр') && (q.includes('работ') || q.includes('проект') || q.includes('сайт'))) ||
-      q === 'работы' ||
-      q === 'наши работы' ||
-      q === 'ваши работы'
-    ) {
-      return {
-        id: `bot-${Date.now()}`,
-        sender: 'assistant',
-        text:
-          'Вот несколько реализованных кейсов Велкод:\n\n' +
-          '— [«Спорт-Товары»](/portfolio/sport-shop) — разработали интернет-магазин с каталогом, корзиной и интеграцией 1С для синхронизации остатков.\n\n' +
-          '— [«Trattoria Pomodoro»](/portfolio/trattoria) — сайт-визитка рестобара с передачей атмосферы, интерактивным меню и бронированием столиков.\n\n' +
-          '— [«Битрикс24 & 1С»](/portfolio/bitrix-1c) — модуль двусторонней интеграции CRM и 1С:Предприятие для обмена заказами и клиентами.\n\n' +
-          'Больше работ смотрите на [этой странице](/portfolio).',
-        actions: [
-          { label: 'Обсудить проект', actionKey: 'show_lead_form', primary: true },
-        ],
-      };
-    }
-
-    // 5. Заявка / контакты
-    if (
-      q.includes('заявк') ||
-      q.includes('связат') ||
-      q.includes('консульт') ||
-      q.includes('телефон') ||
-      q.includes('позвон')
-    ) {
-      const hasUnsubmittedForm = messages.some((m) => m.showLeadForm) && !leadSent;
-      if (hasUnsubmittedForm) {
-        return {
-          id: `bot-${Date.now()}`,
-          sender: 'assistant',
-          text: 'Форма для связи уже открыта выше. Пожалуйста, укажите имя и телефон, и специалист сразу с вами свяжется!',
-        };
-      }
-      return {
-        id: `bot-${Date.now()}`,
-        sender: 'assistant',
-        text: 'С удовольствием проконсультируем вас! Заполните, пожалуйста, форму ниже — специалист свяжется с вами в течение 15 минут:',
-        showLeadForm: true,
-      };
-    }
-
-    // Дефолтный ответ
-    return {
-      id: `bot-${Date.now()}`,
-      sender: 'assistant',
-      text: 'Спасибо за вопрос! Я умный ассистент Велкод. Могу рассказать о стоимости, услугах, гарантиях, показать [кейсы в портфолио](/portfolio) или передать ваши контакты для детальной консультации.',
-      actions: [
-        { label: 'Обсудить проект', actionKey: 'show_lead_form', primary: true },
-      ],
-    };
   };
 
   const handleActionClick = (actionKey: string, messageId: string) => {
     if (actionKey === 'show_lead_form') {
       const hasUnsubmittedForm = messages.some((m) => m.showLeadForm) && !leadSent;
       if (hasUnsubmittedForm) {
-        // Убираем кнопку и скроллим к уже открытой форме
         setMessages((prev) =>
           prev.map((m) => (m.id === messageId ? { ...m, actions: undefined } : m))
         );
@@ -622,22 +307,14 @@ export function AiChatWidget() {
       const leadMsg: Message = {
         id: `bot-lead-${Date.now()}`,
         sender: 'assistant',
-        text: 'Заполните, пожалуйста, форму ниже — специалист свяжется с вами:',
+        text: 'Заполните, пожалуйста, форму ниже — специалист свяжется с вами в рабочее время:',
         showLeadForm: true,
       };
-      // Убираем кнопку действия из сообщения и выводим форму
       setMessages((prev) => [
         ...prev.map((m) => (m.id === messageId ? { ...m, actions: undefined } : m)),
         leadMsg,
       ]);
       return;
-    }
-
-    if (actionKey === 'ask_cases') {
-      setMessages((prev) =>
-        prev.map((m) => (m.id === messageId ? { ...m, actions: undefined } : m))
-      );
-      addUserMessage('Примеры выполненных кейсов');
     }
   };
 
