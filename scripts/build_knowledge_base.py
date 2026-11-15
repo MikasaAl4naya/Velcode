@@ -28,11 +28,11 @@ from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
 from app.database import AsyncSessionLocal, init_models
-from app.models import Category, Portfolio, Service
+from app.models import Category, Faq, Portfolio, Service
 
 
 async def extract_knowledge_data() -> dict[str, Any]:
-    """Извлекает из базы данных только услуги и проекты портфолио."""
+    """Извлекает из базы данных услуги, проекты портфолио и FAQ."""
     await init_models()
 
     async with AsyncSessionLocal() as db:
@@ -54,9 +54,18 @@ async def extract_knowledge_data() -> dict[str, Any]:
         portfolio_res = await db.execute(portfolio_stmt)
         projects = portfolio_res.scalars().all()
 
+        # 3. Извлекаем вопросы-ответы FAQ
+        faq_stmt = (
+            select(Faq)
+            .order_by(Faq.sort_order.asc(), Faq.id.asc())
+        )
+        faq_res = await db.execute(faq_stmt)
+        faqs = faq_res.scalars().all()
+
     return {
         "services": services,
         "projects": projects,
+        "faqs": faqs,
     }
 
 
@@ -131,23 +140,87 @@ def build_chunks(data: dict[str, Any]) -> list[dict[str, Any]]:
             },
         })
 
+    # 3. Контакты и реквизиты компании
+    contacts_text = (
+        "Контакты и реквизиты компании Велкод:\n"
+        "Телефон: +7 (924) 534 51 82\n"
+        "Email: velcode@inbox.ru\n"
+        "Telegram: https://t.me/VelcodeIRK (@VelcodeIRK)\n"
+        "Адрес: г. Иркутск, ул. Баррикад, д. 60/6, кв./офис 23\n"
+        "Реквизиты: ИП Манилат Виктория Пхетудоновна, ИНН: 381914585931, ОГРНИП: 326385000117097\n"
+        "Ссылка: /contacts"
+    ).strip()
+
+    chunks.append({
+        "id": "company_contacts",
+        "category": "contacts",
+        "title": "Контакты и реквизиты Велкод",
+        "url": "/contacts",
+        "content": contacts_text,
+        "metadata": {
+            "type": "contacts",
+            "url": "/contacts",
+            "phone": "+7 (924) 534 51 82",
+            "email": "velcode@inbox.ru",
+            "telegram": "@VelcodeIRK",
+            "city": "Иркутск",
+        },
+    })
+
+    # 4. Частые вопросы и ответы (FAQ) из БД
+    for f in data.get("faqs", []):
+        faq_text = (
+            f"Вопрос: {f.question.strip()}\n"
+            f"Ответ: {f.answer.strip()}\n"
+            f"Ссылка: /faq"
+        ).strip()
+
+        chunks.append({
+            "id": f"faq_{f.id}",
+            "category": "faq",
+            "title": f.question.strip(),
+            "url": "/faq",
+            "content": faq_text,
+            "metadata": {
+                "type": "faq",
+                "faq_id": f.id,
+                "sort_order": f.sort_order,
+                "url": "/faq",
+            },
+        })
+
     return chunks
 
 
 def build_markdown_document(chunks: list[dict[str, Any]]) -> str:
-    """Генерирует Markdown-документ только из услуг и кейсов БД."""
+    """Генерирует сводный Markdown-документ (услуги, портфолио, контакты, FAQ)."""
     now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
 
     lines = [
-        "# База знаний Велкод (Услуги и Портфолио)",
+        "# База знаний Велкод",
         f"> Дата генерации: {now}",
-        "> Источник: база данных проекта",
+        "> Источник: база данных проекта и sitemap.xml",
         "",
+        "---",
+        "",
+        "## Контакты и реквизиты",
+        "",
+    ]
+
+    contacts = [c for c in chunks if c["category"] == "contacts"]
+    if contacts:
+        for c in contacts:
+            lines.append(c["content"])
+            lines.append("")
+    else:
+        lines.append("_Контакты не найдены._\n")
+
+    lines.extend([
         "---",
         "",
         "## Услуги",
         "",
-    ]
+    ])
 
     services = [c for c in chunks if c["category"] == "service"]
     if services:
@@ -173,6 +246,22 @@ def build_markdown_document(chunks: list[dict[str, Any]]) -> str:
             lines.append("")
     else:
         lines.append("_Кейсы в базе данных не найдены._\n")
+
+    lines.extend([
+        "---",
+        "",
+        "## Частые вопросы (FAQ)",
+        "",
+    ])
+
+    faqs = [c for c in chunks if c["category"] == "faq"]
+    if faqs:
+        for idx, f in enumerate(faqs, start=1):
+            lines.append(f"### {idx}. {f['title']}")
+            lines.append(f["content"])
+            lines.append("")
+    else:
+        lines.append("_Вопросы FAQ в базе данных не найдены._\n")
 
     return "\n".join(lines)
 
@@ -264,6 +353,7 @@ async def rebuild_knowledge_base(
     return {
         "services_count": len(data["services"]),
         "projects_count": len(data["projects"]),
+        "faqs_count": len(data.get("faqs", [])),
         "total_chunks": len(chunks),
     }
 

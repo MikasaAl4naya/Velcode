@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ymGoal } from '@/lib/ym';
 import { Tag } from '@/components/ui/Tag';
 import { LeadForm } from '@/components/ui/LeadForm';
+import { getFaq, FaqItem } from '@/lib/api';
 
 interface Message {
   id: string;
@@ -18,23 +19,23 @@ interface Message {
   showLeadForm?: boolean;
 }
 
-const FREQUENT_QUESTIONS = [
+const DEFAULT_FREQUENT_QUESTIONS = [
   'Сколько стоит разработка под ключ',
   'Какие услуги вы предоставляете',
   'Какие вы даете гарантии на работу',
 ];
 
-const EXACT_QUESTION_ANSWERS: Record<string, { text: string; actionLabel: string }> = {
+const DEFAULT_QUESTION_ANSWERS: Record<string, { text: string; actionLabel: string }> = {
   'сколько стоит разработка под ключ': {
-    text: 'Стоимость разработки под ключ рассчитывается индивидуально: лендинги — от 45 000 ₽, корпоративные сайты — от 75 000 ₽, интернет-магазины и веб-сервисы — от 110 000 ₽. В стоимость входят аналитика, дизайн, верстка, интеграции и базовая оптимизация. Смета и сроки фиксируются в договоре.',
-    actionLabel: 'Оставить заявку на расчет',
+    text: 'Стоимость разработки под ключ рассчитывается индивидуально: лендинги — от 30 000 ₽, корпоративные сайты — от 50 000 ₽, интернет-магазины и веб-сервисы — от 90 000 ₽. В стоимость входят аналитика, дизайн, адаптивная вёрстка, интеграции и базовая оптимизация. Смета и сроки фиксируются в договоре.',
+    actionLabel: 'Оставить заявку',
   },
   'какие услуги вы предоставляете': {
-    text: 'Велкод предоставляет комплексную разработку и автоматизацию: создание сайтов и веб-сервисов (Next.js, React, TypeScript, Python/FastAPI), внедрение Битрикс24 и 1С, разработка ИИ-ассистентов и чат-ботов, а также реклама и SEO-продвижение.\n\nВсе направления подробно описаны на [странице услуг](/services).',
-    actionLabel: 'Оставить заявку на проект',
+    text: 'Велкод предоставляет комплексную веб-разработку и автоматизацию: создание сайтов и сервисов (Next.js, React, FastAPI), внедрение Битрикс24 и 1С, разработку ИИ-ассистентов и чат-ботов, а также рекламу и SEO-продвижение.\n\nВсе направления подробно описаны на [странице услуг](/services).',
+    actionLabel: 'Обсудить проект',
   },
   'какие вы даете гарантии на работу': {
-    text: 'Мы работаем строго по официальному договору (ИП), где четко зафиксированы смета, этапы и сроки. Предоставляем гарантию на весь разработанный код и работоспособность проекта, а также бесплатную гарантийную поддержку после сдачи.\n\nПодробнее о нашем подходе читайте в [разделе преимуществ](/advantages).',
+    text: 'Мы работаем строго по официальному договору (ИП Манилат В. П.), где четко зафиксированы смета, этапы и сроки. Предоставляем 60 дней бесплатной гарантийной поддержки на весь разработанный код и работоспособность проекта после сдачи.\n\nПодробнее о нашем подходе читайте в [разделе преимуществ](/advantages).',
     actionLabel: 'Оставить заявку',
   },
 };
@@ -89,9 +90,31 @@ export function AiChatWidget() {
   const [leadSent, setLeadSent] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   const [isDebugMode, setIsDebugMode] = useState(false);
+  const [faqList, setFaqList] = useState<FaqItem[]>([]);
 
   const chatBodyRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Загрузка актуального FAQ из БД для быстрых вопросов
+  useEffect(() => {
+    let active = true;
+    getFaq()
+      .then((items) => {
+        if (active && Array.isArray(items) && items.length > 0) {
+          setFaqList(items);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  // Первые 3 вопроса берутся динамически из FAQ (с безопасным фоллбеком)
+  const frequentQuestions =
+    faqList.length >= 3
+      ? faqList.slice(0, 3).map((f) => f.question)
+      : DEFAULT_FREQUENT_QUESTIONS;
 
   // Восстановление истории чата, состояния открытости и проверка режима дебага (?ai_debug=1)
   useEffect(() => {
@@ -213,9 +236,24 @@ export function AiChatWidget() {
   const generateBotResponse = (query: string): Message => {
     const trimmed = query.trim().toLowerCase();
 
-    // За быстрым вопросом закреплён точный ответ — поиск не выполняется
-    if (EXACT_QUESTION_ANSWERS[trimmed]) {
-      const fixed = EXACT_QUESTION_ANSWERS[trimmed];
+    // 1. Проверяем точное совпадение с вопросами FAQ из базы данных
+    const matchedFaq = faqList.find(
+      (item) => item.question.trim().toLowerCase() === trimmed
+    );
+    if (matchedFaq) {
+      return {
+        id: `bot-${Date.now()}`,
+        sender: 'assistant',
+        text: matchedFaq.answer,
+        actions: [
+          { label: 'Оставить заявку', actionKey: 'show_lead_form', primary: true },
+        ],
+      };
+    }
+
+    // 2. Фоллбек по точным дефолтным вопросам
+    if (DEFAULT_QUESTION_ANSWERS[trimmed]) {
+      const fixed = DEFAULT_QUESTION_ANSWERS[trimmed];
       return {
         id: `bot-${Date.now()}`,
         sender: 'assistant',
@@ -242,9 +280,9 @@ export function AiChatWidget() {
       return {
         id: `bot-${Date.now()}`,
         sender: 'assistant',
-        text: 'Стоимость разработки под ключ рассчитывается индивидуально: лендинги — от 45 000 ₽, корпоративные сайты — от 75 000 ₽, интернет-магазины и веб-сервисы — от 110 000 ₽. В стоимость входят аналитика, дизайн, верстка, интеграции и базовая оптимизация. Смета и сроки фиксируются в договоре.',
+        text: 'Стоимость разработки под ключ рассчитывается индивидуально: лендинги — от 30 000 ₽, корпоративные сайты — от 50 000 ₽, интернет-магазины и веб-сервисы — от 90 000 ₽. В стоимость входят аналитика, дизайн, адаптивная вёрстка, интеграции и базовая оптимизация. Смета и сроки фиксируются в договоре.',
         actions: [
-          { label: 'Оставить заявку на расчет', actionKey: 'show_lead_form', primary: true },
+          { label: 'Оставить заявку', actionKey: 'show_lead_form', primary: true },
         ],
       };
     }
@@ -260,7 +298,7 @@ export function AiChatWidget() {
       return {
         id: `bot-${Date.now()}`,
         sender: 'assistant',
-        text: 'Мы работаем строго по официальному договору (ИП), где четко зафиксированы смета, этапы и сроки. Предоставляем гарантию на весь разработанный код и работоспособность проекта, а также бесплатную гарантийную поддержку после сдачи.\n\nПодробнее о нашем подходе читайте в [разделе преимуществ](/advantages).',
+        text: 'Мы работаем строго по официальному договору (ИП Манилат В. П.), где четко зафиксированы смета, этапы и сроки. Предоставляем 60 дней бесплатной гарантийной поддержки на весь разработанный код и работоспособность проекта после сдачи.\n\nПодробнее о нашем подходе читайте в [разделе преимуществ](/advantages).',
         actions: [
           { label: 'Оставить заявку', actionKey: 'show_lead_form', primary: true },
         ],
@@ -279,9 +317,9 @@ export function AiChatWidget() {
       return {
         id: `bot-${Date.now()}`,
         sender: 'assistant',
-        text: 'Велкод предоставляет комплексную разработку и автоматизацию: создание сайтов и веб-сервисов (Next.js, React, TypeScript, Python/FastAPI), внедрение Битрикс24 и 1С, разработка ИИ-ассистентов и чат-ботов, а также реклама и SEO-продвижение.\n\nВсе направления подробно описаны на [странице услуг](/services).',
+        text: 'Велкод предоставляет комплексную веб-разработку и автоматизацию: создание сайтов и сервисов (Next.js, React, FastAPI), внедрение Битрикс24 и 1С, разработку ИИ-ассистентов и чат-ботов, а также рекламу и SEO-продвижение.\n\nВсе направления подробно описаны на [странице услуг](/services).',
         actions: [
-          { label: 'Оставить заявку на проект', actionKey: 'show_lead_form', primary: true },
+          { label: 'Обсудить проект', actionKey: 'show_lead_form', primary: true },
         ],
       };
     }
@@ -308,7 +346,7 @@ export function AiChatWidget() {
           '— [«Битрикс24 & 1С»](/portfolio/bitrix-1c) — модуль двусторонней интеграции CRM и 1С:Предприятие для обмена заказами и клиентами.\n\n' +
           'Больше работ смотрите на [этой странице](/portfolio).',
         actions: [
-          { label: 'Обсудить мой проект', actionKey: 'show_lead_form', primary: true },
+          { label: 'Обсудить проект', actionKey: 'show_lead_form', primary: true },
         ],
       };
     }
@@ -343,7 +381,7 @@ export function AiChatWidget() {
       sender: 'assistant',
       text: 'Спасибо за вопрос! Я умный ассистент Велкод. Могу рассказать о стоимости, услугах, гарантиях, показать [кейсы в портфолио](/portfolio) или передать ваши контакты для детальной консультации.',
       actions: [
-        { label: 'Обсудить мой проект', actionKey: 'show_lead_form', primary: true },
+        { label: 'Обсудить проект', actionKey: 'show_lead_form', primary: true },
       ],
     };
   };
@@ -466,9 +504,9 @@ export function AiChatWidget() {
                   Ответит на любой вопрос по нашим услугам
                 </p>
 
-                {/* Частые вопросы в виде компонентов тегов сайта */}
+                {/* Частые вопросы в виде компонентов тегов сайта (первые 3 из FAQ) */}
                 <div className="ai-frequent-tags">
-                  {FREQUENT_QUESTIONS.map((q, idx) => (
+                  {frequentQuestions.map((q, idx) => (
                     <Tag
                       key={idx}
                       as="button"

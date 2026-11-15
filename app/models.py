@@ -147,7 +147,7 @@ def _trigger_kb_rebuild(mapper, connection, target):
         print(f"[DB Trigger] Ошибка автообновления базы знаний: {e}")
 
 
-for _model in (Service, Portfolio, Tag):
+for _model in (Service, Portfolio, Tag, Faq):
     event.listen(_model, "after_insert", _trigger_kb_rebuild)
     event.listen(_model, "after_update", _trigger_kb_rebuild)
     event.listen(_model, "after_delete", _trigger_kb_rebuild)
