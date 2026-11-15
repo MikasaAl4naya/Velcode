@@ -219,7 +219,7 @@ class AiChatService:
             "model": settings.ai_model,
             "messages": payload_messages,
             "response_format": {"type": "json_object"},
-            "temperature": 0.3,
+            "temperature": 0.5,
             "max_tokens": 450,
         }
 
