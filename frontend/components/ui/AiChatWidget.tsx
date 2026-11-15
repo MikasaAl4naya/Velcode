@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { ymGoal } from '@/lib/ym';
 import { Tag } from '@/components/ui/Tag';
 import { LeadForm } from '@/components/ui/LeadForm';
@@ -30,7 +31,6 @@ const DEFAULT_FREQUENT_QUESTIONS = [
 ];
 
 const STORAGE_MSGS_KEY = 'velcode_ai_chat_messages_v1';
-const STORAGE_OPEN_KEY = 'velcode_ai_chat_open_v1';
 const STORAGE_TOPIC_KEY = 'velcode_ai_chat_topic_v1';
 const STORAGE_PROFILE_KEY = 'velcode_ai_chat_profile_v1';
 const MAX_INPUT_LENGTH = 300;
@@ -86,6 +86,16 @@ export function AiChatWidget() {
 
   const chatBodyRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const pathname = usePathname();
+  const prevPathnameRef = useRef(pathname);
+
+  // Сворачивать чат при переходе между страницами сайта
+  useEffect(() => {
+    if (prevPathnameRef.current !== pathname) {
+      prevPathnameRef.current = pathname;
+      setIsOpen(false);
+    }
+  }, [pathname]);
 
   // Загрузка актуального FAQ из БД для быстрых вопросов
   useEffect(() => {
@@ -108,7 +118,7 @@ export function AiChatWidget() {
       ? faqList.slice(0, 3).map((f) => f.question)
       : DEFAULT_FREQUENT_QUESTIONS;
 
-  // Восстановление истории чата и состояния открытости
+  // Восстановление истории чата
   useEffect(() => {
     try {
       const savedMsgs = localStorage.getItem(STORAGE_MSGS_KEY);
@@ -136,10 +146,6 @@ export function AiChatWidget() {
           // ignore
         }
       }
-      const savedOpen = localStorage.getItem(STORAGE_OPEN_KEY);
-      if (savedOpen === 'true') {
-        setIsOpen(true);
-      }
     } catch {
       // ignore
     } finally {
@@ -152,7 +158,6 @@ export function AiChatWidget() {
     if (!isMounted) return;
     try {
       localStorage.setItem(STORAGE_MSGS_KEY, JSON.stringify(messages));
-      localStorage.setItem(STORAGE_OPEN_KEY, String(isOpen));
       if (chatTopic) {
         localStorage.setItem(STORAGE_TOPIC_KEY, chatTopic);
       }
@@ -162,7 +167,7 @@ export function AiChatWidget() {
     } catch {
       // ignore
     }
-  }, [messages, isOpen, chatTopic, userProfile, isMounted]);
+  }, [messages, chatTopic, userProfile, isMounted]);
 
   // Прокрутка чата строго внутри тела сообщений
   useEffect(() => {

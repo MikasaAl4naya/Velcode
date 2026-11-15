@@ -174,7 +174,23 @@ export async function sendChatMessage(
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ message, history, topic, prefill }),
     })
-    if (!res.ok) return null
+    if (!res.ok) {
+      if (res.status === 429) {
+        const data = await res.json().catch(() => ({}))
+        const msg = typeof data?.detail === 'string' ? data.detail : 'Слишком много сообщений. Пожалуйста, подождите немного.'
+        return {
+          text: msg,
+          show_lead_form: false,
+        }
+      }
+      if (res.status === 422) {
+        return {
+          text: 'Сообщение слишком длинное или содержит недопустимый формат.',
+          show_lead_form: false,
+        }
+      }
+      return null
+    }
     return await res.json()
   } catch {
     return null
