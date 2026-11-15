@@ -28,7 +28,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
 from app.database import AsyncSessionLocal, init_models
-from app.models import Category, Faq, Portfolio, Service
+from app.models import Category, CompanyContact, Faq, Portfolio, Service
 
 
 async def extract_knowledge_data() -> dict[str, Any]:
@@ -62,10 +62,26 @@ async def extract_knowledge_data() -> dict[str, Any]:
         faq_res = await db.execute(faq_stmt)
         faqs = faq_res.scalars().all()
 
+        # 4. Извлекаем контакты компании (если нет, создаём дефолтную запись)
+        contacts_stmt = select(CompanyContact).order_by(CompanyContact.id.asc()).limit(1)
+        contacts_res = await db.execute(contacts_stmt)
+        contact = contacts_res.scalars().first()
+        if not contact:
+            contact = CompanyContact(
+                legal_entity="ИП Манилат Виктория Пхетудоновна, ИНН: 381914585931, ОГРНИП: 326385000117097",
+                phone="+7 (924) 534 51 82",
+                messengers="Telegram: https://t.me/VelcodeIRK (@VelcodeIRK)",
+                email="velcode@inbox.ru",
+            )
+            db.add(contact)
+            await db.commit()
+            await db.refresh(contact)
+
     return {
         "services": services,
         "projects": projects,
         "faqs": faqs,
+        "contact": contact,
     }
 
 
@@ -140,16 +156,31 @@ def build_chunks(data: dict[str, Any]) -> list[dict[str, Any]]:
             },
         })
 
-    # 3. Контакты и реквизиты компании
-    contacts_text = (
-        "Контакты и реквизиты компании Велкод:\n"
-        "Телефон: +7 (924) 534 51 82\n"
-        "Email: velcode@inbox.ru\n"
-        "Telegram: https://t.me/VelcodeIRK (@VelcodeIRK)\n"
-        "Адрес: г. Иркутск, ул. Баррикад, д. 60/6, кв./офис 23\n"
-        "Реквизиты: ИП Манилат Виктория Пхетудоновна, ИНН: 381914585931, ОГРНИП: 326385000117097\n"
-        "Ссылка: /contacts"
-    ).strip()
+    # 3. Контакты и реквизиты компании из БД
+    contact = data.get("contact")
+    if contact:
+        phone = contact.phone.strip() if contact.phone else ""
+        email = contact.email.strip() if contact.email else ""
+        messengers = contact.messengers.strip() if contact.messengers else ""
+        legal = contact.legal_entity.strip() if contact.legal_entity else ""
+    else:
+        phone = "+7 (924) 534 51 82"
+        email = "velcode@inbox.ru"
+        messengers = "Telegram: https://t.me/VelcodeIRK (@VelcodeIRK)"
+        legal = "ИП Манилат Виктория Пхетудоновна, ИНН: 381914585931, ОГРНИП: 326385000117097"
+
+    lines = ["Контакты и реквизиты компании Велкод:"]
+    if phone:
+        lines.append(f"Телефон: {phone}")
+    if email:
+        lines.append(f"Email: {email}")
+    if messengers:
+        lines.append(f"Мессенджеры: {messengers}")
+    if legal:
+        lines.append(f"Реквизиты: {legal}")
+    lines.append("Ссылка: /contacts")
+
+    contacts_text = "\n".join(lines).strip()
 
     chunks.append({
         "id": "company_contacts",
@@ -160,10 +191,10 @@ def build_chunks(data: dict[str, Any]) -> list[dict[str, Any]]:
         "metadata": {
             "type": "contacts",
             "url": "/contacts",
-            "phone": "+7 (924) 534 51 82",
-            "email": "velcode@inbox.ru",
-            "telegram": "@VelcodeIRK",
-            "city": "Иркутск",
+            "phone": phone,
+            "email": email,
+            "messengers": messengers,
+            "legal_entity": legal,
         },
     })
 

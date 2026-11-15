@@ -336,7 +336,7 @@ export function AiChatWidget() {
       const leadMsg: Message = {
         id: `bot-lead-${Date.now()}`,
         sender: 'assistant',
-        text: 'Заполните, пожалуйста, форму ниже — специалист свяжется с вами в рабочее время:',
+        text: 'Заполните, пожалуйста, форму ниже — специалист свяжется с вами:',
         showLeadForm: true,
         prefill: {
           name: userProfile.name || null,
@@ -372,7 +372,7 @@ export function AiChatWidget() {
     const successMsg: Message = {
       id: `bot-done-${Date.now()}`,
       sender: 'assistant',
-      text: `Спасибо${data.name ? ', ' + data.name : ''}! Ваша заявка успешно принята. Специалист свяжется с вами по номеру ${data.phone} в рабочее время (Пн-Пт с 10:00 до 18:00).`,
+      text: `Спасибо${data.name ? ', ' + data.name : ''}! Ваша заявка успешно принята. Специалист скоро свяжется с вами по номеру ${data.phone}.`,
     };
     setMessages((prev) => [...prev, successMsg]);
   };

@@ -133,6 +133,26 @@ class Lead(Base):
     )
 
 
+class CompanyContact(Base):
+    """Контакты и реквизиты компании для сайта и базы знаний ИИ."""
+
+    __tablename__ = "company_contacts"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    legal_entity: Mapped[str] = mapped_column(
+        String(500),
+        nullable=False,
+        default="ИП Манилат Виктория Пхетудоновна, ИНН: 381914585931, ОГРНИП: 326385000117097",
+    )
+    phone: Mapped[str] = mapped_column(String(100), nullable=False, default="+7 (924) 534 51 82")
+    messengers: Mapped[str] = mapped_column(
+        String(500),
+        nullable=False,
+        default="Telegram: https://t.me/VelcodeIRK (@VelcodeIRK)",
+    )
+    email: Mapped[str] = mapped_column(String(255), nullable=False, default="velcode@inbox.ru")
+
+
 # ---------------------------------------------------------------------------
 # Автоматический триггер пересборки базы знаний ИИ при любых изменениях в БД
 # ---------------------------------------------------------------------------
@@ -147,7 +167,7 @@ def _trigger_kb_rebuild(mapper, connection, target):
         print(f"[DB Trigger] Ошибка автообновления базы знаний: {e}")
 
 
-for _model in (Service, Portfolio, Tag, Faq):
+for _model in (Service, Portfolio, Tag, Faq, CompanyContact):
     event.listen(_model, "after_insert", _trigger_kb_rebuild)
     event.listen(_model, "after_update", _trigger_kb_rebuild)
     event.listen(_model, "after_delete", _trigger_kb_rebuild)

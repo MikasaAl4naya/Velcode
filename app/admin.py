@@ -11,7 +11,7 @@ from starlette.responses import HTMLResponse, JSONResponse
 
 from app.config import settings
 from app.database import engine
-from app.models import Faq, Lead, Portfolio, Service, Tag
+from app.models import CompanyContact, Faq, Lead, Portfolio, Service, Tag
 
 UPLOADS_DIR = Path("uploads")
 
@@ -468,6 +468,47 @@ class FaqAdmin(ModelView, model=Faq):
             print(f"[Admin] Ошибка пересборки базы знаний ИИ: {e}")
 
 
+class CompanyContactAdmin(ModelView, model=CompanyContact):
+    name = "Контакты и реквизиты"
+    name_plural = "Контакты и реквизиты"
+    icon = "fa-solid fa-address-book"
+
+    column_list = [
+        CompanyContact.id,
+        CompanyContact.legal_entity,
+        CompanyContact.phone,
+        CompanyContact.email,
+        CompanyContact.messengers,
+    ]
+    column_labels = {
+        "id": "ID",
+        "legal_entity": "Юрлицо / Реквизиты",
+        "phone": "Телефон",
+        "email": "Email",
+        "messengers": "Мессенджеры",
+    }
+    form_columns = [
+        CompanyContact.legal_entity,
+        CompanyContact.phone,
+        CompanyContact.email,
+        CompanyContact.messengers,
+    ]
+
+    async def after_model_change(self, data: dict, model, is_created: bool, request: Request) -> None:
+        try:
+            from scripts.build_knowledge_base import rebuild_knowledge_base
+            await rebuild_knowledge_base()
+        except Exception as e:
+            print(f"[Admin] Ошибка пересборки базы знаний ИИ: {e}")
+
+    async def after_model_delete(self, model, request: Request) -> None:
+        try:
+            from scripts.build_knowledge_base import rebuild_knowledge_base
+            await rebuild_knowledge_base()
+        except Exception as e:
+            print(f"[Admin] Ошибка пересборки базы знаний ИИ: {e}")
+
+
 def create_admin(app) -> Admin:
     auth = AdminAuth(secret_key=settings.admin_secret_key)
     admin = Admin(app=app, engine=engine, authentication_backend=auth, title="Велкод — Admin")
@@ -476,6 +517,7 @@ def create_admin(app) -> Admin:
     admin.add_view(TagAdmin)
     admin.add_view(ServiceAdmin)
     admin.add_view(FaqAdmin)
+    admin.add_view(CompanyContactAdmin)
     admin.add_base_view(UploadView)
     admin.add_base_view(UploadsManagerView)
     return admin
