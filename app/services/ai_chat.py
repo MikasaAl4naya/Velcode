@@ -95,12 +95,21 @@ class AiChatService:
         kb_summary = self._load_knowledge_base_summary()
 
         topic_context = f"\nТЕКУЩАЯ ТЕМА ДИАЛОГА: {topic}\n" if topic else ""
+        session_context = []
+        if history:
+            all_hist_text = " ".join(m.text for m in history)
+            phone_find = re.search(r'(?:\+?7|8)[\s\-\(]*(\d{3})[\s\-\)]*(\d{3})[\s\-]*(\d{2})[\s\-]*(\d{2})|\b(?:\+?7|8)?(\d{10})\b', all_hist_text)
+            if phone_find:
+                session_context.append(f"Телефон клиента: {_format_russian_phone(phone_find.group(0))}")
+        session_context_str = f"\nКОНТЕКСТ ДИАЛОГА: {', '.join(session_context)}\n" if session_context else ""
+
         full_system_prompt = (
             f"{system_prompt}\n\n"
             f"--- БАЗА ЗНАНИЙ КОМПАНИИ ВЕЛКОД ---\n"
             f"{kb_summary}\n"
             f"-----------------------------------\n"
             f"{topic_context}"
+            f"{session_context_str}"
         )
 
         recent_history = history[-6:] if history else []
@@ -157,6 +166,10 @@ class AiChatService:
                         clean_name = str(p_name).strip() if p_name else None
                         if formatted_phone or clean_name:
                             prefill = ChatPrefill(phone=formatted_phone, name=clean_name)
+
+                    lower_text = text.lower()
+                    if any(k in lower_text for k in ["форму ниже", "форма открыта", "форма заявки открыта"]):
+                        show_lead_form = True
 
                     actions: list[ChatAction] = []
                     if show_lead_form:
