@@ -221,17 +221,19 @@ class AiChatService:
         effective_topic = _detect_topic(query, topic)
         q = query.strip().lower()
 
+        # Извлекаем телефон и имя из текущего сообщения или истории диалога
+        known_phone = _extract_phone(query)
+        known_name = _extract_name(query)
+        if history:
+            for h in reversed(history):
+                if not known_phone and h.role == "user":
+                    known_phone = _extract_phone(h.text)
+                if not known_name and h.role == "user":
+                    known_name = _extract_name(h.text)
+        formatted_known_phone = _format_russian_phone(known_phone) if known_phone else None
+
         # 0. Вопросы про согласие / почему бот сам не отправляет (152-ФЗ)
         if _is_152_fz_query(query):
-            phone = _extract_phone(query)
-            if not phone and history:
-                for h in reversed(history):
-                    if h.role == "user":
-                        p = _extract_phone(h.text)
-                        if p:
-                            phone = p
-                            break
-            formatted_phone = _format_russian_phone(phone) if phone else None
             return ChatResponse(
                 text=(
                     "Согласно Федеральному закону № 152-ФЗ «О персональных данных», мы не имеем права "
@@ -242,13 +244,13 @@ class AiChatService:
                 topic=effective_topic,
                 actions=[],
                 show_lead_form=True,
-                prefill=ChatPrefill(phone=formatted_phone) if formatted_phone else None,
+                prefill=ChatPrefill(phone=formatted_known_phone, name=known_name) if (formatted_known_phone or known_name) else None,
             )
 
         # 0.1 Пользователь передал номер телефона
         phone = _extract_phone(query)
         if phone:
-            name = _extract_name(query)
+            name = _extract_name(query) or known_name
             formatted_phone = _format_russian_phone(phone)
             if name:
                 text = (
@@ -379,84 +381,47 @@ class AiChatService:
         self, message: str, history: list[ChatMessage] | None = None, topic: str | None = None
     ) -> ChatResponse:
         effective_topic = _detect_topic(message, topic)
-
-        # 1. Запрос по 152-ФЗ / почему бот сам не отправляет
-        if _is_152_fz_query(message):
-            phone = _extract_phone(message)
-            if not phone and history:
-                for h in reversed(history):
-                    if h.role == "user":
-                        p = _extract_phone(h.text)
-                        if p:
-                            phone = p
-                            break
-            formatted_phone = _format_russian_phone(phone) if phone else None
-            return ChatResponse(
-                text=(
-                    "Согласно Федеральному закону № 152-ФЗ «О персональных данных», мы не имеем права "
-                    "собирать и отправлять ваши контактные данные без вашего личного прямого согласия. "
-                    "Поэтому вам необходимо подтвердить согласие галочкой и нажать кнопку отправки самостоятельно — "
-                    "это требование закона для защиты ваших персональных данных."
-                ),
-                topic=effective_topic,
-                actions=[],
-                show_lead_form=True,
-                prefill=ChatPrefill(phone=formatted_phone) if formatted_phone else None,
-            )
-
-        # 2. Если в сообщении есть телефон — формируем мгновенный гарантированный ответ с открытием формы
-        extracted_phone = _extract_phone(message)
-        extracted_name = _extract_name(message)
-        if extracted_phone:
-            formatted_phone = _format_russian_phone(extracted_phone)
-            if extracted_name:
-                text = (
-                    f"Отлично, {extracted_name}! Я открыл форму заявки ниже и уже заполнил ваши данные ({formatted_phone}). "
-                    f"Пожалуйста, подтвердите согласие на обработку персональных данных и нажмите кнопку «Отправить»."
-                )
-            else:
-                text = (
-                    f"Отлично! Я открыл форму заявки ниже и уже заполнил поле с вашим номером ({formatted_phone}). "
-                    f"Пожалуйста, укажите ваше имя, подтвердите согласие на обработку персональных данных и нажмите «Отправить»."
-                )
-            return ChatResponse(
-                text=text,
-                topic=effective_topic,
-                actions=[],
-                show_lead_form=True,
-                prefill=ChatPrefill(phone=formatted_phone, name=extracted_name),
-            )
-
-        # 3. Короткие / неясные реплики без сути вопроса («нет», «не знаю», «ок», «ага» и т.д.)
-        if _is_vague_query(message):
-            return ChatResponse(
-                text="Не совсем понимаю вас. Хотите оставить заявку и уточнить все детали у нашего менеджера?",
-                topic=effective_topic or "Консультация по услугам",
-                actions=[ChatAction(label="Связаться с менеджером", actionKey="show_lead_form", primary=True)],
-                show_lead_form=False,
-                prefill=None,
-            )
-
         api_key = self._get_api_key()
 
         # Если токен не задан — используем локальный движок
         if not api_key:
             return self._local_smart_response(message, history, topic)
 
+        # Извлекаем телефон и имя из текущего сообщения или истории диалога
+        known_phone = _extract_phone(message)
+        known_name = _extract_name(message)
+        if history:
+            for h in reversed(history):
+                if not known_phone and h.role == "user":
+                    known_phone = _extract_phone(h.text)
+                if not known_name and h.role == "user":
+                    known_name = _extract_name(h.text)
+        formatted_known_phone = _format_russian_phone(known_phone) if known_phone else None
+
         system_prompt = self._load_system_prompt()
         kb_summary = self._load_knowledge_base_summary()
 
         topic_context = f"\nТЕКУЩАЯ ТЕМА ДИАЛОГА: {effective_topic}\n" if effective_topic else ""
+        known_client_info = ""
+        if known_name or formatted_known_phone:
+            parts = []
+            if known_name:
+                parts.append(f"Имя: {known_name}")
+            if formatted_known_phone:
+                parts.append(f"Телефон: {formatted_known_phone}")
+            known_client_info = f"\nДАННЫЕ КЛИЕНТА ИЗ ДИАЛОГА: {', '.join(parts)} (ОБЯЗАТЕЛЬНО сохраняй их в prefill: {{\"name\": \"...\", \"phone\": \"...\"}} при показе формы!)\n"
+
         full_system_prompt = (
             f"{system_prompt}\n\n"
             f"--- ДАННЫЕ БАЗЫ ЗНАНИЙ КОМПАНИИ ВЕЛКОД ---\n"
             f"{kb_summary}\n"
             f"-----------------------------------------\n"
             f"{topic_context}"
+            f"{known_client_info}"
             f"ВАЖНЫЕ ПРАВИЛА:\n"
             f"1. Ты НЕ можешь сам отправлять заявки от имени пользователя! НИКОГДА не говори «Заявка принята» или «Я передал контакты».\n"
-            f"2. Если клиент передал номер телефона или просит оставить заявку: всегда отвечай с show_lead_form: true, prefill с телефоном/именем, и action: null. Если указано имя (например «вика 8999...», «меня зовут Олег») — обязательно укажи его в prefill.name. Напиши, что форма открыта ниже и телефон подставлен, осталось указать имя, согласиться с ПД и нажать Отправить.\n"
-            f"3. Если клиент спрашивает, почему бот сам не отправит заявку или зачем нажимать галочку согласия — сошлись на Федеральный закон № 152-ФЗ «О персональных данных».\n"
+            f"2. Если клиент передал номер телефона или просит оставить заявку: всегда отвечай с show_lead_form: true. Обязательно сохраняй и передавай в prefill имя и телефон (текущие или из истории): prefill: {{\"name\": \"...\", \"phone\": \"...\"}}, action: null. Напиши, что форма открыта ниже и данные подставлены, осталось подтвердить согласие с ПД и нажать Отправить.\n"
+            f"3. Если клиент спрашивает, почему бот сам не отправит заявку или зачем нажимать галочку согласия (например «отправь сам», «зачем галочка»): вежливо сошлись на Федеральный закон № 152-ФЗ «О персональных данных», оставь форму открытой show_lead_form: true и сохрани prefill с данными клиента.\n"
             f"4. В поле \"topic\" формулируй точную суть задачи с учётом деталей и уточнений клиента (2-6 слов, например «Разработка сайта под ключ со своим дизайном», «Интернет-магазин с каталогом и 1С»).\n"
             f"5. Всегда отвечай строго в формате JSON: {{\"text\": \"...\", \"topic\": \"...\", \"show_lead_form\": false, \"prefill\": {{\"phone\": null, \"name\": null}}, \"action\": {{\"label\": \"...\", \"actionKey\": \"show_lead_form\"}}}}.\n"
             f"6. Текст label в action должен содержать МАКСИМУМ 3 слова. Если show_lead_form: true, то action должен быть null.\n"
@@ -526,24 +491,20 @@ class AiChatService:
 
                     prefill_data = parsed.get("prefill")
                     prefill: ChatPrefill | None = None
-                    if isinstance(prefill_data, dict) and (prefill_data.get("phone") or prefill_data.get("name")):
+                    eff_name = None
+                    eff_phone = None
+                    if isinstance(prefill_data, dict):
                         p_phone = prefill_data.get("phone")
                         if p_phone:
-                            p_phone = _format_russian_phone(str(p_phone))
+                            eff_phone = _format_russian_phone(str(p_phone))
                         p_name = str(prefill_data.get("name") or "").strip() or None
-                        if not p_name and extracted_name:
-                            p_name = extracted_name
-                        if not p_phone and extracted_phone:
-                            p_phone = _format_russian_phone(extracted_phone)
-                        prefill = ChatPrefill(
-                            phone=p_phone,
-                            name=p_name,
-                        )
-                    elif extracted_phone or extracted_name:
-                        prefill = ChatPrefill(
-                            phone=_format_russian_phone(extracted_phone) if extracted_phone else None,
-                            name=extracted_name,
-                        )
+                        if p_name:
+                            eff_name = p_name
+
+                    eff_name = eff_name or known_name
+                    eff_phone = eff_phone or formatted_known_phone
+                    if eff_name or eff_phone:
+                        prefill = ChatPrefill(phone=eff_phone, name=eff_name)
 
                     # Проверяем намерение показать форму из текста
                     lower_text = text.lower()
@@ -559,6 +520,8 @@ class AiChatService:
                     if show_lead_form:
                         # Когда форма открыта — убираем дублирующую кнопку действия
                         actions = []
+                        if eff_name or eff_phone:
+                            prefill = ChatPrefill(phone=eff_phone, name=eff_name)
                     elif isinstance(action_data, dict) and action_data.get("label"):
                         raw_label = str(action_data["label"]).strip()
                         trimmed_label = _truncate_words(raw_label, 3)

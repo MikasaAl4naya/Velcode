@@ -132,6 +132,7 @@ export function AiChatWidget() {
   const [isTyping, setIsTyping] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [chatTopic, setChatTopic] = useState<string>('');
+  const [userProfile, setUserProfile] = useState<{ name?: string; phone?: string }>({});
   const [leadSent, setLeadSent] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   const [isDebugMode, setIsDebugMode] = useState(false);
@@ -269,6 +270,27 @@ export function AiChatWidget() {
     if (leadSent) {
       setLeadSent(false);
       setChatTopic('');
+      setUserProfile({});
+    }
+
+    // Сохраняем имя или телефон из сообщения пользователя в профиль сессии
+    const directPhone = text.match(/(?:\+?7|8)[\s\-\(]*(\d{3})[\s\-\)]*(\d{3})[\s\-]*(\d{2})[\s\-]*(\d{2})|\b(?:\+?7|8)?(\d{10})\b/);
+    const directName = extractClientName(text);
+    if (directPhone || directName) {
+      setUserProfile((prev) => {
+        let formattedPhone = prev.phone;
+        if (directPhone) {
+          const raw = directPhone[0].replace(/\D/g, '');
+          const clean = raw.length === 10 ? '7' + raw : (raw[0] === '8' ? '7' + raw.slice(1) : raw);
+          if (clean.length === 11) {
+            formattedPhone = `+7 (${clean.slice(1, 4)}) ${clean.slice(4, 7)}-${clean.slice(7, 9)}-${clean.slice(9, 11)}`;
+          }
+        }
+        return {
+          name: directName || prev.name,
+          phone: formattedPhone || prev.phone,
+        };
+      });
     }
 
     // Очищаем кнопки действий и показ формы из всех предыдущих сообщений (если пользователь пишет дальше)
@@ -317,6 +339,12 @@ export function AiChatWidget() {
         if (apiResponse.topic) {
           setChatTopic(apiResponse.topic);
         }
+        if (apiResponse.prefill) {
+          setUserProfile((prev) => ({
+            name: apiResponse.prefill?.name || prev.name,
+            phone: apiResponse.prefill?.phone || prev.phone,
+          }));
+        }
         setMessages((prev) => [
           ...prev,
           {
@@ -338,6 +366,12 @@ export function AiChatWidget() {
     // Фоллбек, если бэкенд недоступен или токен не задан
     setTimeout(() => {
       const botResponse = generateLocalBotResponse(text);
+      if (botResponse.prefill) {
+        setUserProfile((prev) => ({
+          name: botResponse.prefill?.name || prev.name,
+          phone: botResponse.prefill?.phone || prev.phone,
+        }));
+      }
       setMessages((prev) => [...prev, botResponse]);
       setIsTyping(false);
     }, 400);
@@ -610,6 +644,7 @@ export function AiChatWidget() {
   const handleResetChat = () => {
     setMessages([]);
     setChatTopic('');
+    setUserProfile({});
     setLeadSent(false);
     setInputText('');
     try {
@@ -622,6 +657,7 @@ export function AiChatWidget() {
 
   const handleLeadSuccess = (data: { name: string; phone: string }) => {
     setLeadSent(true);
+    setUserProfile({});
     const successMsg: Message = {
       id: `bot-done-${Date.now()}`,
       sender: 'assistant',
@@ -756,8 +792,8 @@ export function AiChatWidget() {
                             hideQuestion={true}
                             hideSuccessModal={true}
                             footerLayout="column"
-                            initialName={msg.prefill?.name || ''}
-                            initialPhone={msg.prefill?.phone || ''}
+                            initialName={msg.prefill?.name || userProfile.name || ''}
+                            initialPhone={msg.prefill?.phone || userProfile.phone || ''}
                             initialQuestion={chatTopic || 'Консультация из чата'}
                             onSuccess={(data) => handleLeadSuccess(data)}
                           />
