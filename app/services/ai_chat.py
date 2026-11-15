@@ -52,13 +52,53 @@ def _format_russian_phone(phone_digits: str) -> str:
 
 
 def _extract_name(text: str) -> str | None:
-    m = re.search(r'(?:меня зовут|мое имя|моё имя|имя|я)\s+([А-ЯЁ][а-яё]+|[A-Z][a-z]+)', text, re.IGNORECASE)
-    if m:
-        candidate = m.group(1).strip().capitalize()
-        stop_words = {'мой', 'мое', 'моё', 'телефон', 'номер', 'заявку', 'привет', 'здравствуйте', 'тут', 'здесь', 'просто'}
-        if candidate.lower() not in stop_words:
-            return candidate
+    stop_words = {
+        'мой', 'мое', 'моё', 'телефон', 'номер', 'номером', 'заявку', 'заявка', 'заявки',
+        'оставь', 'оставьте', 'отправь', 'отправьте', 'заполни', 'заполните',
+        'привет', 'здравствуйте', 'добрый', 'день', 'вечер', 'тут', 'здесь',
+        'просто', 'свяжитесь', 'напишите', 'позвоните', 'перезвоните', 'набери', 'наберите',
+        'жду', 'звонка', 'связь', 'связи', 'для', 'вот', 'это', 'давай', 'хочу',
+        'клиент', 'пользователь', 'человек', 'заказчик', 'нет', 'да', 'ок', 'ага',
+        'пожалуйста', 'спасибо', 'согласен', 'согласна', 'знаю', 'знает', 'знать', 'помню', 'думаю'
+    }
+
+    # 1. Шаблоны с явным представлением
+    explicit = re.search(r'(?:меня\s+зовут|мое\s+имя|моё\s+имя|имя[:\s]+)\s*([А-ЯЁа-яёA-Za-z]+(?:\s+[А-ЯЁа-яёA-Za-z]+)?)', text, re.IGNORECASE)
+    if explicit:
+        candidate = explicit.group(1).strip()
+        words = [w.capitalize() for w in candidate.split() if w.lower() not in stop_words and len(w) >= 2 and w.isalpha()]
+        if words:
+            return ' '.join(words[:2])
+
+    # 2. Выделение имени при наличии телефона
+    clean = re.sub(r'(?:\+?7|8)[\s\-\(]*\d{3}[\s\-\)]*\d{3}[\s\-]*\d{2}[\s\-]*\d{2}|\b(?:\+?7|8)?\d{10}\b', ' ', text)
+    clean = re.sub(r'[^\w\s]', ' ', clean)
+    words = clean.split()
+
+    potential_names = []
+    for w in words:
+        w_low = w.lower()
+        if w_low not in stop_words and len(w) >= 2 and w.isalpha():
+            potential_names.append(w.capitalize())
+
+    if 1 <= len(potential_names) <= 2:
+        return ' '.join(potential_names)
     return None
+
+
+def _is_vague_query(text: str) -> bool:
+    q = text.strip().lower()
+    q_clean = re.sub(r'[^\w\s]', '', q).strip()
+    vague_phrases = {
+        'нет', 'не', 'неа', 'ноу', 'no',
+        'хз', 'не знаю', 'не уверена', 'не уверен', 'без понятия',
+        'ок', 'ладно', 'ясно', 'понял', 'понятно', 'ага', 'угу', 'ну', 'хм', 'эм', 'мм',
+        'ну ок', 'да нет', 'да не', 'не знаю даже', 'ничего', 'ниче',
+        'что', 'че', 'чё', 'и', 'и что', 'и че', 'а'
+    }
+    if q_clean in vague_phrases or (len(q_clean) <= 2 and not q_clean.isdigit()):
+        return True
+    return False
 
 
 def _is_152_fz_query(text: str) -> bool:
@@ -228,6 +268,16 @@ class AiChatService:
                 prefill=ChatPrefill(phone=formatted_phone, name=name),
             )
 
+        # 0.2 Короткие / неясные реплики без сути вопроса («нет», «не знаю», «ок», «ага» и т.д.)
+        if _is_vague_query(query):
+            return ChatResponse(
+                text="Не совсем понимаю вас. Хотите оставить заявку и уточнить все детали у нашего менеджера?",
+                topic=effective_topic or "Консультация по услугам",
+                actions=[ChatAction(label="Связаться с менеджером", actionKey="show_lead_form", primary=True)],
+                show_lead_form=False,
+                prefill=None,
+            )
+
         # 1. Сложные / нестандартные задачи -> мягкий перевод на специалиста и показ формы
         complex_keywords = [
             "c#", "c++", "java", "микросервис", "кластер", "самописн", "архитектур",
@@ -377,6 +427,16 @@ class AiChatService:
                 prefill=ChatPrefill(phone=formatted_phone, name=extracted_name),
             )
 
+        # 3. Короткие / неясные реплики без сути вопроса («нет», «не знаю», «ок», «ага» и т.д.)
+        if _is_vague_query(message):
+            return ChatResponse(
+                text="Не совсем понимаю вас. Хотите оставить заявку и уточнить все детали у нашего менеджера?",
+                topic=effective_topic or "Консультация по услугам",
+                actions=[ChatAction(label="Связаться с менеджером", actionKey="show_lead_form", primary=True)],
+                show_lead_form=False,
+                prefill=None,
+            )
+
         api_key = self._get_api_key()
 
         # Если токен не задан — используем локальный движок
@@ -395,11 +455,12 @@ class AiChatService:
             f"{topic_context}"
             f"ВАЖНЫЕ ПРАВИЛА:\n"
             f"1. Ты НЕ можешь сам отправлять заявки от имени пользователя! НИКОГДА не говори «Заявка принята» или «Я передал контакты».\n"
-            f"2. Если клиент передал номер телефона или просит оставить заявку: всегда отвечай с show_lead_form: true, prefill с телефоном/именем, и action: null. Напиши, что форма открыта ниже и телефон подставлен, осталось указать имя, согласиться с ПД и нажать Отправить.\n"
+            f"2. Если клиент передал номер телефона или просит оставить заявку: всегда отвечай с show_lead_form: true, prefill с телефоном/именем, и action: null. Если указано имя (например «вика 8999...», «меня зовут Олег») — обязательно укажи его в prefill.name. Напиши, что форма открыта ниже и телефон подставлен, осталось указать имя, согласиться с ПД и нажать Отправить.\n"
             f"3. Если клиент спрашивает, почему бот сам не отправит заявку или зачем нажимать галочку согласия — сошлись на Федеральный закон № 152-ФЗ «О персональных данных».\n"
             f"4. В поле \"topic\" формулируй точную суть задачи с учётом деталей и уточнений клиента (2-6 слов, например «Разработка сайта под ключ со своим дизайном», «Интернет-магазин с каталогом и 1С»).\n"
             f"5. Всегда отвечай строго в формате JSON: {{\"text\": \"...\", \"topic\": \"...\", \"show_lead_form\": false, \"prefill\": {{\"phone\": null, \"name\": null}}, \"action\": {{\"label\": \"...\", \"actionKey\": \"show_lead_form\"}}}}.\n"
-            f"6. Текст label в action должен содержать МАКСИМУМ 3 слова. Если show_lead_form: true, то action должен быть null."
+            f"6. Текст label в action должен содержать МАКСИМУМ 3 слова. Если show_lead_form: true, то action должен быть null.\n"
+            f"7. Если сообщение пользователя не содержит сути или конкретного вопроса (например «нет», «не знаю», «ок», «ага»): вежливо ответь: «Не совсем понимаю вас. Хотите оставить заявку и уточнить все детали у нашего менеджера?», show_lead_form: false, action: {{\"label\": \"Связаться с менеджером\", \"actionKey\": \"show_lead_form\"}}."
         )
 
         # Скользящее окно: берем последние 4 сообщения для экономии контекста
@@ -469,9 +530,19 @@ class AiChatService:
                         p_phone = prefill_data.get("phone")
                         if p_phone:
                             p_phone = _format_russian_phone(str(p_phone))
+                        p_name = str(prefill_data.get("name") or "").strip() or None
+                        if not p_name and extracted_name:
+                            p_name = extracted_name
+                        if not p_phone and extracted_phone:
+                            p_phone = _format_russian_phone(extracted_phone)
                         prefill = ChatPrefill(
                             phone=p_phone,
-                            name=str(prefill_data.get("name") or "").strip() or None,
+                            name=p_name,
+                        )
+                    elif extracted_phone or extracted_name:
+                        prefill = ChatPrefill(
+                            phone=_format_russian_phone(extracted_phone) if extracted_phone else None,
+                            name=extracted_name,
                         )
 
                     # Проверяем намерение показать форму из текста

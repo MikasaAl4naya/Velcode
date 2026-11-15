@@ -88,6 +88,44 @@ function renderMessageContent(text: string) {
   return parts;
 }
 
+function extractClientName(text: string): string | null {
+  const stopWords = new Set([
+    'мой', 'мое', 'моё', 'телефон', 'номер', 'номером', 'заявку', 'заявка', 'заявки',
+    'оставь', 'оставьте', 'отправь', 'отправьте', 'заполни', 'заполните',
+    'привет', 'здравствуйте', 'добрый', 'день', 'вечер', 'тут', 'здесь',
+    'просто', 'свяжитесь', 'напишите', 'позвоните', 'перезвоните', 'набери', 'наберите',
+    'жду', 'звонка', 'связь', 'связи', 'для', 'вот', 'это', 'давай', 'хочу',
+    'клиент', 'пользователь', 'человек', 'заказчик', 'нет', 'да', 'ок', 'ага',
+    'пожалуйста', 'спасибо', 'согласен', 'согласна', 'знаю', 'знает', 'знать', 'помню', 'думаю'
+  ]);
+
+  // 1. Шаблоны с явным представлением
+  const explicitMatch = text.match(/(?:меня\s+зовут|мое\s+имя|моё\s+имя|имя[:\s]+)\s*([А-ЯЁа-яёA-Za-z]+(?:\s+[А-ЯЁа-яёA-Za-z]+)?)/i);
+  if (explicitMatch && explicitMatch[1]) {
+    const words = explicitMatch[1]
+      .split(/\s+/)
+      .filter((w) => !stopWords.has(w.toLowerCase()) && w.length >= 2 && /^[а-яёa-z]+$/i.test(w))
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase());
+    if (words.length > 0) {
+      return words.slice(0, 2).join(' ');
+    }
+  }
+
+  // 2. Выделение имени при наличии телефона
+  const withoutPhone = text.replace(/(?:\+?7|8)[\s\-\(]*\d{3}[\s\-\)]*\d{3}[\s\-]*\d{2}[\s\-]*\d{2}|\b(?:\+?7|8)?\d{10}\b/g, ' ');
+  const cleanWords = withoutPhone
+    .replace(/[^\w\sа-яё]/gi, ' ')
+    .split(/\s+/)
+    .filter((w) => !stopWords.has(w.toLowerCase()) && w.length >= 2 && /^[а-яёa-z]+$/i.test(w))
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase());
+
+  if (cleanWords.length >= 1 && cleanWords.length <= 2) {
+    return cleanWords.join(' ');
+  }
+
+  return null;
+}
+
 export function AiChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [inputText, setInputText] = useState('');
@@ -346,12 +384,37 @@ export function AiChatWidget() {
         ? `+7 (${cleanDigits.slice(1, 4)}) ${cleanDigits.slice(4, 7)}-${cleanDigits.slice(7, 9)}-${cleanDigits.slice(9, 11)}`
         : phoneMatch[0];
 
+      const extractedName = extractClientName(query);
+      const responseText = extractedName
+        ? `Отлично, ${extractedName}! Я открыл форму заявки ниже и уже заполнил ваши данные (${formattedPhone}). Пожалуйста, подтвердите согласие на обработку персональных данных и нажмите кнопку «Отправить».`
+        : `Отлично! Я открыл форму заявки ниже и уже заполнил поле с вашим номером (${formattedPhone}). Пожалуйста, укажите ваше имя, подтвердите согласие на обработку персональных данных и нажмите «Отправить».`;
+
       return {
         id: `bot-${Date.now()}`,
         sender: 'assistant',
-        text: `Отлично! Я открыл форму заявки ниже и уже заполнил поле с вашим номером (${formattedPhone}). Пожалуйста, укажите ваше имя, подтвердите согласие на обработку персональных данных и нажмите «Отправить».`,
+        text: responseText,
         showLeadForm: true,
-        prefill: { phone: formattedPhone },
+        prefill: { phone: formattedPhone, name: extractedName || undefined },
+      };
+    }
+
+    // 0.2 Короткие / неясные реплики без сути вопроса («нет», «не знаю», «ок», «ага» и т.д.)
+    const vaguePhrases = [
+      'нет', 'не', 'неа', 'ноу', 'no',
+      'хз', 'не знаю', 'не уверена', 'не уверен', 'без понятия',
+      'ок', 'ладно', 'ясно', 'понял', 'понятно', 'ага', 'угу', 'ну', 'хм', 'эм', 'мм',
+      'ну ок', 'да нет', 'да не', 'не знаю даже', 'ничего', 'ниче',
+      'что', 'че', 'чё', 'и', 'и что', 'и че', 'а'
+    ];
+    const cleanQuery = trimmed.replace(/[^\w\sа-яё]/gi, '').trim();
+    if (vaguePhrases.includes(cleanQuery) || (cleanQuery.length <= 2 && !/^\d+$/.test(cleanQuery))) {
+      return {
+        id: `bot-${Date.now()}`,
+        sender: 'assistant',
+        text: 'Не совсем понимаю вас. Хотите оставить заявку и уточнить все детали у нашего менеджера?',
+        actions: [
+          { label: 'Связаться с менеджером', actionKey: 'show_lead_form', primary: true },
+        ],
       };
     }
 
