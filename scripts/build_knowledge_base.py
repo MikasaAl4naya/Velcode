@@ -1,10 +1,12 @@
 """Скрипт динамической сборки базы знаний для ИИ строго из базы данных (услуги и портфолио).
 
-Никаких фиктивных данных и заглушек — только то, что реально сохранено в БД.
+- Чанки для RAG/LLM собираются напрямую из таблиц services и portfolio базы данных.
+- Реестр ссылок для валидатора (site_catalog.json) тянется напрямую из живого sitemap.xml.
+
 Сохраняет артефакты в knowledge_base/:
   - knowledge_base.json  — структурированные чанки услуг и проектов для RAG / векторных баз
   - knowledge_base.md    — сводный Markdown по услугам и проектам
-  - site_catalog.json    — валидные ссылки страниц и проектов для проверки ответов модели
+  - site_catalog.json    — валидные ссылки сайта из sitemap.xml для проверки ответов модели
 
 Запуск:
     python -m scripts.build_knowledge_base
@@ -15,10 +17,13 @@ from __future__ import annotations
 import argparse
 import asyncio
 import json
+import re
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlparse
 
+import httpx
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
@@ -172,20 +177,43 @@ def build_markdown_document(chunks: list[dict[str, Any]]) -> str:
     return "\n".join(lines)
 
 
-def build_site_catalog(chunks: list[dict[str, Any]]) -> dict[str, Any]:
-    """Реестр всех страниц услуг и проектов для валидатора ссылок."""
+async def fetch_sitemap_urls(
+    sitemap_url: str = "http://127.0.0.1:3000/sitemap.xml",
+) -> list[str]:
+    """Запрашивает живой sitemap.xml у Next.js и вытаскивает все валидные пути сайта."""
+    try:
+        async with httpx.AsyncClient(timeout=4.0) as client:
+            resp = await client.get(sitemap_url)
+            if resp.status_code == 200:
+                raw_locs = re.findall(r"<loc>([^<]+)</loc>", resp.text)
+                paths = []
+                for loc in raw_locs:
+                    parsed = urlparse(loc.strip())
+                    path = parsed.path or "/"
+                    if path not in paths:
+                        paths.append(path)
+                if paths:
+                    return paths
+    except Exception as e:
+        print(f"  [Sitemap] Не удалось получить sitemap.xml с {sitemap_url}: {e}")
+    return []
+
+
+def build_site_catalog(
+    chunks: list[dict[str, Any]],
+    sitemap_paths: list[str] | None = None,
+) -> dict[str, Any]:
+    """Реестр всех валидных ссылок на основе живого sitemap.xml."""
     portfolio_routes: dict[str, str] = {}
     for ch in chunks:
         if ch["category"] == "portfolio":
             portfolio_routes[ch["title"]] = ch["url"]
 
-    valid_urls = list(set(["/services", "/portfolio"] + list(portfolio_routes.values())))
+    base_paths = sitemap_paths if sitemap_paths else ["/", "/services", "/portfolio"]
+    valid_urls = sorted(list(set(base_paths + list(portfolio_routes.values()))))
 
     return {
-        "routes": {
-            "услуги": "/services",
-            "портфолио": "/portfolio",
-        },
+        "source": "sitemap.xml" if sitemap_paths else "database_fallback",
         "portfolio_projects": portfolio_routes,
         "valid_urls": valid_urls,
     }
@@ -195,7 +223,7 @@ async def rebuild_knowledge_base(
     out_dir: str = "knowledge_base",
     output_format: str = "all",
 ) -> dict[str, Any]:
-    """Пересобирает базу знаний строго из БД."""
+    """Пересобирает базу знаний (услуги и портфолио из БД, ссылки из sitemap.xml)."""
     out_path = Path(out_dir)
     out_path.mkdir(parents=True, exist_ok=True)
 
@@ -216,9 +244,16 @@ async def rebuild_knowledge_base(
                 indent=2,
             )
 
+        # Вытаскиваем ссылки напрямую из sitemap.xml
+        sitemap_paths = await fetch_sitemap_urls()
         catalog_file = out_path / "site_catalog.json"
         with open(catalog_file, "w", encoding="utf-8") as f:
-            json.dump(build_site_catalog(chunks), f, ensure_ascii=False, indent=2)
+            json.dump(
+                build_site_catalog(chunks, sitemap_paths),
+                f,
+                ensure_ascii=False,
+                indent=2,
+            )
 
     if output_format in ("all", "md"):
         md_file = out_path / "knowledge_base.md"
@@ -249,7 +284,7 @@ async def main() -> None:
     args = parser.parse_args()
 
     print("=" * 60)
-    print("🚀 Сборка базы знаний ИИ строго из базы данных (услуги + портфолио)...")
+    print("🚀 Сборка базы знаний ИИ (БД + sitemap.xml)...")
     print("=" * 60)
 
     res = await rebuild_knowledge_base(out_dir=args.out_dir, output_format=args.format)

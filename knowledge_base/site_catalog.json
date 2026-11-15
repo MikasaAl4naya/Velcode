@@ -1,18 +1,18 @@
 {
-  "routes": {
-    "услуги": "/services",
-    "портфолио": "/portfolio"
-  },
+  "source": "sitemap.xml",
   "portfolio_projects": {
     "Сайт-визитка для рестобара Trattoria Pomodoro": "/portfolio/trattoria",
     "Сайт для магазина спорт-товаров": "/portfolio/sport-shop",
     "Модуль интеграции Битрикс24 и 1С:Предприятие": "/portfolio/bitrix-1c"
   },
   "valid_urls": [
+    "/",
+    "/advantages",
+    "/contacts",
     "/portfolio",
-    "/services",
+    "/portfolio/bitrix-1c",
     "/portfolio/sport-shop",
     "/portfolio/trattoria",
-    "/portfolio/bitrix-1c"
+    "/services"
   ]
 }
