@@ -19,6 +19,9 @@ venv/bin/pip install -r requirements.txt -q
 echo "=== Backend: миграции ==="
 venv/bin/alembic upgrade head
 
+echo "=== Backend: пересборка базы знаний ИИ ==="
+venv/bin/python -m scripts.build_knowledge_base || true
+
 echo "=== Frontend: зависимости ==="
 cd frontend
 npm ci || (rm -rf node_modules && npm ci)

@@ -1,18 +1,22 @@
 {
   "source": "sitemap.xml",
   "portfolio_projects": {
-    "Сайт-визитка для рестобара Trattoria Pomodoro": "/portfolio/trattoria",
-    "Сайт для магазина спорт-товаров": "/portfolio/sport-shop",
-    "Модуль интеграции Битрикс24 и 1С:Предприятие": "/portfolio/bitrix-1c"
+    "Сайт-визитка для рестобара": "/portfolio/sajt-vizitka-dlya-restobara",
+    "Сайт для 5-звездочного отеля": "/portfolio/sajt-dlya-5-zvezdochnogo-otelya",
+    "Сайт для спортивного магазина": "/portfolio/sajt-dlya-sportivnogo-magazina",
+    "Интеграция между 1С и Битрикс24": "/portfolio/integratsiya-mezhdu-1s-i-bitriks24",
+    "Парсер лидов с интеграцией в Битрикс24": "/portfolio/parser-lidov-bitriks24"
   },
   "valid_urls": [
     "/",
     "/advantages",
     "/contacts",
     "/portfolio",
-    "/portfolio/bitrix-1c",
-    "/portfolio/sport-shop",
-    "/portfolio/trattoria",
+    "/portfolio/integratsiya-mezhdu-1s-i-bitriks24",
+    "/portfolio/parser-lidov-bitriks24",
+    "/portfolio/sajt-dlya-5-zvezdochnogo-otelya",
+    "/portfolio/sajt-dlya-sportivnogo-magazina",
+    "/portfolio/sajt-vizitka-dlya-restobara",
     "/services"
   ]
 }
