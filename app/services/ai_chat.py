@@ -90,9 +90,8 @@ def _detect_topic(text: str, current_topic: str | None = None) -> str:
             return f"{current_topic} с каталогом"
         if any(w in q for w in ["срочно", "быстро"]) and "срочно" not in t_low:
             return f"{current_topic} (срочно)"
-        # Приветствия / подтверждения не меняют уже установленную тему
-        if any(w in q for w in ["привет", "здравствуй", "добрый", "спасибо", "ясно", "понял", "хорошо", "ок"]):
-            return current_topic
+        # Сохраняем уже выработанную тему диалога от случайного перезатирания
+        return current_topic
 
     # 2. Первичное определение темы по ключевым словам
     if any(w in q for w in ["магазин", "каталог", "корзин", "товар", "e-commerce"]):
@@ -113,7 +112,7 @@ def _detect_topic(text: str, current_topic: str | None = None) -> str:
         return "Внедрение Битрикс24"
     if any(w in q for w in ["1с", "1c"]):
         return "Интеграция с 1С"
-    if any(w in q for w in ["бот", "телеграм", "telegram", "чат-бот"]):
+    if bool(re.search(r'\b(?:чат-)?бот[а-я]*\b', q)) or any(w in q for w in ["телеграм", "telegram"]):
         return "Разработка чат-бота"
     if any(w in q for w in ["seo", "продвижен", "оптимизац"]):
         return "SEO-продвижение"
@@ -398,7 +397,7 @@ class AiChatService:
             f"1. Ты НЕ можешь сам отправлять заявки от имени пользователя! НИКОГДА не говори «Заявка принята» или «Я передал контакты».\n"
             f"2. Если клиент передал номер телефона или просит оставить заявку: всегда отвечай с show_lead_form: true, prefill с телефоном/именем, и action: null. Напиши, что форма открыта ниже и телефон подставлен, осталось указать имя, согласиться с ПД и нажать Отправить.\n"
             f"3. Если клиент спрашивает, почему бот сам не отправит заявку или зачем нажимать галочку согласия — сошлись на Федеральный закон № 152-ФЗ «О персональных данных».\n"
-            f"4. Всегда определяй и возвращай в JSON поле \"topic\": краткая суть задачи (2-5 слов, например «Разработка интернет-магазина»).\n"
+            f"4. В поле \"topic\" формулируй точную суть задачи с учётом деталей и уточнений клиента (2-6 слов, например «Разработка сайта под ключ со своим дизайном», «Интернет-магазин с каталогом и 1С»).\n"
             f"5. Всегда отвечай строго в формате JSON: {{\"text\": \"...\", \"topic\": \"...\", \"show_lead_form\": false, \"prefill\": {{\"phone\": null, \"name\": null}}, \"action\": {{\"label\": \"...\", \"actionKey\": \"show_lead_form\"}}}}.\n"
             f"6. Текст label в action должен содержать МАКСИМУМ 3 слова. Если show_lead_form: true, то action должен быть null."
         )
@@ -451,10 +450,18 @@ class AiChatService:
                     actions: list[ChatAction] = []
                     show_lead_form = bool(parsed.get("show_lead_form", False))
 
+                    base_topic = topic or effective_topic
                     if parsed.get("topic"):
                         llm_topic = str(parsed["topic"]).strip()
-                        if 2 < len(llm_topic) <= 60:
-                            effective_topic = llm_topic
+                        # Если модель вернула общий раздел вместо конкретики темы, сохраняем уточненную базу
+                        if llm_topic.lower() in ["дизайн и ui/ux", "дизайн", "ui/ux", "услуги", "консультация"] and base_topic and base_topic != "Консультация по услугам":
+                            effective_topic = _detect_topic(message, base_topic)
+                        elif 3 < len(llm_topic) <= 70 and llm_topic.lower() != "консультация по услугам":
+                            effective_topic = _detect_topic(message, llm_topic)
+                        else:
+                            effective_topic = _detect_topic(message, base_topic)
+                    else:
+                        effective_topic = _detect_topic(message, base_topic)
 
                     prefill_data = parsed.get("prefill")
                     prefill: ChatPrefill | None = None
