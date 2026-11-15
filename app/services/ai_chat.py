@@ -195,7 +195,6 @@ class AiChatService:
         text = re.sub(r'(?<!\()(?<!\[)(/contacts)(?![a-zA-Z0-9_/-])', r'[Контакты](/contacts)', text)
         text = re.sub(r'(?<!\()(?<!\[)(/portfolio)(?![a-zA-Z0-9_/-])', r'[Портфолио](/portfolio)', text)
         text = re.sub(r'(?<!\()(?<!\[)(/services)(?![a-zA-Z0-9_/-])', r'[Услуги](/services)', text)
-        text = re.sub(r'(?<!\()(?<!\[)(/faq)(?![a-zA-Z0-9_/-])', r'[FAQ](/faq)', text)
         return text
 
     def _fallback_response(self, topic: str | None = None) -> ChatResponse:

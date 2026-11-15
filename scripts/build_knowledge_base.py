@@ -212,25 +212,24 @@ def build_chunks(data: dict[str, Any]) -> list[dict[str, Any]]:
         },
     })
 
-    # 4. Частые вопросы и ответы (FAQ) из БД
+    # 4. Частые вопросы и ответы (FAQ) из БД (отдельной страницы /faq на сайте нет, это база знаний для ИИ)
     for f in data.get("faqs", []):
         faq_text = (
             f"Вопрос: {f.question.strip()}\n"
-            f"Ответ: {f.answer.strip()}\n"
-            f"Ссылка: /faq"
+            f"Ответ: {f.answer.strip()}"
         ).strip()
 
         chunks.append({
             "id": f"faq_{f.id}",
             "category": "faq",
             "title": f.question.strip(),
-            "url": "/faq",
+            "url": "",
             "content": faq_text,
             "metadata": {
                 "type": "faq",
                 "faq_id": f.id,
                 "sort_order": f.sort_order,
-                "url": "/faq",
+                "url": "",
             },
         })
 

@@ -10,7 +10,8 @@ cd "$APP_DIR"
 
 echo "=== Pull ==="
 git config core.fileMode false
-git checkout -- knowledge_base/ 2>/dev/null || true
+git checkout -- . 2>/dev/null || true
+git clean -fd 2>/dev/null || true
 git pull origin master
 
 echo "=== Backend: зависимости ==="
