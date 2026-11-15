@@ -273,14 +273,19 @@
 }
 
 /* ============================================================
-   Форма заявки внутри AI-чата (компактная, вертикальный футер)
+   Форма заявки внутри AI-чата (отступы и размеры как в обычной форме)
 ============================================================ */
 .lead-form--chat {
   width: 100% !important;
+  --lf-input-height: 58px !important;
+  --lf-label-top: 15px !important;
+  --lf-label-room: 18px !important;
+  --lf-pad-x: 8px !important;
+  --lf-fields-gap: 8px !important;
 }
 
 .lead-form--chat .lead-form__fields {
-  gap: 2px !important;
+  gap: 8px !important;
 }
 
 .lead-form--chat .lead-form__field {
@@ -288,18 +293,18 @@
 }
 
 .lead-form--chat .lead-form__input {
-  height: 48px !important;
-  font-size: 14px !important;
-  padding: 14px 24px 0 0 !important;
+  height: 58px !important;
+  font-size: 15px !important;
+  padding: 18px 28px 0 8px !important;
 }
 
 .lead-form--chat .lead-form__label {
-  left: 0 !important;
-  font-size: 14px !important;
+  left: 8px !important;
+  font-size: 15px !important;
 }
 
 .lead-form--chat .lead-form__dot {
-  right: 0 !important;
+  right: 8px !important;
 }
 
 .lead-form--chat .lead-form__footer {
@@ -307,8 +312,8 @@
   flex-direction: column !important;
   align-items: stretch !important;
   justify-content: flex-start !important;
-  gap: 14px !important;
-  margin-top: 18px !important;
+  gap: 16px !important;
+  margin-top: 24px !important;
   padding-left: 0 !important;
   width: 100% !important;
 }
