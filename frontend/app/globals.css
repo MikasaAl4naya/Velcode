@@ -19,6 +19,7 @@
 /* UI components */
 @import './styles/lead-form.css';
 @import './styles/modal.css';
+@import './styles/ai-chat.css';
 
 /* Sub-pages */
 @import './styles/subpage.css';

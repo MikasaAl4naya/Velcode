@@ -174,6 +174,7 @@
 }
 
 .lead-form__consent {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -185,6 +186,10 @@
 
 .lead-form__checkbox {
   position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 1px;
   opacity: 0;
   pointer-events: none;
 }
@@ -265,5 +270,97 @@
 .lead-success__text {
   font-size: var(--fs-small);
   opacity: 0.7;
+}
+
+/* ============================================================
+   Форма заявки внутри AI-чата (компактная, вертикальный футер)
+============================================================ */
+.lead-form--chat {
+  width: 100% !important;
+}
+
+.lead-form--chat .lead-form__fields {
+  gap: 2px !important;
+}
+
+.lead-form--chat .lead-form__field {
+  border-bottom: 1px solid #dcdcdc !important;
+}
+
+.lead-form--chat .lead-form__input {
+  height: 48px !important;
+  font-size: 14px !important;
+  padding: 14px 24px 0 0 !important;
+}
+
+.lead-form--chat .lead-form__label {
+  left: 0 !important;
+  font-size: 14px !important;
+}
+
+.lead-form--chat .lead-form__dot {
+  right: 0 !important;
+}
+
+.lead-form--chat .lead-form__footer {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  justify-content: flex-start !important;
+  gap: 14px !important;
+  margin-top: 18px !important;
+  padding-left: 0 !important;
+  width: 100% !important;
+}
+
+.lead-form--chat .lead-form__agree {
+  width: 100% !important;
+  order: 1 !important;
+}
+
+.lead-form--chat .lead-form__consent {
+  display: flex !important;
+  align-items: flex-start !important;
+  gap: 10px !important;
+  width: 100% !important;
+  cursor: pointer !important;
+}
+
+.lead-form--chat .lead-form__checkmark {
+  flex-shrink: 0 !important;
+  margin-top: 2px !important;
+}
+
+.lead-form--chat .lead-form__consent-text {
+  font-size: 11.5px !important;
+  line-height: 1.4 !important;
+  color: #747c87 !important;
+  white-space: normal !important;
+  word-break: normal !important;
+  overflow-wrap: break-word !important;
+  flex: 1 !important;
+}
+
+.lead-form--chat .lead-form__submit {
+  order: 2 !important;
+  width: 100% !important;
+  height: 48px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background-color: var(--color-blue-pill, #7183bd) !important;
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: var(--radius-btn, 9999px) !important;
+  font-size: 15px !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  transition: background-color 0.2s ease !important;
+  margin-top: 4px !important;
+}
+
+.lead-form--chat .lead-form__submit:hover {
+  background-color: var(--color-dark, #171819) !important;
+  color: #ffffff !important;
 }
 

@@ -4,6 +4,7 @@ import './globals.css';
 import { ModalProvider } from '@/components/ModalProvider';
 import { SvgSprite } from '@/components/ui/SvgSprite';
 import { CookieBanner } from '@/components/ui/CookieBanner';
+import { AiChatWidget } from '@/components/ui/AiChatWidget';
 import { COMPANY_CONFIG } from '@/lib/company';
 
 export const metadata: Metadata = {
@@ -123,6 +124,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ModalProvider>
           {children}
           <CookieBanner />
+          <AiChatWidget />
         </ModalProvider>
         <Script
           id="yandex-metrika"

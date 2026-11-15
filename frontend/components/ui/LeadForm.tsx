@@ -26,6 +26,7 @@ function formatPhone(value: string): string {
 
 type LeadFormProps = {
   id?: string;
+  className?: string;
   theme?: 'light' | 'dark';
   isLarge?: boolean;
   submitLabel?: string;
@@ -33,10 +34,14 @@ type LeadFormProps = {
   source?: string;
   goalName?: string;
   onSuccess?: (data: any) => void;
+  hideSuccessModal?: boolean;
+  hideQuestion?: boolean;
+  footerLayout?: 'row' | 'column';
 };
 
 export function LeadForm({
   id,
+  className = '',
   theme = 'light',
   isLarge = false,
   submitLabel = 'Отправить',
@@ -44,6 +49,9 @@ export function LeadForm({
   source = 'contact_form',
   goalName = 'lead_submit',
   onSuccess,
+  hideSuccessModal = false,
+  hideQuestion = false,
+  footerLayout = 'row',
 }: LeadFormProps) {
   const { openSuccessModal } = useModal();
   const [formData, setFormData] = useState({
@@ -126,7 +134,7 @@ export function LeadForm({
         formOpenedAtRef.current = Math.floor(Date.now() / 1000);
         setSubmitted(false);
         setTouched({ name: false, phone: false, consent: false });
-        if (openSuccessModal) openSuccessModal();
+        if (!hideSuccessModal && openSuccessModal) openSuccessModal();
         if (onSuccess) onSuccess(formData);
       }
     } catch {
@@ -136,7 +144,7 @@ export function LeadForm({
       formOpenedAtRef.current = Math.floor(Date.now() / 1000);
       setSubmitted(false);
       setTouched({ name: false, phone: false, consent: false });
-      if (openSuccessModal) openSuccessModal();
+      if (!hideSuccessModal && openSuccessModal) openSuccessModal();
     } finally {
       setIsSubmitting(false);
     }
@@ -146,6 +154,7 @@ export function LeadForm({
     'lead-form',
     theme === 'dark' ? 'lead-form--dark' : '',
     isLarge ? 'lead-form--large' : '',
+    className,
   ].filter(Boolean).join(' ');
 
   return (
@@ -216,28 +225,67 @@ export function LeadForm({
           <span className="lead-form__dot" aria-hidden="true"></span>
         </label>
 
-        <label className="lead-form__field">
-          <input
-            className="lead-form__input"
-            type="text"
-            name="question"
-            value={formData.question}
-            onChange={handleChange}
-            placeholder=" "
-            maxLength={1000}
-          />
-          <span className="lead-form__label">Ваш вопрос</span>
-        </label>
+        {!hideQuestion && (
+          <label className="lead-form__field">
+            <input
+              className="lead-form__input"
+              type="text"
+              name="question"
+              value={formData.question}
+              onChange={handleChange}
+              placeholder=" "
+              maxLength={1000}
+            />
+            <span className="lead-form__label">Ваш вопрос</span>
+          </label>
+        )}
       </div>
 
-      <div className="lead-form__footer">
-        <div className="lead-form__agree">
+      <div
+        className="lead-form__footer"
+        style={
+          footerLayout === 'column'
+            ? {
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'stretch',
+                width: '100%',
+                gap: '16px',
+                paddingLeft: 0,
+                marginTop: '18px',
+              }
+            : undefined
+        }
+      >
+        <div
+          className="lead-form__agree"
+          style={
+            footerLayout === 'column'
+              ? {
+                  width: '100%',
+                  order: 1,
+                }
+              : undefined
+          }
+        >
           {hasGlobalError && (
             <p className="lead-form__error" role="alert">
               Обязательное поле
             </p>
           )}
-          <label className={`lead-form__consent ${showConsentError ? 'is-invalid' : ''}`}>
+          <label
+            className={`lead-form__consent ${showConsentError ? 'is-invalid' : ''}`}
+            style={
+              footerLayout === 'column'
+                ? {
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: '10px',
+                  }
+                : undefined
+            }
+          >
             <input
               className="lead-form__checkbox"
               type="checkbox"
@@ -246,8 +294,26 @@ export function LeadForm({
               onChange={handleChange}
               required
             />
-            <span className="lead-form__checkmark" aria-hidden="true"></span>
-            <span className="lead-form__consent-text">
+            <span
+              className="lead-form__checkmark"
+              aria-hidden="true"
+              style={footerLayout === 'column' ? { flexShrink: 0, marginTop: '2px' } : undefined}
+            ></span>
+            <span
+              className="lead-form__consent-text"
+              style={
+                footerLayout === 'column'
+                  ? {
+                      flex: 1,
+                      whiteSpace: 'normal',
+                      wordBreak: 'normal',
+                      overflowWrap: 'break-word',
+                      fontSize: '12px',
+                      lineHeight: '1.4',
+                    }
+                  : undefined
+              }
+            >
               Даю{' '}
               <Link
                 href="/consent"
@@ -274,6 +340,18 @@ export function LeadForm({
           className={`btn ${submitButtonClass} lead-form__submit`}
           type="submit"
           disabled={isSubmitting}
+          style={
+            footerLayout === 'column'
+              ? {
+                  width: '100%',
+                  order: 2,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  height: '48px',
+                }
+              : undefined
+          }
         >
           {submitLabel}
         </button>
