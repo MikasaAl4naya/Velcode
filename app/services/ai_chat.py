@@ -119,6 +119,7 @@ class AiChatService:
         body: dict[str, Any] = {
             "model": settings.ai_model,
             "messages": payload_messages,
+            "response_format": {"type": "json_object"},
             "temperature": 0.3,
             "max_tokens": 450,
         }
@@ -142,6 +143,11 @@ class AiChatService:
                     clean_json_str = clean_json_str.split("```json")[1].split("```")[0].strip()
                 elif "```" in clean_json_str:
                     clean_json_str = clean_json_str.split("```")[1].split("```")[0].strip()
+
+                start_idx = clean_json_str.find('{')
+                end_idx = clean_json_str.rfind('}')
+                if start_idx != -1 and end_idx > start_idx:
+                    clean_json_str = clean_json_str[start_idx:end_idx + 1]
 
                 try:
                     parsed = json.loads(clean_json_str)
