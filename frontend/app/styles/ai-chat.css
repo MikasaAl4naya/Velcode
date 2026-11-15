@@ -274,6 +274,10 @@
   transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease, transform 0.2s ease !important;
 }
 
+.ai-tag {
+   opacity: 0.85;
+}
+
 .ai-frequent-tags button.tag:hover,
 .ai-frequent-tags .ai-tag:hover {
   background-color: var(--color-blue-pill, #7183bd) !important;
@@ -408,8 +412,8 @@
 .ai-msg__actions .btn--primary-lg {
   width: 100%;
   height: auto;
-  min-height: 50px;
-  padding: 12px 20px;
+  padding: 10px 15px;
+  font-size: 12px;
   white-space: normal;
   text-align: center;
   line-height: 1.25;
