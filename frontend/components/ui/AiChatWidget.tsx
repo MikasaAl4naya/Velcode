@@ -179,12 +179,15 @@ export function AiChatWidget() {
     }
   }, [messages, isTyping, isOpen]);
 
-  // Фокус на поле ввода при открытии
+  // Фокус на поле ввода при открытии чата и после получения ответа от бота
   useEffect(() => {
-    if (isOpen) {
-      setTimeout(() => inputRef.current?.focus(), 250);
+    if (isOpen && !isTyping) {
+      const timer = setTimeout(() => {
+        inputRef.current?.focus();
+      }, 100);
+      return () => clearTimeout(timer);
     }
-  }, [isOpen]);
+  }, [isOpen, isTyping]);
 
   const handleToggle = () => {
     setIsOpen((prev) => {
@@ -290,6 +293,7 @@ export function AiChatWidget() {
 
   const handleInputSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (isTyping) return;
     const text = inputText.trim().slice(0, MAX_INPUT_LENGTH);
     if (!text) return;
     setInputText('');
@@ -554,11 +558,11 @@ export function AiChatWidget() {
                 ref={inputRef}
                 type="text"
                 className="ai-chat-input-bar__field"
-                placeholder="Ваш вопрос..."
+                placeholder={isTyping ? "ИИ печатает ответ..." : "Ваш вопрос..."}
                 maxLength={MAX_INPUT_LENGTH}
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
-                disabled={isTyping}
+                autoComplete="off"
               />
               <button
                 type="submit"
