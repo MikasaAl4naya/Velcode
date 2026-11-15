@@ -46,6 +46,7 @@ const DEFAULT_QUESTION_ANSWERS: Record<string, { text: string; actionLabel: stri
 
 const STORAGE_MSGS_KEY = 'velcode_ai_chat_messages_v1';
 const STORAGE_OPEN_KEY = 'velcode_ai_chat_open_v1';
+const STORAGE_TOPIC_KEY = 'velcode_ai_chat_topic_v1';
 const STORAGE_DEBUG_KEY = 'velcode_ai_debug_mode';
 const MAX_INPUT_LENGTH = 300;
 
@@ -92,6 +93,7 @@ export function AiChatWidget() {
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
+  const [chatTopic, setChatTopic] = useState<string>('');
   const [leadSent, setLeadSent] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   const [isDebugMode, setIsDebugMode] = useState(false);
@@ -156,6 +158,10 @@ export function AiChatWidget() {
           }
         }
       }
+      const savedTopic = localStorage.getItem(STORAGE_TOPIC_KEY);
+      if (savedTopic) {
+        setChatTopic(savedTopic);
+      }
       const savedOpen = localStorage.getItem(STORAGE_OPEN_KEY);
       if (savedOpen === 'true') {
         setIsOpen(true);
@@ -173,10 +179,13 @@ export function AiChatWidget() {
     try {
       localStorage.setItem(STORAGE_MSGS_KEY, JSON.stringify(messages));
       localStorage.setItem(STORAGE_OPEN_KEY, String(isOpen));
+      if (chatTopic) {
+        localStorage.setItem(STORAGE_TOPIC_KEY, chatTopic);
+      }
     } catch {
       // ignore
     }
-  }, [messages, isOpen, isMounted]);
+  }, [messages, isOpen, chatTopic, isMounted]);
 
   // Прокрутка чата строго внутри тела сообщений (без смещения родительских блоков)
   useEffect(() => {
@@ -255,8 +264,11 @@ export function AiChatWidget() {
         text: m.text,
       }));
 
-      const apiResponse = await sendChatMessage(text, historyPayload);
+      const apiResponse = await sendChatMessage(text, historyPayload, chatTopic);
       if (apiResponse && apiResponse.text) {
+        if (apiResponse.topic) {
+          setChatTopic(apiResponse.topic);
+        }
         setMessages((prev) => [
           ...prev,
           {
@@ -292,6 +304,7 @@ export function AiChatWidget() {
   };
 
   const handleSelectQuestion = (question: string) => {
+    setChatTopic(question);
     addUserMessage(question);
   };
 
@@ -641,6 +654,7 @@ export function AiChatWidget() {
                             footerLayout="column"
                             initialName={msg.prefill?.name || ''}
                             initialPhone={msg.prefill?.phone || ''}
+                            initialQuestion={chatTopic || 'Консультация из чата'}
                             onSuccess={(data) => handleLeadSuccess(data)}
                           />
                         </div>

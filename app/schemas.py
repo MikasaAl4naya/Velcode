@@ -150,11 +150,13 @@ class ChatPrefill(BaseModel):
 
 class ChatRequest(BaseModel):
     message: str
+    topic: str | None = None
     history: list[ChatMessage] = []
 
 
 class ChatResponse(BaseModel):
     text: str
+    topic: str | None = None
     actions: list[ChatAction] = []
     show_lead_form: bool = False
     prefill: ChatPrefill | None = None

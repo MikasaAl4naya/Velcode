@@ -132,6 +132,7 @@ export type ChatApiAction = {
 
 export type ChatApiResponse = {
   text: string
+  topic?: string | null
   actions?: ChatApiAction[]
   show_lead_form?: boolean
   prefill?: {
@@ -142,13 +143,14 @@ export type ChatApiResponse = {
 
 export async function sendChatMessage(
   message: string,
-  history: Array<{ role: string; text: string }> = []
+  history: Array<{ role: string; text: string }> = [],
+  topic?: string | null
 ): Promise<ChatApiResponse | null> {
   try {
     const res = await apiFetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message, history }),
+      body: JSON.stringify({ message, history, topic }),
     })
     if (!res.ok) return null
     return await res.json()

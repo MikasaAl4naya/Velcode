@@ -73,6 +73,44 @@ def _is_152_fz_query(text: str) -> bool:
     return any(p in q for p in patterns)
 
 
+def _detect_topic(text: str, current_topic: str | None = None) -> str:
+    q = text.lower()
+    # Приветствия / подтверждения не меняют уже установленную тему
+    if current_topic and any(w in q for w in ["привет", "здравствуй", "добрый", "спасибо", "ясно", "понял", "хорошо", "ок"]):
+        return current_topic
+
+    if any(w in q for w in ["магазин", "каталог", "корзин", "товар", "e-commerce"]):
+        if any(w in q for w in ["1с", "1c"]):
+            return "Интернет-магазин с интеграцией 1С"
+        return "Разработка интернет-магазина"
+    if any(w in q for w in ["лендинг", "одностранич"]):
+        return "Разработка лендинга"
+    if any(w in q for w in ["корпоратив", "визитк"]):
+        return "Корпоративный сайт"
+    if any(w in q for w in ["битрикс", "bitrix"]):
+        if any(w in q for w in ["1с", "1c"]):
+            return "Интеграция Битрикс24 и 1С"
+        return "Внедрение Битрикс24"
+    if any(w in q for w in ["1с", "1c"]):
+        return "Интеграция с 1С"
+    if any(w in q for w in ["бот", "телеграм", "telegram", "чат-бот"]):
+        return "Разработка чат-бота"
+    if any(w in q for w in ["seo", "продвижен", "оптимизац"]):
+        return "SEO-продвижение"
+    if any(w in q for w in ["реклам", "директ", "трафик"]):
+        return "Контекстная реклама"
+    if any(w in q for w in ["дизайн", "редизайн", "ui", "ux"]):
+        return "Дизайн и UI/UX"
+    if any(w in q for w in ["c#", "микросервис", "склад", "архитектур", "самописн"]):
+        return "Кастомная веб-разработка и интеграции"
+    if any(w in q for w in ["гарант", "договор"]):
+        return "Вопрос по договору и гарантиям"
+    if any(w in q for w in ["стоим", "цен", "сколько", "расчет", "прайс"]):
+        return "Расчет стоимости разработки"
+
+    return current_topic or "Консультация по услугам"
+
+
 class AiChatService:
     def __init__(self) -> None:
         self._cached_prompt: str | None = None
@@ -86,7 +124,7 @@ class AiChatService:
             "Ты — ИИ-консультант digital-агентства Велкод (velcode.ru). "
             "Отвечай кратко (2-3 предложения), дружелюбно и строго по делу. "
             "Ссылки только в markdown [текст](/url). "
-            "Формат ответа: JSON {\"text\": \"...\", \"show_lead_form\": false, \"prefill\": {\"phone\": null, \"name\": null}, \"action\": {\"label\": \"...\", \"actionKey\": \"show_lead_form\"}}."
+            "Формат ответа: JSON {\"text\": \"...\", \"topic\": \"...\", \"show_lead_form\": false, \"prefill\": {\"phone\": null, \"name\": null}, \"action\": {\"label\": \"...\", \"actionKey\": \"show_lead_form\"}}."
         )
 
     def _load_knowledge_base_summary(self) -> str:
@@ -115,8 +153,11 @@ class AiChatService:
             or os.getenv("GEMINI_API_KEY", "")
         ).strip()
 
-    def _local_smart_response(self, query: str, history: list[ChatMessage] | None = None) -> ChatResponse:
+    def _local_smart_response(
+        self, query: str, history: list[ChatMessage] | None = None, topic: str | None = None
+    ) -> ChatResponse:
         """Интеллектуальный локальный ответ на случай отсутствия токена или ошибки сети."""
+        effective_topic = _detect_topic(query, topic)
         q = query.strip().lower()
 
         # 0. Вопросы про согласие / почему бот сам не отправляет (152-ФЗ)
@@ -137,6 +178,7 @@ class AiChatService:
                     "Поэтому вам необходимо подтвердить согласие галочкой и нажать кнопку отправки самостоятельно — "
                     "это законное требование для защиты ваших персональных данных."
                 ),
+                topic=effective_topic,
                 actions=[],
                 show_lead_form=True,
                 prefill=ChatPrefill(phone=formatted_phone) if formatted_phone else None,
@@ -159,6 +201,7 @@ class AiChatService:
                 )
             return ChatResponse(
                 text=text,
+                topic=effective_topic,
                 actions=[],
                 show_lead_form=True,
                 prefill=ChatPrefill(phone=formatted_phone, name=name),
@@ -177,6 +220,7 @@ class AiChatService:
                     "Оставьте ваше имя и номер телефона — наш ведущий разработчик свяжется с вами, "
                     "уточнив детали интеграции и архитектуры, и подготовит детальный расчет."
                 ),
+                topic=effective_topic,
                 actions=[ChatAction(label="Обсудить проект", actionKey="show_lead_form", primary=True)],
                 show_lead_form=True,
             )
@@ -191,6 +235,7 @@ class AiChatService:
                     "В стоимость входят аналитика, дизайн, вёрстка, интеграции и базовая оптимизация. "
                     "Смета и сроки фиксируются в договоре."
                 ),
+                topic=effective_topic,
                 actions=[ChatAction(label="Оставить заявку", actionKey="show_lead_form", primary=True)],
                 show_lead_form=False,
             )
@@ -203,6 +248,7 @@ class AiChatService:
                     "зафиксированы смета, этапы и сроки. Предоставляем 60 дней бесплатной гарантийной поддержки "
                     "на весь разработанный код после сдачи. Подробнее — в [разделе преимуществ](/advantages)."
                 ),
+                topic=effective_topic,
                 actions=[ChatAction(label="Оставить заявку", actionKey="show_lead_form", primary=True)],
                 show_lead_form=False,
             )
@@ -215,6 +261,7 @@ class AiChatService:
                     "(Next.js, React, FastAPI), внедрение Битрикс24 и 1С, разработку ИИ-ассистентов и чат-ботов, "
                     "а также рекламу и продвижение. Все направления описаны на [странице услуг](/services)."
                 ),
+                topic=effective_topic,
                 actions=[ChatAction(label="Обсудить проект", actionKey="show_lead_form", primary=True)],
                 show_lead_form=False,
             )
@@ -229,6 +276,7 @@ class AiChatService:
                     "— [«Битрикс24 & 1С»](/portfolio/bitrix-1c) — двусторонняя интеграция CRM и 1С:Предприятие.\n\n"
                     "Все работы доступны в [портфолио](/portfolio)."
                 ),
+                topic=effective_topic,
                 actions=[ChatAction(label="Обсудить проект", actionKey="show_lead_form", primary=True)],
                 show_lead_form=False,
             )
@@ -240,6 +288,7 @@ class AiChatService:
                     "С удовольствием проконсультируем вас! Заполните, пожалуйста, форму ниже — "
                     "специалист перезвонит вам в течение 15 минут в рабочее время (Пн-Пт с 10:00 до 18:00):"
                 ),
+                topic=effective_topic,
                 actions=[],
                 show_lead_form=True,
             )
@@ -250,11 +299,16 @@ class AiChatService:
                 "Спасибо за вопрос! Я умный ассистент Велкод. Могу рассказать о стоимости разработки, "
                 "наших услугах, гарантиях, показать [кейсы в портфолио](/portfolio) или помочь оставить заявку."
             ),
+            topic=effective_topic,
             actions=[ChatAction(label="Обсудить проект", actionKey="show_lead_form", primary=True)],
             show_lead_form=False,
         )
 
-    async def ask(self, message: str, history: list[ChatMessage] | None = None) -> ChatResponse:
+    async def ask(
+        self, message: str, history: list[ChatMessage] | None = None, topic: str | None = None
+    ) -> ChatResponse:
+        effective_topic = _detect_topic(message, topic)
+
         # 1. Запрос по 152-ФЗ / почему бот сам не отправляет
         if _is_152_fz_query(message):
             phone = _extract_phone(message)
@@ -273,6 +327,7 @@ class AiChatService:
                     "Поэтому вам необходимо подтвердить согласие галочкой и нажать кнопку отправки самостоятельно — "
                     "это требование закона для защиты ваших персональных данных."
                 ),
+                topic=effective_topic,
                 actions=[],
                 show_lead_form=True,
                 prefill=ChatPrefill(phone=formatted_phone) if formatted_phone else None,
@@ -295,6 +350,7 @@ class AiChatService:
                 )
             return ChatResponse(
                 text=text,
+                topic=effective_topic,
                 actions=[],
                 show_lead_form=True,
                 prefill=ChatPrefill(phone=formatted_phone, name=extracted_name),
@@ -304,22 +360,25 @@ class AiChatService:
 
         # Если токен не задан — используем локальный движок
         if not api_key:
-            return self._local_smart_response(message, history)
+            return self._local_smart_response(message, history, topic)
 
         system_prompt = self._load_system_prompt()
         kb_summary = self._load_knowledge_base_summary()
 
+        topic_context = f"\nТЕКУЩАЯ ТЕМА ДИАЛОГА: {effective_topic}\n" if effective_topic else ""
         full_system_prompt = (
             f"{system_prompt}\n\n"
             f"--- ДАННЫЕ БАЗЫ ЗНАНИЙ КОМПАНИИ ВЕЛКОД ---\n"
             f"{kb_summary}\n"
             f"-----------------------------------------\n"
+            f"{topic_context}"
             f"ВАЖНЫЕ ПРАВИЛА:\n"
             f"1. Ты НЕ можешь сам отправлять заявки от имени пользователя! НИКОГДА не говори «Заявка принята» или «Я передал контакты».\n"
             f"2. Если клиент передал номер телефона или просит оставить заявку: всегда отвечай с show_lead_form: true, prefill с телефоном/именем, и action: null. Напиши, что форма открыта ниже и телефон подставлен, осталось указать имя, согласиться с ПД и нажать Отправить.\n"
             f"3. Если клиент спрашивает, почему бот сам не отправит заявку или зачем нажимать галочку согласия — сошлись на Федеральный закон № 152-ФЗ «О персональных данных».\n"
-            f"4. Всегда отвечай строго в формате JSON: {{\"text\": \"...\", \"show_lead_form\": false, \"prefill\": {{\"phone\": null, \"name\": null}}, \"action\": {{\"label\": \"...\", \"actionKey\": \"show_lead_form\"}}}}.\n"
-            f"5. Текст label в action должен содержать МАКСИМУМ 3 слова. Если show_lead_form: true, то action должен быть null."
+            f"4. Всегда определяй и возвращай в JSON поле \"topic\": краткая суть задачи (2-5 слов, например «Разработка интернет-магазина»).\n"
+            f"5. Всегда отвечай строго в формате JSON: {{\"text\": \"...\", \"topic\": \"...\", \"show_lead_form\": false, \"prefill\": {{\"phone\": null, \"name\": null}}, \"action\": {{\"label\": \"...\", \"actionKey\": \"show_lead_form\"}}}}.\n"
+            f"6. Текст label в action должен содержать МАКСИМУМ 3 слова. Если show_lead_form: true, то action должен быть null."
         )
 
         # Скользящее окно: берем последние 4 сообщения для экономии контекста
@@ -351,7 +410,7 @@ class AiChatService:
                 )
                 if res.status_code != 200:
                     logger.warning(f"AI API returned {res.status_code}: {res.text[:200]}")
-                    return self._local_smart_response(message, history)
+                    return self._local_smart_response(message, history, topic)
 
                 data = res.json()
                 raw_reply = data["choices"][0]["message"]["content"].strip()
@@ -369,6 +428,11 @@ class AiChatService:
                     action_data = parsed.get("action")
                     actions: list[ChatAction] = []
                     show_lead_form = bool(parsed.get("show_lead_form", False))
+
+                    if parsed.get("topic"):
+                        llm_topic = str(parsed["topic"]).strip()
+                        if 2 < len(llm_topic) <= 60:
+                            effective_topic = llm_topic
 
                     prefill_data = parsed.get("prefill")
                     prefill: ChatPrefill | None = None
@@ -408,6 +472,7 @@ class AiChatService:
 
                     return ChatResponse(
                         text=text or raw_reply,
+                        topic=effective_topic,
                         actions=actions,
                         show_lead_form=show_lead_form,
                         prefill=prefill,
@@ -427,13 +492,14 @@ class AiChatService:
 
                     return ChatResponse(
                         text=clean_text,
+                        topic=effective_topic,
                         actions=actions,
                         show_lead_form=show_lead,
                     )
 
         except Exception as e:
             logger.error(f"Ошибка при вызове AI API: {e}")
-            return self._local_smart_response(message, history)
+            return self._local_smart_response(message, history, topic)
 
 
 ai_chat_service = AiChatService()
