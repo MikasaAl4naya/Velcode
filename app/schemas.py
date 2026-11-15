@@ -143,6 +143,11 @@ class ChatAction(BaseModel):
     primary: bool = True
 
 
+class ChatPrefill(BaseModel):
+    name: str | None = None
+    phone: str | None = None
+
+
 class ChatRequest(BaseModel):
     message: str
     history: list[ChatMessage] = []
@@ -152,3 +157,5 @@ class ChatResponse(BaseModel):
     text: str
     actions: list[ChatAction] = []
     show_lead_form: bool = False
+    prefill: ChatPrefill | None = None
+

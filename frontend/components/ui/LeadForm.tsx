@@ -37,6 +37,8 @@ type LeadFormProps = {
   hideSuccessModal?: boolean;
   hideQuestion?: boolean;
   footerLayout?: 'row' | 'column';
+  initialName?: string;
+  initialPhone?: string;
 };
 
 export function LeadForm({
@@ -52,14 +54,26 @@ export function LeadForm({
   hideSuccessModal = false,
   hideQuestion = false,
   footerLayout = 'row',
+  initialName = '',
+  initialPhone = '',
 }: LeadFormProps) {
   const { openSuccessModal } = useModal();
   const [formData, setFormData] = useState({
-    name: '',
-    phone: '',
+    name: initialName,
+    phone: initialPhone ? formatPhone(initialPhone) : '',
     question: '',
     consent: false,
   });
+
+  useEffect(() => {
+    if (initialName || initialPhone) {
+      setFormData((prev) => ({
+        ...prev,
+        name: prev.name || initialName,
+        phone: prev.phone || (initialPhone ? formatPhone(initialPhone) : ''),
+      }));
+    }
+  }, [initialName, initialPhone]);
 
   // Защита от спама (как в vangerrf): honeypot и время открытия формы
   const [website, setWebsite] = useState('');

@@ -17,6 +17,10 @@ interface Message {
     primary?: boolean;
   }>;
   showLeadForm?: boolean;
+  prefill?: {
+    name?: string | null;
+    phone?: string | null;
+  };
 }
 
 const DEFAULT_FREQUENT_QUESTIONS = [
@@ -253,8 +257,9 @@ export function AiChatWidget() {
             id: `bot-${Date.now()}`,
             sender: 'assistant',
             text: apiResponse.text,
-            actions: apiResponse.actions,
+            actions: apiResponse.show_lead_form ? [] : apiResponse.actions,
             showLeadForm: apiResponse.show_lead_form,
+            prefill: apiResponse.prefill,
           },
         ]);
         setIsTyping(false);
@@ -286,6 +291,40 @@ export function AiChatWidget() {
 
   const generateLocalBotResponse = (query: string): Message => {
     const trimmed = query.trim().toLowerCase();
+
+    // 0. Вопрос про 152-ФЗ / согласие
+    const is152Fz = [
+      'сам не можешь', 'почему сам', 'зачем галк', 'зачем нажимать',
+      'зачем подтвержд', 'отправь сам', 'сам заполни', 'сам отправь',
+      'почему я должен', 'не хочу нажимать', 'зачем соглас', 'зачем галочк',
+      'почему не можешь сам', 'че сам не можешь'
+    ].some((p) => trimmed.includes(p));
+    if (is152Fz) {
+      return {
+        id: `bot-${Date.now()}`,
+        sender: 'assistant',
+        text: 'Согласно Федеральному закону № 152-ФЗ «О персональных данных», мы не имеем права собирать и отправлять ваши контактные данные без вашего личного прямого согласия. Поэтому вам необходимо подтвердить согласие галочкой и нажать кнопку отправки самостоятельно — это требование закона для защиты ваших персональных данных.',
+        showLeadForm: true,
+      };
+    }
+
+    // 0.1 Передан номер телефона
+    const phoneMatch = query.match(/(?:\+?7|8)[\s\-\(]*(\d{3})[\s\-\)]*(\d{3})[\s\-]*(\d{2})[\s\-]*(\d{2})|\b(?:\+?7|8)?(\d{10})\b/);
+    if (phoneMatch) {
+      const rawDigits = phoneMatch[0].replace(/\D/g, '');
+      const cleanDigits = rawDigits.length === 10 ? '7' + rawDigits : (rawDigits[0] === '8' ? '7' + rawDigits.slice(1) : rawDigits);
+      const formattedPhone = cleanDigits.length === 11 
+        ? `+7 (${cleanDigits.slice(1, 4)}) ${cleanDigits.slice(4, 7)}-${cleanDigits.slice(7, 9)}-${cleanDigits.slice(9, 11)}`
+        : phoneMatch[0];
+
+      return {
+        id: `bot-${Date.now()}`,
+        sender: 'assistant',
+        text: `Отлично! Я открыл форму заявки ниже и уже заполнил поле с вашим номером (${formattedPhone}). Пожалуйста, укажите ваше имя, подтвердите согласие на обработку персональных данных и нажмите «Отправить».`,
+        showLeadForm: true,
+        prefill: { phone: formattedPhone },
+      };
+    }
 
     // 1. Проверяем точное совпадение с вопросами FAQ из базы данных
     const matchedFaq = faqList.find(
@@ -594,13 +633,15 @@ export function AiChatWidget() {
                             hideQuestion={true}
                             hideSuccessModal={true}
                             footerLayout="column"
+                            initialName={msg.prefill?.name || ''}
+                            initialPhone={msg.prefill?.phone || ''}
                             onSuccess={(data) => handleLeadSuccess(data)}
                           />
                         </div>
                       )}
 
-                      {/* Быстрые кнопки действий */}
-                      {msg.actions && msg.actions.length > 0 && !leadSent && (
+                      {/* Быстрые кнопки действий (скрыты, если форма уже отображается) */}
+                      {msg.actions && msg.actions.length > 0 && !msg.showLeadForm && !leadSent && (
                         <div className="ai-msg__actions">
                           {msg.actions.map((act, i) => (
                             <button

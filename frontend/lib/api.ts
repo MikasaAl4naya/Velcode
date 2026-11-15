@@ -134,6 +134,10 @@ export type ChatApiResponse = {
   text: string
   actions?: ChatApiAction[]
   show_lead_form?: boolean
+  prefill?: {
+    name?: string | null
+    phone?: string | null
+  }
 }
 
 export async function sendChatMessage(
