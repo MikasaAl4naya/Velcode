@@ -37,18 +37,20 @@ def _format_russian_phone(phone_str: str) -> str:
 
 def _stem_word(word: str) -> str:
     word = word.lower().replace("ё", "е")
-    word = re.sub(r"(?:[аеиоуыэюя]{1,2})$", "", word)
+    if len(word) <= 3:
+        return word
     word = re.sub(
         r"(?:ов|ев|ей|ям|ам|ами|ями|ом|ем|их|ых|ую|юю|ой|ей|ая|яя|ое|ее|ые|ие|ть|ти|л|ла|ли|ло|ся|сь)$",
         "",
         word,
     )
+    word = re.sub(r"(?:[аеиоуыэюя]{1,2})$", "", word)
     return word
 
 
 def _tokenize(text: str) -> list[str]:
     words = re.findall(r"[a-zA-Zа-яА-Я0-9]+", text.lower())
-    return [_stem_word(w) for w in words if len(w) > 1]
+    return [_stem_word(w) for w in words if len(w) >= 2]
 
 
 class SimpleBM25:
@@ -117,8 +119,6 @@ class AiChatService:
             doc_tokens: list[list[str]] = []
             for c in self._chunks:
                 text = f"{c.get('title', '')} {c.get('category', '')} {c.get('content', '')}"
-                if c.get("id") == "service_4":
-                    text += " виджет чат-виджет иишный нейросеть бот ассистент"
                 doc_tokens.append(_tokenize(text))
             self._bm25 = SimpleBM25(doc_tokens)
         except Exception as e:
