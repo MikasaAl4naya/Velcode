@@ -155,6 +155,10 @@ class AiChatService:
                     show_lead_form = bool(parsed.get("show_lead_form", False))
                     effective_topic = str(parsed.get("topic") or topic or "Консультация по услугам").strip()
 
+                    generic_topics = {"оставить заявку", "отправка заявки", "заявка", "консультация", "приветствие", "консультация по услугам"}
+                    if effective_topic.lower() in generic_topics and topic and topic.lower() not in generic_topics:
+                        effective_topic = topic
+
                     prefill_data = parsed.get("prefill")
                     prefill: ChatPrefill | None = None
                     if isinstance(prefill_data, dict):
