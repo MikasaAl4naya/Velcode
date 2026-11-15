@@ -1,3 +1,5 @@
+import html
+import hmac
 import re
 from datetime import datetime
 from pathlib import Path
@@ -14,6 +16,8 @@ from app.database import engine
 from app.models import CompanyContact, Faq, Lead, Portfolio, Service, Tag
 
 UPLOADS_DIR = Path("uploads")
+ALLOWED_IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".webp", ".gif", ".avif", ".ico"}
+MAX_UPLOAD_SIZE = 10 * 1024 * 1024  # 10 MB
 
 _TRANSLIT = {
     'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd',
@@ -42,10 +46,13 @@ def _img_thumb(url: str | None) -> str:
 class AdminAuth(AuthenticationBackend):
     async def login(self, request: Request) -> bool:
         form = await request.form()
-        if (
-            form.get("username") == settings.admin_username
-            and form.get("password") == settings.admin_password
-        ):
+        username = str(form.get("username", ""))
+        password = str(form.get("password", ""))
+
+        user_ok = hmac.compare_digest(username, settings.admin_username)
+        pass_ok = hmac.compare_digest(password, settings.admin_password)
+
+        if user_ok and pass_ok:
             request.session["authenticated"] = True
             return True
         return False
@@ -70,16 +77,22 @@ class UploadView(BaseView):
         if request.method == "POST":
             form = await request.form()
             file = form.get("file")
-            if file and getattr(file, "filename", ""):
-                content = await file.read()
-                if content:
-                    UPLOADS_DIR.mkdir(exist_ok=True)
-                    suffix = Path(file.filename).suffix or ".png"
-                    fname = f"{uuid4().hex}{suffix}"
-                    (UPLOADS_DIR / fname).write_bytes(content)
-                    uploaded_url = f"/uploads/{fname}"
+            filename = getattr(file, "filename", "") or ""
+            if file and filename:
+                suffix = Path(filename).suffix.lower()
+                if suffix not in ALLOWED_IMAGE_EXTENSIONS:
+                    error = f"Недопустимый формат файла. Разрешены только изображения: {', '.join(sorted(ALLOWED_IMAGE_EXTENSIONS))}"
                 else:
-                    error = "Файл пустой"
+                    content = await file.read()
+                    if not content:
+                        error = "Файл пустой"
+                    elif len(content) > MAX_UPLOAD_SIZE:
+                        error = "Файл превышает максимально допустимый размер 10 МБ"
+                    else:
+                        UPLOADS_DIR.mkdir(exist_ok=True)
+                        fname = f"{uuid4().hex}{suffix}"
+                        (UPLOADS_DIR / fname).write_bytes(content)
+                        uploaded_url = f"/uploads/{fname}"
             else:
                 error = "Выберите файл"
 
@@ -202,11 +215,12 @@ class UploadsManagerView(BaseView):
         if request.method == "POST":
             try:
                 data = await request.json()
-                name = data.get("name", "")
+                name = str(data.get("name", "")).strip()
                 if not name or "/" in name or "\\" in name or name.startswith("."):
                     return JSONResponse({"error": "invalid name"}, status_code=400)
-                target = UPLOADS_DIR / name
-                if not target.exists() or not target.is_file():
+                base_dir = UPLOADS_DIR.resolve()
+                target = (UPLOADS_DIR / name).resolve()
+                if not str(target).startswith(str(base_dir)) or not target.is_file():
                     return JSONResponse({"error": "not found"}, status_code=404)
                 target.unlink()
                 return JSONResponse({"ok": True})
@@ -225,17 +239,18 @@ class UploadsManagerView(BaseView):
         rows = ""
         for f in files:
             ext = f["name"].rsplit(".", 1)[-1].lower() if "." in f["name"] else ""
-            is_img = ext in ("jpg", "jpeg", "png", "gif", "webp", "svg", "avif")
+            is_img = ext in ("jpg", "jpeg", "png", "gif", "webp", "avif", "ico")
+            escaped_name = html.escape(f["name"])
             thumb = f'<img src="{f["url"]}" style="height:36px;border-radius:4px;object-fit:cover;vertical-align:middle">' if is_img else "—"
             rows += f"""
             <tr>
                 <td style="text-align:center">{thumb}</td>
-                <td><code style="font-size:12px">{f["name"]}</code></td>
+                <td><code style="font-size:12px">{escaped_name}</code></td>
                 <td>{f["size"]}</td>
                 <td>{f["mtime"]}</td>
                 <td>
                     <a href="{f["url"]}" target="_blank" style="color:#4f46e5;margin-right:8px">Открыть</a>
-                    <button onclick="deleteFile('{f["name"]}')" style="background:#dc2626;color:#fff;border:none;border-radius:4px;padding:4px 10px;cursor:pointer;font-size:13px">Удалить</button>
+                    <button onclick="deleteFile('{escaped_name}')" style="background:#dc2626;color:#fff;border:none;border-radius:4px;padding:4px 10px;cursor:pointer;font-size:13px">Удалить</button>
                 </td>
             </tr>"""
 

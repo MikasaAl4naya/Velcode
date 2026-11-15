@@ -167,6 +167,16 @@ class ChatRequest(BaseModel):
     history: list[ChatMessage] = []
     prefill: ChatPrefill | None = None
 
+    @field_validator("message")
+    @classmethod
+    def validate_message(cls, v: str) -> str:
+        v = v.strip()
+        if not v:
+            raise ValueError("Сообщение не может быть пустым")
+        if len(v) > 2000:
+            raise ValueError("Сообщение слишком длинное (максимум 2000 символов)")
+        return v
+
 
 class ChatResponse(BaseModel):
     text: str

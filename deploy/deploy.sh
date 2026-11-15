@@ -9,6 +9,8 @@ FIRST_RUN=${1:-""}
 cd "$APP_DIR"
 
 echo "=== Pull ==="
+git config core.fileMode false
+git checkout -- knowledge_base/ 2>/dev/null || true
 git pull origin master
 
 echo "=== Backend: зависимости ==="
@@ -42,6 +44,7 @@ fi
 
 echo "=== Права на директорию ==="
 sudo chown -R www-data:www-data "$APP_DIR"
+sudo chmod -R 775 "$APP_DIR/knowledge_base"
 
 echo "=== Перезапуск сервисов ==="
 sudo systemctl restart velcode-backend

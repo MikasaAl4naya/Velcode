@@ -1,11 +1,13 @@
-.env
-.env.production
+.env*
+!*.example
 *.db
+*.sqlite3
 __pycache__/
 .venv/
+venv/
 .pytest_cache/
 *.pyc
+uploads/
 frontend/.next/
 frontend/node_modules/
-frontend/.env.local
-frontend/.env.production
+frontend/.env*
