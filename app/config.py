@@ -30,5 +30,12 @@ class Settings(BaseSettings):
     admin_password: str = "changeme"
     admin_secret_key: str = "changeme-secret-key-32-chars-min!"
 
+    # AI-консультант
+    ai_api_key: str = ""
+    ai_base_url: str = "https://api.openai.com/v1"
+    ai_model: str = "gpt-4o-mini"
+    ai_system_prompt_path: str = "knowledge_base/system_prompt.md"
+    ai_knowledge_base_path: str = "knowledge_base/knowledge_base.json"
+
 
 settings = Settings()

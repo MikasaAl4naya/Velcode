@@ -123,3 +123,32 @@ export async function createLead(data: LeadCreate): Promise<{ ok: boolean; error
     return { ok: false, error: 'Нет связи с сервером' }
   }
 }
+
+export type ChatApiAction = {
+  label: string
+  actionKey: string
+  primary?: boolean
+}
+
+export type ChatApiResponse = {
+  text: string
+  actions?: ChatApiAction[]
+  show_lead_form?: boolean
+}
+
+export async function sendChatMessage(
+  message: string,
+  history: Array<{ role: string; text: string }> = []
+): Promise<ChatApiResponse | null> {
+  try {
+    const res = await apiFetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message, history }),
+    })
+    if (!res.ok) return null
+    return await res.json()
+  } catch {
+    return null
+  }
+}

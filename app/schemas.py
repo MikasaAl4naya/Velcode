@@ -128,3 +128,27 @@ class LeadOut(BaseModel):
     question: str | None
     source: str
     created_at: dt.datetime
+
+
+# ---------- ИИ-Консультант ----------
+
+class ChatMessage(BaseModel):
+    role: str  # "user" | "assistant"
+    text: str
+
+
+class ChatAction(BaseModel):
+    label: str
+    actionKey: str = "show_lead_form"
+    primary: bool = True
+
+
+class ChatRequest(BaseModel):
+    message: str
+    history: list[ChatMessage] = []
+
+
+class ChatResponse(BaseModel):
+    text: str
+    actions: list[ChatAction] = []
+    show_lead_form: bool = False

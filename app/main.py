@@ -8,7 +8,7 @@ from fastapi.staticfiles import StaticFiles
 from app.admin import create_admin
 from app.config import settings
 from app.database import init_models
-from app.routers import catalog, leads
+from app.routers import catalog, chat, leads
 
 
 @asynccontextmanager
@@ -29,6 +29,7 @@ app.add_middleware(
 
 app.include_router(catalog.router)
 app.include_router(leads.router)
+app.include_router(chat.router)
 
 create_admin(app)
 

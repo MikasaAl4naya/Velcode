@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { ymGoal } from '@/lib/ym';
 import { Tag } from '@/components/ui/Tag';
 import { LeadForm } from '@/components/ui/LeadForm';
-import { getFaq, FaqItem } from '@/lib/api';
+import { getFaq, FaqItem, sendChatMessage } from '@/lib/api';
 
 interface Message {
   id: string;
@@ -204,21 +204,72 @@ export function AiChatWidget() {
     });
   };
 
-  const addUserMessage = (text: string) => {
+  const addUserMessage = async (text: string) => {
     const userMsg: Message = {
       id: `u-${Date.now()}`,
       sender: 'user',
       text,
     };
-    setMessages((prev) => [...prev, userMsg]);
+    const nextMessages = [...messages, userMsg];
+    setMessages(nextMessages);
     setIsTyping(true);
 
-    // Имитация ответа ИИ с задержкой (болванка)
+    const trimmed = text.trim().toLowerCase();
+
+    // Fast Path: точное совпадение с вопросами FAQ из базы данных (0 мс задержки, без запроса к LLM)
+    const matchedFaq = faqList.find(
+      (item) => item.question.trim().toLowerCase() === trimmed
+    );
+    if (matchedFaq) {
+      setTimeout(() => {
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: `bot-${Date.now()}`,
+            sender: 'assistant',
+            text: matchedFaq.answer,
+            actions: [
+              { label: 'Оставить заявку', actionKey: 'show_lead_form', primary: true },
+            ],
+          },
+        ]);
+        setIsTyping(false);
+      }, 350);
+      return;
+    }
+
+    // Запрос к живому ИИ-эндпоинту бэкенда (/api/chat)
+    try {
+      const historyPayload = nextMessages.slice(-5, -1).map((m) => ({
+        role: m.sender,
+        text: m.text,
+      }));
+
+      const apiResponse = await sendChatMessage(text, historyPayload);
+      if (apiResponse && apiResponse.text) {
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: `bot-${Date.now()}`,
+            sender: 'assistant',
+            text: apiResponse.text,
+            actions: apiResponse.actions,
+            showLeadForm: apiResponse.show_lead_form,
+          },
+        ]);
+        setIsTyping(false);
+        return;
+      }
+    } catch {
+      // Игнорируем сетевые сбои и переходим на локальный фоллбек
+    }
+
+    // Фоллбек, если бэкенд недоступен или токен не задан
     setTimeout(() => {
-      const botResponse = generateBotResponse(text);
+      const botResponse = generateLocalBotResponse(text);
       setMessages((prev) => [...prev, botResponse]);
       setIsTyping(false);
-    }, 750);
+    }, 400);
   };
 
   const handleInputSubmit = (e: React.FormEvent) => {
@@ -233,7 +284,7 @@ export function AiChatWidget() {
     addUserMessage(question);
   };
 
-  const generateBotResponse = (query: string): Message => {
+  const generateLocalBotResponse = (query: string): Message => {
     const trimmed = query.trim().toLowerCase();
 
     // 1. Проверяем точное совпадение с вопросами FAQ из базы данных
