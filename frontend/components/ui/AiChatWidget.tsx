@@ -471,7 +471,7 @@ export function AiChatWidget() {
                       key={idx}
                       as="button"
                       type="button"
-                      className="hero__tag-btn ai-tag"
+                      className="ai-tag"
                       onClick={() => handleSelectQuestion(q)}
                     >
                       {q}
