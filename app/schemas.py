@@ -42,6 +42,19 @@ class FaqOut(BaseModel):
     sort_order: int
 
 
+class CompanyContactOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    company_name: str
+    inn: str
+    ogrnip: str
+    phone: str
+    email: str
+    telegram_url: str
+    max_url: str
+
+
 class PortfolioOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

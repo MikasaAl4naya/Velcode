@@ -1,5 +1,8 @@
+'use client';
+
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { COMPANY_CONFIG } from '@/lib/company';
+import { useCompanyContacts } from '@/components/CompanyContactsProvider';
 import {
   CONSENT_HTML,
   COOKIES_HTML,
@@ -7,15 +10,15 @@ import {
   PRIVACY_P3_HTML,
 } from '@/lib/legalData';
 
-function formatHtml(raw: string): string {
+function formatHtml(raw: string, contacts: { email: string; inn: string; ogrnip: string }): string {
   if (!raw) return '';
   const host = COMPANY_CONFIG.defaultSiteHost;
   return raw
     .replace(/velcode\.ru\/privacy/g, `${host}/privacy`)
     .replace(/velcode\.ru/g, host)
-    .replace(/velcode@inbox\.ru/g, COMPANY_CONFIG.email)
-    .replace(/381914585931/g, COMPANY_CONFIG.inn)
-    .replace(/326385000117097/g, COMPANY_CONFIG.ogrnip);
+    .replace(/velcode@inbox\.ru/g, contacts.email)
+    .replace(/381914585931/g, contacts.inn)
+    .replace(/326385000117097/g, contacts.ogrnip);
 }
 
 type LegalPageContentProps = {
@@ -23,6 +26,7 @@ type LegalPageContentProps = {
 };
 
 export function LegalPageContent({ type }: LegalPageContentProps) {
+  const contacts = useCompanyContacts();
   let title = '';
   let content: React.ReactNode = null;
 
@@ -32,7 +36,7 @@ export function LegalPageContent({ type }: LegalPageContentProps) {
       <>
         <div
           className="legal-page__body"
-          dangerouslySetInnerHTML={{ __html: formatHtml(PRIVACY_P0_HTML) }}
+          dangerouslySetInnerHTML={{ __html: formatHtml(PRIVACY_P0_HTML, contacts) }}
         />
 
         <div className="legal-page__table-wrap">
@@ -67,7 +71,7 @@ export function LegalPageContent({ type }: LegalPageContentProps) {
 
         <div
           className="legal-page__body"
-          dangerouslySetInnerHTML={{ __html: formatHtml(PRIVACY_P3_HTML) }}
+          dangerouslySetInnerHTML={{ __html: formatHtml(PRIVACY_P3_HTML, contacts) }}
         />
       </>
     );
@@ -76,7 +80,7 @@ export function LegalPageContent({ type }: LegalPageContentProps) {
     content = (
       <div
         className="legal-page__body"
-        dangerouslySetInnerHTML={{ __html: formatHtml(CONSENT_HTML) }}
+        dangerouslySetInnerHTML={{ __html: formatHtml(CONSENT_HTML, contacts) }}
       />
     );
   } else if (type === 'cookies') {
@@ -84,7 +88,7 @@ export function LegalPageContent({ type }: LegalPageContentProps) {
     content = (
       <div
         className="legal-page__body"
-        dangerouslySetInnerHTML={{ __html: formatHtml(COOKIES_HTML) }}
+        dangerouslySetInnerHTML={{ __html: formatHtml(COOKIES_HTML, contacts) }}
       />
     );
   }

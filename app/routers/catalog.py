@@ -4,10 +4,19 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.database import get_db
-from app.models import Category, Faq, Portfolio, Service
-from app.schemas import CategoryOut, FaqOut, PortfolioOut, ServiceOut
+from app.models import Category, CompanyContact, Faq, Portfolio, Service
+from app.schemas import CategoryOut, CompanyContactOut, FaqOut, PortfolioOut, ServiceOut
 
 router = APIRouter(prefix="/api", tags=["catalog"])
+
+
+@router.get("/contacts", response_model=CompanyContactOut)
+async def get_contacts(db: AsyncSession = Depends(get_db)) -> CompanyContact:
+    result = await db.execute(select(CompanyContact).order_by(CompanyContact.id.asc()).limit(1))
+    contact = result.scalar_one_or_none()
+    if contact is None:
+        contact = CompanyContact()
+    return contact
 
 
 @router.get("/categories", response_model=list[CategoryOut])

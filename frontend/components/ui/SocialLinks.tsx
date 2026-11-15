@@ -1,6 +1,6 @@
 'use client';
 
-import { COMPANY_CONFIG } from '@/lib/company';
+import { useCompanyContacts } from '@/components/CompanyContactsProvider';
 import { ymGoal } from '@/lib/ym';
 
 type SocialLinksProps = {
@@ -16,11 +16,13 @@ export function SocialLinks({
   source = 'contacts',
   idPrefix = 'contacts',
 }: SocialLinksProps) {
+  const contacts = useCompanyContacts();
+
   return (
     <div className={className}>
       <a
         id={`${idPrefix}-max`}
-        href={COMPANY_CONFIG.maxBot}
+        href={contacts.maxUrl}
         target="_blank"
         rel="noopener noreferrer"
         className={itemClassName}
@@ -34,7 +36,7 @@ export function SocialLinks({
       </a>
       <a
         id={`${idPrefix}-telegram`}
-        href={COMPANY_CONFIG.telegramBot}
+        href={contacts.telegramUrl}
         target="_blank"
         rel="noopener noreferrer"
         className={itemClassName}

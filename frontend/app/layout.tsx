@@ -2,10 +2,12 @@ import type { Metadata } from 'next';
 import Script from 'next/script';
 import './globals.css';
 import { ModalProvider } from '@/components/ModalProvider';
+import { CompanyContactsProvider } from '@/components/CompanyContactsProvider';
 import { SvgSprite } from '@/components/ui/SvgSprite';
 import { CookieBanner } from '@/components/ui/CookieBanner';
 import { AiChatWidget } from '@/components/ui/AiChatWidget';
 import { COMPANY_CONFIG } from '@/lib/company';
+import { getCompanyContacts } from '@/lib/api';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://velcode.ru'),
@@ -50,67 +52,52 @@ export const metadata: Metadata = {
   },
 };
 
-const schemaGraph = {
-  '@context': 'https://schema.org',
-  '@graph': [
-    {
-      '@type': ['Organization', 'ProfessionalService'],
-      '@id': 'https://velcode.ru/#organization',
-      name: 'Велкод',
-      legalName: COMPANY_CONFIG.ipFullName,
-      url: 'https://velcode.ru',
-      logo: 'https://velcode.ru/apple-touch-icon.png',
-      image: 'https://velcode.ru/apple-touch-icon.png',
-      email: COMPANY_CONFIG.email,
-      telephone: COMPANY_CONFIG.phone,
-      priceRange: '₽₽',
-      address: {
-        '@type': 'PostalAddress',
-        addressLocality: 'Иркутск',
-        addressRegion: 'Иркутская область',
-        addressCountry: 'RU',
-      },
-      openingHoursSpecification: [
-        {
-          '@type': 'OpeningHoursSpecification',
-          dayOfWeek: [
-            'Monday',
-            'Tuesday',
-            'Wednesday',
-            'Thursday',
-            'Friday',
-          ],
-          opens: '10:00',
-          closes: '18:00',
-        },
-      ],
-      sameAs: [
-        COMPANY_CONFIG.telegramBot,
-      ],
-      contactPoint: {
-        '@type': 'ContactPoint',
-        telephone: COMPANY_CONFIG.phone,
-        contactType: 'customer service',
-        areaServed: 'RU',
-        availableLanguage: 'Russian',
-      },
-    },
-    {
-      '@type': 'WebSite',
-      '@id': 'https://velcode.ru/#website',
-      url: 'https://velcode.ru',
-      name: 'Велкод — разработка сайтов и автоматизация бизнеса',
-      description:
-        'Разработка сайтов под ключ, реклама и автоматизация бизнеса в Иркутске. Битрикс24, 1С, чат-боты и ИИ.',
-      publisher: {
-        '@id': 'https://velcode.ru/#organization',
-      },
-      inLanguage: 'ru-RU',
-    },
-  ],
-};
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const contacts = await getCompanyContacts();
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const legalName = contacts?.company_name || COMPANY_CONFIG.ipFullName;
+  const email = contacts?.email || COMPANY_CONFIG.email;
+  const phone = contacts?.phone || COMPANY_CONFIG.phone;
+  const telegramBot = contacts?.telegram_url || COMPANY_CONFIG.telegramBot;
+
+  const schemaGraph = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': ['Organization', 'ProfessionalService'],
+        '@id': 'https://velcode.ru/#organization',
+        name: 'Велкод',
+        legalName: legalName,
+        url: 'https://velcode.ru',
+        logo: 'https://velcode.ru/apple-touch-icon.png',
+        image: 'https://velcode.ru/apple-touch-icon.png',
+        email: email,
+        telephone: phone,
+        priceRange: '₽₽',
+        sameAs: [telegramBot],
+        contactPoint: {
+          '@type': 'ContactPoint',
+          telephone: phone,
+          contactType: 'customer service',
+          areaServed: 'RU',
+          availableLanguage: 'Russian',
+        },
+      },
+      {
+        '@type': 'WebSite',
+        '@id': 'https://velcode.ru/#website',
+        url: 'https://velcode.ru',
+        name: 'Велкод — разработка сайтов и автоматизация бизнеса',
+        description:
+          'Разработка сайтов под ключ, реклама и автоматизация бизнеса в Иркутске. Битрикс24, 1С, чат-боты и ИИ.',
+        publisher: {
+          '@id': 'https://velcode.ru/#organization',
+        },
+        inLanguage: 'ru-RU',
+      },
+    ],
+  };
+
   return (
     <html lang="ru">
       <head>
@@ -121,11 +108,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className="page">
         <SvgSprite />
-        <ModalProvider>
-          {children}
-          <CookieBanner />
-          <AiChatWidget />
-        </ModalProvider>
+        <CompanyContactsProvider initialContacts={contacts}>
+          <ModalProvider>
+            {children}
+            <CookieBanner />
+            <AiChatWidget />
+          </ModalProvider>
+        </CompanyContactsProvider>
         <Script
           id="yandex-metrika"
           strategy="afterInteractive"

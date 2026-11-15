@@ -38,6 +38,17 @@ export type PortfolioItem = {
   sort_order: number
 }
 
+export type CompanyContact = {
+  id: number
+  company_name: string
+  inn: string
+  ogrnip: string
+  phone: string
+  email: string
+  telegram_url: string
+  max_url: string
+}
+
 export type LeadCreate = {
   name: string
   phone: string
@@ -103,6 +114,16 @@ export async function getPortfolio(): Promise<PortfolioItem[]> {
     return res.json()
   } catch {
     return []
+  }
+}
+
+export async function getCompanyContacts(): Promise<CompanyContact | null> {
+  try {
+    const res = await apiFetch('/api/contacts', { next: { revalidate: 60 } })
+    if (!res.ok) return null
+    return res.json()
+  } catch {
+    return null
   }
 }
 

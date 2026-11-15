@@ -1,9 +1,13 @@
+'use client';
+
 import Link from 'next/link';
 import { COMPANY_CONFIG, getCurrentYear } from '@/lib/company';
+import { useCompanyContacts } from '@/components/CompanyContactsProvider';
 
 export function Footer() {
   const currentYear = getCurrentYear();
   const siteHost = COMPANY_CONFIG.defaultSiteHost;
+  const contacts = useCompanyContacts();
 
   return (
     <footer className="footer">
@@ -11,15 +15,15 @@ export function Footer() {
         <div className="footer__col-left">
           <span className="footer__logo">{COMPANY_CONFIG.brandName}</span>
           <p className="footer__requisites">
-            {COMPANY_CONFIG.ipFullName}<br />
-            ИНН: {COMPANY_CONFIG.inn}<br />
-            ОГРНИП: {COMPANY_CONFIG.ogrnip}
+            {contacts.companyName}<br />
+            ИНН: {contacts.inn}<br />
+            ОГРНИП: {contacts.ogrnip}
           </p>
         </div>
 
         <div className="footer__col-right">
           <p className="footer__copyright">
-            {currentYear}© {siteHost}, {COMPANY_CONFIG.city}
+            {currentYear}© {siteHost}
           </p>
           <div className="footer__links">
             <Link href="/consent" className="footer__link">

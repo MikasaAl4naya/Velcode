@@ -475,23 +475,32 @@ class CompanyContactAdmin(ModelView, model=CompanyContact):
 
     column_list = [
         CompanyContact.id,
-        CompanyContact.legal_entity,
+        CompanyContact.company_name,
+        CompanyContact.inn,
+        CompanyContact.ogrnip,
         CompanyContact.phone,
         CompanyContact.email,
-        CompanyContact.messengers,
+        CompanyContact.telegram_url,
+        CompanyContact.max_url,
     ]
     column_labels = {
         "id": "ID",
-        "legal_entity": "Юрлицо / Реквизиты",
+        "company_name": "Организация / ИП",
+        "inn": "ИНН",
+        "ogrnip": "ОГРНИП / ОГРН",
         "phone": "Телефон",
         "email": "Email",
-        "messengers": "Мессенджеры",
+        "telegram_url": "Ссылка на Telegram",
+        "max_url": "Ссылка на MAX",
     }
     form_columns = [
-        CompanyContact.legal_entity,
+        CompanyContact.company_name,
+        CompanyContact.inn,
+        CompanyContact.ogrnip,
         CompanyContact.phone,
         CompanyContact.email,
-        CompanyContact.messengers,
+        CompanyContact.telegram_url,
+        CompanyContact.max_url,
     ]
 
     async def after_model_change(self, data: dict, model, is_created: bool, request: Request) -> None:

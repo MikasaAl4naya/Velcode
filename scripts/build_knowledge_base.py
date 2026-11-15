@@ -68,10 +68,13 @@ async def extract_knowledge_data() -> dict[str, Any]:
         contact = contacts_res.scalars().first()
         if not contact:
             contact = CompanyContact(
-                legal_entity="ИП Манилат Виктория Пхетудоновна, ИНН: 381914585931, ОГРНИП: 326385000117097",
+                company_name="ИП Манилат Виктория Пхетудоновна",
+                inn="381914585931",
+                ogrnip="326385000117097",
                 phone="+7 (924) 534 51 82",
-                messengers="Telegram: https://t.me/VelcodeIRK (@VelcodeIRK)",
                 email="velcode@inbox.ru",
+                telegram_url="https://t.me/VelcodeIRK",
+                max_url="https://max.ru/u/f9LHodD0cOIXsNCHlykOi9hpG3Q_0_ZRaXPmYzt9Yz_UgBRgZXjmEQBJXWg",
             )
             db.add(contact)
             await db.commit()
@@ -159,25 +162,33 @@ def build_chunks(data: dict[str, Any]) -> list[dict[str, Any]]:
     # 3. Контакты и реквизиты компании из БД
     contact = data.get("contact")
     if contact:
-        phone = contact.phone.strip() if contact.phone else ""
-        email = contact.email.strip() if contact.email else ""
-        messengers = contact.messengers.strip() if contact.messengers else ""
-        legal = contact.legal_entity.strip() if contact.legal_entity else ""
+        c_name = contact.company_name.strip() if contact.company_name else "ИП Манилат Виктория Пхетудоновна"
+        c_inn = contact.inn.strip() if contact.inn else "381914585931"
+        c_ogrnip = contact.ogrnip.strip() if contact.ogrnip else "326385000117097"
+        c_phone = contact.phone.strip() if contact.phone else "+7 (924) 534 51 82"
+        c_email = contact.email.strip() if contact.email else "velcode@inbox.ru"
+        c_tg = contact.telegram_url.strip() if contact.telegram_url else "https://t.me/VelcodeIRK"
+        c_max = contact.max_url.strip() if contact.max_url else ""
     else:
-        phone = "+7 (924) 534 51 82"
-        email = "velcode@inbox.ru"
-        messengers = "Telegram: https://t.me/VelcodeIRK (@VelcodeIRK)"
-        legal = "ИП Манилат Виктория Пхетудоновна, ИНН: 381914585931, ОГРНИП: 326385000117097"
+        c_name = "ИП Манилат Виктория Пхетудоновна"
+        c_inn = "381914585931"
+        c_ogrnip = "326385000117097"
+        c_phone = "+7 (924) 534 51 82"
+        c_email = "velcode@inbox.ru"
+        c_tg = "https://t.me/VelcodeIRK"
+        c_max = ""
 
-    lines = ["Контакты и реквизиты компании Велкод:"]
-    if phone:
-        lines.append(f"Телефон: {phone}")
-    if email:
-        lines.append(f"Email: {email}")
-    if messengers:
-        lines.append(f"Мессенджеры: {messengers}")
-    if legal:
-        lines.append(f"Реквизиты: {legal}")
+    lines = [
+        "Контакты и реквизиты компании Велкод:",
+        f"Организация: {c_name}",
+        f"ИНН: {c_inn}",
+        f"ОГРНИП: {c_ogrnip}",
+        f"Телефон: {c_phone}",
+        f"Email: {c_email}",
+        f"Telegram: {c_tg}",
+    ]
+    if c_max:
+        lines.append(f"MAX: {c_max}")
     lines.append("Ссылка: /contacts")
 
     contacts_text = "\n".join(lines).strip()
@@ -191,10 +202,13 @@ def build_chunks(data: dict[str, Any]) -> list[dict[str, Any]]:
         "metadata": {
             "type": "contacts",
             "url": "/contacts",
-            "phone": phone,
-            "email": email,
-            "messengers": messengers,
-            "legal_entity": legal,
+            "company_name": c_name,
+            "inn": c_inn,
+            "ogrnip": c_ogrnip,
+            "phone": c_phone,
+            "email": c_email,
+            "telegram_url": c_tg,
+            "max_url": c_max,
         },
     })
 

@@ -139,18 +139,25 @@ class CompanyContact(Base):
     __tablename__ = "company_contacts"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    legal_entity: Mapped[str] = mapped_column(
-        String(500),
+    company_name: Mapped[str] = mapped_column(
+        String(255),
         nullable=False,
-        default="ИП Манилат Виктория Пхетудоновна, ИНН: 381914585931, ОГРНИП: 326385000117097",
+        default="ИП Манилат Виктория Пхетудоновна",
     )
-    phone: Mapped[str] = mapped_column(String(100), nullable=False, default="+7 (924) 534 51 82")
-    messengers: Mapped[str] = mapped_column(
-        String(500),
-        nullable=False,
-        default="Telegram: https://t.me/VelcodeIRK (@VelcodeIRK)",
-    )
+    inn: Mapped[str] = mapped_column(String(32), nullable=False, default="381914585931")
+    ogrnip: Mapped[str] = mapped_column(String(32), nullable=False, default="326385000117097")
+    phone: Mapped[str] = mapped_column(String(64), nullable=False, default="+7 (924) 534 51 82")
     email: Mapped[str] = mapped_column(String(255), nullable=False, default="velcode@inbox.ru")
+    telegram_url: Mapped[str] = mapped_column(
+        String(500),
+        nullable=False,
+        default="https://t.me/VelcodeIRK",
+    )
+    max_url: Mapped[str] = mapped_column(
+        String(500),
+        nullable=False,
+        default="https://max.ru/u/f9LHodD0cOIXsNCHlykOi9hpG3Q_0_ZRaXPmYzt9Yz_UgBRgZXjmEQBJXWg",
+    )
 
 
 # ---------------------------------------------------------------------------

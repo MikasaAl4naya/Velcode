@@ -1,6 +1,6 @@
 'use client';
 
-import { COMPANY_CONFIG } from '@/lib/company';
+import { useCompanyContacts } from '@/components/CompanyContactsProvider';
 import { ymGoal } from '@/lib/ym';
 
 type ContactChannelsProps = {
@@ -16,23 +16,25 @@ export function ContactChannels({
   source = 'contacts',
   idPrefix = 'contacts',
 }: ContactChannelsProps) {
+  const contacts = useCompanyContacts();
+
   return (
     <div className={className}>
       <a
         id={`${idPrefix}-phone`}
-        href={`tel:${COMPANY_CONFIG.phoneLink}`}
+        href={`tel:+${contacts.phoneLink}`}
         className={linkClassName}
         onClick={() => ymGoal(`${source}_click_phone`)}
       >
-        {COMPANY_CONFIG.phone}
+        {contacts.phone}
       </a>
       <a
         id={`${idPrefix}-email`}
-        href={`mailto:${COMPANY_CONFIG.email}`}
+        href={`mailto:${contacts.email}`}
         className={linkClassName}
         onClick={() => ymGoal(`${source}_click_email`)}
       >
-        {COMPANY_CONFIG.email}
+        {contacts.email}
       </a>
     </div>
   );
