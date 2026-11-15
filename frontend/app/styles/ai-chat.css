@@ -355,7 +355,7 @@
 }
 
 .ai-msg--user .ai-msg__bubble {
-  background: var(--color-dark, #171819);
+  background: var(--color-blue-pill, #7183bd);
   color: #ffffff;
   border-bottom-right-radius: 6px;
 }
@@ -542,6 +542,7 @@
 .ai-chat-input-bar {
   display: flex;
   align-items: center;
+  gap: 8px;
   background: #f7f9fd;
   border: 1px solid #e7ecf6;
   border-radius: 9999px;
@@ -557,12 +558,14 @@
 
 .ai-chat-input-bar__field {
   flex: 1;
+  min-width: 0;
   border: none;
   background: transparent;
   outline: none;
   font-size: 14px;
   font-family: inherit;
   color: var(--color-dark, #171819);
+  padding-right: 10px;
 }
 
 .ai-chat-input-bar__field::placeholder {
@@ -590,8 +593,9 @@
 }
 
 .ai-chat-input-bar__send:disabled {
-  opacity: 0.35;
-  cursor: not-allowed;
+  opacity: 1;
+  cursor: default;
+  pointer-events: none;
 }
 
 .ai-chat-footer__hint {

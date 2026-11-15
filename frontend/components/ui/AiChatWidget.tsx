@@ -47,6 +47,7 @@ const DEFAULT_QUESTION_ANSWERS: Record<string, { text: string; actionLabel: stri
 const STORAGE_MSGS_KEY = 'velcode_ai_chat_messages_v1';
 const STORAGE_OPEN_KEY = 'velcode_ai_chat_open_v1';
 const STORAGE_DEBUG_KEY = 'velcode_ai_debug_mode';
+const MAX_INPUT_LENGTH = 300;
 
 /**
  * Рендерит текст сообщения с поддержкой markdown-ссылок [текст](url)
@@ -209,16 +210,21 @@ export function AiChatWidget() {
   };
 
   const addUserMessage = async (text: string) => {
+    const cappedText = text.slice(0, MAX_INPUT_LENGTH);
     const userMsg: Message = {
       id: `u-${Date.now()}`,
       sender: 'user',
-      text,
+      text: cappedText,
     };
-    const nextMessages = [...messages, userMsg];
+    // Очищаем кнопки действий из всех предыдущих сообщений (если пользователь проигнорировал их и пишет дальше)
+    const sanitizedPrevious = messages.map((m) =>
+      m.actions && m.actions.length > 0 ? { ...m, actions: undefined } : m
+    );
+    const nextMessages = [...sanitizedPrevious, userMsg];
     setMessages(nextMessages);
     setIsTyping(true);
 
-    const trimmed = text.trim().toLowerCase();
+    const trimmed = cappedText.trim().toLowerCase();
 
     // Fast Path: точное совпадение с вопросами FAQ из базы данных (0 мс задержки, без запроса к LLM)
     const matchedFaq = faqList.find(
@@ -279,7 +285,7 @@ export function AiChatWidget() {
 
   const handleInputSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const text = inputText.trim();
+    const text = inputText.trim().slice(0, MAX_INPUT_LENGTH);
     if (!text) return;
     setInputText('');
     addUserMessage(text);
@@ -612,7 +618,7 @@ export function AiChatWidget() {
             ) : (
               /* Список сообщений */
               <div className="ai-messages-list">
-                {messages.map((msg) => (
+                {messages.map((msg, idx) => (
                   <div
                     key={msg.id}
                     className={`ai-msg ${msg.sender === 'user' ? 'ai-msg--user' : 'ai-msg--assistant'} ${msg.showLeadForm && !leadSent ? 'ai-msg--has-form' : ''}`}
@@ -640,8 +646,8 @@ export function AiChatWidget() {
                         </div>
                       )}
 
-                      {/* Быстрые кнопки действий (скрыты, если форма уже отображается) */}
-                      {msg.actions && msg.actions.length > 0 && !msg.showLeadForm && !leadSent && (
+                      {/* Быстрые кнопки действий (показываем только у последнего сообщения, если форма не открыта) */}
+                      {msg.actions && msg.actions.length > 0 && !msg.showLeadForm && !leadSent && idx === messages.length - 1 && (
                         <div className="ai-msg__actions">
                           {msg.actions.map((act, i) => (
                             <button
@@ -678,7 +684,8 @@ export function AiChatWidget() {
                 ref={inputRef}
                 type="text"
                 className="ai-chat-input-bar__field"
-                placeholder="Message"
+                placeholder="Ваш вопрос..."
+                maxLength={MAX_INPUT_LENGTH}
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
                 disabled={isTyping}
