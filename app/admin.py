@@ -11,7 +11,7 @@ from starlette.responses import HTMLResponse, JSONResponse
 
 from app.config import settings
 from app.database import engine
-from app.models import Lead, Portfolio, Service, Tag
+from app.models import Faq, Lead, Portfolio, Service, Tag
 
 UPLOADS_DIR = Path("uploads")
 
@@ -379,6 +379,20 @@ class PortfolioAdmin(ModelView, model=Portfolio):
             )
             await session.commit()
 
+        # Автоматическая пересборка базы знаний ИИ при создании/изменении кейса
+        try:
+            from scripts.build_knowledge_base import rebuild_knowledge_base
+            await rebuild_knowledge_base()
+        except Exception as e:
+            print(f"[Admin] Ошибка пересборки базы знаний ИИ: {e}")
+
+    async def after_model_delete(self, model, request: Request) -> None:
+        try:
+            from scripts.build_knowledge_base import rebuild_knowledge_base
+            await rebuild_knowledge_base()
+        except Exception as e:
+            print(f"[Admin] Ошибка пересборки базы знаний ИИ: {e}")
+
 
 class ServiceAdmin(ModelView, model=Service):
     name = "Услуга"
@@ -408,6 +422,51 @@ class ServiceAdmin(ModelView, model=Service):
         "sort_order": "Порядок",
     }
 
+    async def after_model_change(self, data: dict, model, is_created: bool, request: Request) -> None:
+        try:
+            from scripts.build_knowledge_base import rebuild_knowledge_base
+            await rebuild_knowledge_base()
+        except Exception as e:
+            print(f"[Admin] Ошибка пересборки базы знаний ИИ: {e}")
+
+    async def after_model_delete(self, model, request: Request) -> None:
+        try:
+            from scripts.build_knowledge_base import rebuild_knowledge_base
+            await rebuild_knowledge_base()
+        except Exception as e:
+            print(f"[Admin] Ошибка пересборки базы знаний ИИ: {e}")
+
+
+class FaqAdmin(ModelView, model=Faq):
+    name = "FAQ / Регламент"
+    name_plural = "FAQ / Регламенты"
+    icon = "fa-solid fa-question"
+
+    column_list = [Faq.id, Faq.question, Faq.sort_order]
+    column_searchable_list = [Faq.question, Faq.answer]
+    column_sortable_list = [Faq.sort_order, Faq.id]
+
+    form_columns = [Faq.question, Faq.answer, Faq.sort_order]
+    column_labels = {
+        "question": "Вопрос",
+        "answer": "Ответ",
+        "sort_order": "Порядок",
+    }
+
+    async def after_model_change(self, data: dict, model, is_created: bool, request: Request) -> None:
+        try:
+            from scripts.build_knowledge_base import rebuild_knowledge_base
+            await rebuild_knowledge_base()
+        except Exception as e:
+            print(f"[Admin] Ошибка пересборки базы знаний ИИ: {e}")
+
+    async def after_model_delete(self, model, request: Request) -> None:
+        try:
+            from scripts.build_knowledge_base import rebuild_knowledge_base
+            await rebuild_knowledge_base()
+        except Exception as e:
+            print(f"[Admin] Ошибка пересборки базы знаний ИИ: {e}")
+
 
 def create_admin(app) -> Admin:
     auth = AdminAuth(secret_key=settings.admin_secret_key)
@@ -416,6 +475,7 @@ def create_admin(app) -> Admin:
     admin.add_view(PortfolioAdmin)
     admin.add_view(TagAdmin)
     admin.add_view(ServiceAdmin)
+    admin.add_view(FaqAdmin)
     admin.add_base_view(UploadView)
     admin.add_base_view(UploadsManagerView)
     return admin

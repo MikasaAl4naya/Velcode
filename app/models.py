@@ -131,3 +131,23 @@ class Lead(Base):
     created_at: Mapped[dt.datetime] = mapped_column(
         DateTime, default=lambda: dt.datetime.now(dt.timezone.utc)
     )
+
+
+# ---------------------------------------------------------------------------
+# Автоматический триггер пересборки базы знаний ИИ при любых изменениях в БД
+# ---------------------------------------------------------------------------
+from sqlalchemy import event
+
+
+def _trigger_kb_rebuild(mapper, connection, target):
+    try:
+        from scripts.build_knowledge_base import trigger_knowledge_base_rebuild
+        trigger_knowledge_base_rebuild()
+    except Exception as e:
+        print(f"[DB Trigger] Ошибка автообновления базы знаний: {e}")
+
+
+for _model in (Service, Portfolio, Tag):
+    event.listen(_model, "after_insert", _trigger_kb_rebuild)
+    event.listen(_model, "after_update", _trigger_kb_rebuild)
+    event.listen(_model, "after_delete", _trigger_kb_rebuild)
