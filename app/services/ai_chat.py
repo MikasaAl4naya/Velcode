@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import json
 import logging
+import math
 import os
 import re
+from collections import Counter
 from pathlib import Path
 from typing import Any
 
@@ -33,34 +35,118 @@ def _format_russian_phone(phone_str: str) -> str:
     return phone_str.strip()
 
 
+def _stem_word(word: str) -> str:
+    word = word.lower().replace("ё", "е")
+    word = re.sub(r"(?:[аеиоуыэюя]{1,2})$", "", word)
+    word = re.sub(
+        r"(?:ов|ев|ей|ям|ам|ами|ями|ом|ем|их|ых|ую|юю|ой|ей|ая|яя|ое|ее|ые|ие|ть|ти|л|ла|ли|ло|ся|сь)$",
+        "",
+        word,
+    )
+    return word
+
+
+def _tokenize(text: str) -> list[str]:
+    words = re.findall(r"[a-zA-Zа-яА-Я0-9]+", text.lower())
+    return [_stem_word(w) for w in words if len(w) > 1]
+
+
+class SimpleBM25:
+    """Компактный и быстрый ретривер BM25 для базы знаний без сторонних зависимостей."""
+
+    def __init__(self, corpus: list[list[str]], k1: float = 1.5, b: float = 0.75):
+        self.k1 = k1
+        self.b = b
+        self.corpus = corpus
+        self.corpus_size = len(corpus)
+        self.avgdl = sum(len(doc) for doc in corpus) / (self.corpus_size or 1)
+        self.doc_freqs: list[Counter[str]] = []
+        self.idf: dict[str, float] = {}
+        self.doc_lens = [len(doc) for doc in corpus]
+
+        df: Counter[str] = Counter()
+        for doc in corpus:
+            for word in set(doc):
+                df[word] += 1
+            self.doc_freqs.append(Counter(doc))
+
+        for word, freq in df.items():
+            self.idf[word] = math.log(1 + (self.corpus_size - freq + 0.5) / (freq + 0.5))
+
+    def get_scores(self, query_tokens: list[str]) -> list[float]:
+        scores = [0.0] * self.corpus_size
+        for word in query_tokens:
+            if word not in self.idf:
+                continue
+            idf = self.idf[word]
+            for i, doc_freq in enumerate(self.doc_freqs):
+                freq = doc_freq.get(word, 0)
+                if freq == 0:
+                    continue
+                num = freq * (self.k1 + 1)
+                den = freq + self.k1 * (1 - self.b + self.b * (self.doc_lens[i] / self.avgdl))
+                scores[i] += idf * (num / den)
+        return scores
+
+
 class AiChatService:
     def __init__(self) -> None:
         self._cached_prompt: str | None = None
-        self._cached_kb: str | None = None
+        self._chunks: list[dict[str, Any]] = []
+        self._bm25: SimpleBM25 | None = None
+        self._core_summary: str = (
+            "### Основные направления услуг Велкод\n"
+            "1. Веб-разработка: сайты под ключ от лендингов до веб-сервисов (Next.js, React, TypeScript, FastAPI). Базовая цена: от 36 000 ₽. Ссылка: [Услуги](/services).\n"
+            "2. Создание и внедрение ИИ-ассистентов: умные чат-виджеты, боты и автономные агенты для сайтов. Базовая цена: от 36 000 ₽. Ссылка: [Услуги](/services).\n"
+            "3. Интеграции с 1С и Битрикс24: синхронизация каталогов, заказов, клиентов и остатков. Базовая цена: от 36 000 ₽. Ссылка: [Услуги](/services).\n"
+            "4. Реклама и продвижение: Яндекс Директ, таргет, сквозная аналитика. Базовая цена: от 36 000 ₽. Ссылка: [Услуги](/services).\n"
+            "Контакты: телефон +7 (924) 534 51 82, Telegram @VelcodeIRK, email info@velcode.ru."
+        )
+
+    def _ensure_kb_index(self) -> None:
+        if self._bm25 is not None and self._chunks:
+            return
+
+        kb_file = Path(settings.ai_knowledge_base_path)
+        if not kb_file.exists():
+            return
+
+        try:
+            raw = json.loads(kb_file.read_text(encoding="utf-8"))
+            self._chunks = raw.get("chunks", [])
+            doc_tokens: list[list[str]] = []
+            for c in self._chunks:
+                text = f"{c.get('title', '')} {c.get('category', '')} {c.get('content', '')}"
+                if c.get("id") == "service_4":
+                    text += " виджет чат-виджет иишный нейросеть бот ассистент"
+                doc_tokens.append(_tokenize(text))
+            self._bm25 = SimpleBM25(doc_tokens)
+        except Exception as e:
+            logger.warning(f"Не удалось инициализировать RAG индекс базы знаний: {e}")
+
+    def _retrieve_relevant_kb(self, query: str, top_k: int = 2) -> str:
+        self._ensure_kb_index()
+        if not self._bm25 or not self._chunks:
+            return self._core_summary
+
+        scores = self._bm25.get_scores(_tokenize(query))
+        top_indices = sorted(range(len(scores)), key=lambda i: scores[i], reverse=True)[:top_k]
+        selected = [self._chunks[i] for i in top_indices if scores[i] > 0.1]
+        if not selected and top_indices:
+            selected = [self._chunks[top_indices[0]]]
+
+        parts = [self._core_summary]
+        if selected:
+            parts.append("\n### Справочная информация по вопросу:")
+            for ch in selected:
+                parts.append(f"#### {ch.get('title', '')}\n{ch.get('content', '')}\n")
+        return "\n".join(parts)
 
     def _load_system_prompt(self) -> str:
         prompt_file = Path(settings.ai_system_prompt_path)
         if prompt_file.exists():
             return prompt_file.read_text(encoding="utf-8").strip()
         return "Ты — официальный ИИ-консультант digital-агентства Велкод (velcode.ru)."
-
-    def _load_knowledge_base_summary(self) -> str:
-        kb_file = Path(settings.ai_knowledge_base_path)
-        if not kb_file.exists():
-            return "Велкод: веб-разработка, Битрикс24, 1С, ИИ-ассистенты, реклама. Телефон: +7 (924) 534 51 82."
-
-        try:
-            raw = json.loads(kb_file.read_text(encoding="utf-8"))
-            chunks = raw.get("chunks", [])
-            lines: list[str] = []
-            for ch in chunks:
-                title = ch.get("title", "")
-                content = ch.get("content", "")
-                lines.append(f"### {title}\n{content}\n")
-            return "\n".join(lines)
-        except Exception as e:
-            logger.warning(f"Не удалось загрузить knowledge_base.json: {e}")
-            return "Велкод: веб-разработка, Битрикс24, 1С, чат-боты, реклама."
 
     def _get_api_key(self) -> str:
         return (
@@ -96,7 +182,8 @@ class AiChatService:
             return self._fallback_response(topic)
 
         system_prompt = self._load_system_prompt()
-        kb_summary = self._load_knowledge_base_summary()
+        search_query = f"{topic or ''} {message}".strip()
+        kb_summary = self._retrieve_relevant_kb(search_query, top_k=2)
 
         topic_context = f"\nТЕКУЩАЯ ТЕМА ДИАЛОГА: {topic}\n" if topic else ""
         client_context = []
