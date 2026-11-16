@@ -981,7 +981,7 @@ class AiSettingsView(BaseView):
 
         var formattedRules = initialRules.map(function(r) {{
             var triggersStr = Array.isArray(r.triggers) ? r.triggers.join(',') : (r.triggers || '');
-            var trigList = triggersStr.replace(/[\r\n]+/g, ',').split(',').map(function(s) {{ return s.trim(); }}).filter(Boolean);
+            var trigList = triggersStr.split(String.fromCharCode(10)).join(',').split(String.fromCharCode(13)).join(',').split(',').map(function(s) {{ return s.trim(); }}).filter(Boolean);
             return {{
                 id: r.id,
                 title: r.title,
