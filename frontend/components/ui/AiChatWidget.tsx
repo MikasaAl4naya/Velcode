@@ -292,109 +292,17 @@ export function AiChatWidget() {
     setIsTyping(false);
   };
 
-  const addFaqAnswer = (question: string, answer: string, topicName?: string) => {
-    const baseMessages = leadSent ? [] : messages;
-    if (leadSent) {
-      setLeadSent(false);
-      setChatTopic('');
-      setUserProfile({});
-    }
-
-    const sanitizedPrevious = baseMessages.map((m) => ({
-      ...m,
-      actions: undefined,
-      showLeadForm: false,
-    }));
-
-    const userMsg: Message = {
-      id: `u-${Date.now()}`,
-      sender: 'user',
-      text: question,
-    };
-
-    const botMsg: Message = {
-      id: `bot-${Date.now() + 1}`,
-      sender: 'assistant',
-      text: answer,
-      actions: [
-        {
-          label: 'Обсудить проект',
-          actionKey: 'show_lead_form',
-          primary: true,
-        },
-      ],
-      showLeadForm: false,
-      prefill: {
-        name: userProfile.name || null,
-        phone: userProfile.phone || null,
-      },
-    };
-
-    setChatTopic(topicName || question);
-    setMessages([...sanitizedPrevious, userMsg, botMsg]);
-    setIsTyping(false);
-  };
-
   const handleInputSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (isTyping) return;
     const text = inputText.trim().slice(0, MAX_INPUT_LENGTH);
     if (!text) return;
     setInputText('');
-
-    const cleanText = text.toLowerCase().replace(/[?!.,;:«»"']/g, '').trim();
-
-    // Быстрый ответ на типовые приветствия без вызова LLM
-    if (['привет', 'здравствуйте', 'добрый день', 'добрый вечер', 'доброе утро', 'приветствую', 'хай', 'hello', 'hi'].includes(cleanText)) {
-      addFaqAnswer(
-        text,
-        'Здравствуйте! Чем можем вам помочь? Мы создаем современные сайты под ключ, разрабатываем чат-ботов и автоматизируем бизнес. Подсказать по услугам или рассчитать проект?',
-        'Консультация'
-      );
-      return;
-    }
-
-    // Быстрый ответ на благодарности
-    if (['спасибо', 'благодарю', 'спасибо большое', 'огромное спасибо', 'спс'].includes(cleanText)) {
-      addFaqAnswer(
-        text,
-        'Пожалуйста! Если появятся вопросы или захотите обсудить проект — мы всегда на связи.',
-        'Консультация'
-      );
-      return;
-    }
-
-    // Быстрый ответ на подтверждения
-    if (['отлично', 'супер', 'хорошо', 'понял', 'понятно', 'договорились', 'ок'].includes(cleanText)) {
-      addFaqAnswer(
-        text,
-        'Договорились! Если потребуется расчёт или возникнут вопросы — напишите, я помогу сориентироваться.',
-        'Консультация'
-      );
-      return;
-    }
-
-    const matched = faqList.find(
-      (f) => f.question.toLowerCase().replace(/[?!.,;:«»"']/g, '').trim() === cleanText
-    );
-    if (matched && matched.answer) {
-      addFaqAnswer(text, matched.answer, matched.question);
-      return;
-    }
-
     addUserMessage(text);
   };
 
   const handleSelectQuestion = (question: string) => {
-    const cleanQ = question.toLowerCase().replace(/[?!.,;:«»"']/g, '').trim();
-    const matched = faqList.find(
-      (f) => f.question.toLowerCase().replace(/[?!.,;:«»"']/g, '').trim() === cleanQ
-    );
-    if (matched && matched.answer) {
-      addFaqAnswer(question, matched.answer, matched.question);
-    } else {
-      addUserMessage(question);
-    }
+    addUserMessage(question);
   };
 
   const handleActionClick = (actionKey: string, messageId: string) => {

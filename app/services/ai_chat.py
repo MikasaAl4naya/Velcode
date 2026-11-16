@@ -141,11 +141,11 @@ class CachedAiSettings:
 
 
 def _parse_fast_responses(raw_json: str | None) -> list[FastResponseRule]:
-    if not raw_json:
+    if raw_json is None:
         return [FastResponseRule(**r) for r in DEFAULT_FAST_RESPONSES]
     try:
         items = json.loads(raw_json)
-        if not isinstance(items, list) or not items:
+        if not isinstance(items, list):
             return [FastResponseRule(**r) for r in DEFAULT_FAST_RESPONSES]
         rules = []
         for i, item in enumerate(items):
@@ -184,22 +184,6 @@ def _tokenize(text: str, custom_stops: set[str] | None = None) -> list[str]:
     stops = RUSSIAN_STOP_WORDS if not custom_stops else (RUSSIAN_STOP_WORDS | custom_stops)
     words = re.findall(r"[a-zA-Zа-яА-Я0-9]+", text.lower())
     return [_stem_word(w) for w in words if w not in stops and len(w) >= 3]
-
-
-GREETINGS = {
-    "привет", "здравствуйте", "добрый день", "добрый вечер", "доброе утро",
-    "приветствую", "хай", "салам", "хей", "ку", "йоу", "hello", "hi"
-}
-
-GRATITUDES = {
-    "спасибо", "благодарю", "спасибо большое", "от души", "огромное спасибо",
-    "сяп", "спс", "спасибочки", "благодарен", "благодарна", "thanks", "thank you"
-}
-
-CONFIRMATIONS = {
-    "отлично", "супер", "хорошо", "понял", "понятно", "договорились",
-    "ясненько", "ладно", "ок", "добро", "принято", "круто"
-}
 
 
 class SimpleBM25:
@@ -336,7 +320,7 @@ class AiChatService:
 
                 fast_resp_raw = getattr(row, "fast_responses_json", None)
                 parsed_rules = _parse_fast_responses(fast_resp_raw)
-                if not fast_resp_raw or fast_resp_raw == "[]":
+                if fast_resp_raw is None:
                     row.fast_responses_json = json.dumps([
                         {"id": r.id, "title": r.title, "triggers": r.triggers, "response": r.response, "is_active": r.is_active}
                         for r in parsed_rules
@@ -490,9 +474,7 @@ class AiChatService:
         if not clean_compact:
             return None
 
-        rules = cfg.fast_responses if (cfg and cfg.fast_responses) else [
-            FastResponseRule(**r) for r in DEFAULT_FAST_RESPONSES
-        ]
+        rules = cfg.fast_responses if (cfg and cfg.fast_responses is not None) else []
 
         clean_words = set(clean_compact.split())
 
