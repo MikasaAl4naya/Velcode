@@ -127,7 +127,7 @@ class FastResponseRule:
 @dataclass
 class CachedAiSettings:
     is_active: bool = True
-    model: str = "gpt-4o-mini"
+    model: str = "ai-chat"
     temperature: float = 0.4
     max_tokens: int = 450
     base_url: str | None = None
@@ -526,10 +526,13 @@ class AiChatService:
                     best_score = score
                     content = chunk.get("content", "")
                     match = re.search(r"Ответ:\s*(.+)", content, re.DOTALL)
-                    best_answer = match.group(1).strip() if match else content
+                    raw_ans = match.group(1).strip() if match else content
+                    raw_ans = re.sub(r"\n?Ссылка:\s*$", "", raw_ans).strip()
+                    best_answer = raw_ans
                     best_title = title
 
         if best_score >= threshold and best_title and best_answer:
+            logger.info(f"[FAQ Fast-Path] Matched '{best_title}' (score={best_score:.3f} >= {threshold}) for query '{query}'")
             return best_title, best_answer
         return None
 
@@ -620,12 +623,16 @@ class AiChatService:
         payload_messages.append({"role": "user", "content": message})
 
         base_url = (cfg.base_url or settings.ai_base_url).rstrip("/")
+        effective_model = cfg.model or settings.ai_model or "ai-chat"
+        if effective_model == "gpt-4o-mini" and ("mwsapis.ru" in base_url):
+            effective_model = "ai-chat"
+
         headers = {
             "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json",
         }
         body: dict[str, Any] = {
-            "model": cfg.model,
+            "model": effective_model,
             "messages": payload_messages,
             "response_format": {"type": "json_object"},
             "temperature": cfg.temperature,

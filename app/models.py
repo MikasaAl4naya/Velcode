@@ -169,7 +169,7 @@ class AiSettings(Base):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
 
     # Параметры LLM
-    model: Mapped[str] = mapped_column(String(100), default="gpt-4o-mini")
+    model: Mapped[str] = mapped_column(String(100), default="ai-chat")
     temperature: Mapped[float] = mapped_column(Float, default=0.4)
     max_tokens: Mapped[int] = mapped_column(Integer, default=450)
     base_url: Mapped[str | None] = mapped_column(String(500), nullable=True)

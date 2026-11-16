@@ -443,6 +443,8 @@ class ServiceAdmin(ModelView, model=Service):
         try:
             from scripts.build_knowledge_base import rebuild_knowledge_base
             await rebuild_knowledge_base()
+            from app.services.ai_chat import ai_chat_service
+            ai_chat_service.reload_kb()
         except Exception as e:
             print(f"[Admin] Ошибка пересборки базы знаний ИИ: {e}")
 
@@ -450,6 +452,8 @@ class ServiceAdmin(ModelView, model=Service):
         try:
             from scripts.build_knowledge_base import rebuild_knowledge_base
             await rebuild_knowledge_base()
+            from app.services.ai_chat import ai_chat_service
+            ai_chat_service.reload_kb()
         except Exception as e:
             print(f"[Admin] Ошибка пересборки базы знаний ИИ: {e}")
 
@@ -474,6 +478,8 @@ class FaqAdmin(ModelView, model=Faq):
         try:
             from scripts.build_knowledge_base import rebuild_knowledge_base
             await rebuild_knowledge_base()
+            from app.services.ai_chat import ai_chat_service
+            ai_chat_service.reload_kb()
         except Exception as e:
             print(f"[Admin] Ошибка пересборки базы знаний ИИ: {e}")
 
@@ -481,6 +487,8 @@ class FaqAdmin(ModelView, model=Faq):
         try:
             from scripts.build_knowledge_base import rebuild_knowledge_base
             await rebuild_knowledge_base()
+            from app.services.ai_chat import ai_chat_service
+            ai_chat_service.reload_kb()
         except Exception as e:
             print(f"[Admin] Ошибка пересборки базы знаний ИИ: {e}")
 
@@ -524,6 +532,8 @@ class CompanyContactAdmin(ModelView, model=CompanyContact):
         try:
             from scripts.build_knowledge_base import rebuild_knowledge_base
             await rebuild_knowledge_base()
+            from app.services.ai_chat import ai_chat_service
+            ai_chat_service.reload_kb()
         except Exception as e:
             print(f"[Admin] Ошибка пересборки базы знаний ИИ: {e}")
 
@@ -531,6 +541,8 @@ class CompanyContactAdmin(ModelView, model=CompanyContact):
         try:
             from scripts.build_knowledge_base import rebuild_knowledge_base
             await rebuild_knowledge_base()
+            from app.services.ai_chat import ai_chat_service
+            ai_chat_service.reload_kb()
         except Exception as e:
             print(f"[Admin] Ошибка пересборки базы знаний ИИ: {e}")
 
@@ -553,7 +565,7 @@ class AiSettingsView(BaseView):
                 def_prompt = prompt_file.read_text(encoding="utf-8").strip() if prompt_file.exists() else ""
                 row = AiSettings(
                     is_active=True,
-                    model="gpt-4o-mini",
+                    model=settings.ai_model or "ai-chat",
                     temperature=0.4,
                     max_tokens=450,
                     base_url=None,
@@ -583,7 +595,7 @@ class AiSettingsView(BaseView):
                                 pass
 
                     row.is_active = bool(payload.get("is_active", True))
-                    row.model = str(payload.get("model", "gpt-4o-mini")).strip() or "gpt-4o-mini"
+                    row.model = str(payload.get("model", settings.ai_model or "ai-chat")).strip() or (settings.ai_model or "ai-chat")
                     row.temperature = float(payload.get("temperature", 0.4))
                     row.max_tokens = int(payload.get("max_tokens", 450))
                     row.base_url = str(payload.get("base_url", "")).strip() or None
@@ -606,6 +618,7 @@ class AiSettingsView(BaseView):
 
                     from app.services.ai_chat import ai_chat_service
                     await ai_chat_service.reload_settings()
+                    ai_chat_service.reload_kb()
 
                     if "application/json" in content_type:
                         return JSONResponse({"ok": True, "message": "Настройки успешно сохранены!"})
@@ -631,7 +644,7 @@ class AiSettingsView(BaseView):
             rules_json_str = json.dumps(rules_data, ensure_ascii=False)
 
             is_active_checked = "checked" if row.is_active else ""
-            model_val = html.escape(row.model or "gpt-4o-mini")
+            model_val = html.escape(row.model or settings.ai_model or "ai-chat")
             temp_val = f"{row.temperature:.2f}"
             max_tokens_val = str(row.max_tokens)
             base_url_val = html.escape(row.base_url or "")
@@ -720,8 +733,9 @@ class AiSettingsView(BaseView):
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label class="form-label">Модель нейросети</label>
-                        <input type="text" class="form-control" id="field-model" value="{model_val}" placeholder="например: gpt-4o-mini">
+                        <input type="text" class="form-control" id="field-model" value="{model_val}" placeholder="ai-chat">
                         <div class="mt-2">
+                            <span class="badge-chip" onclick="setModel('ai-chat')">ai-chat (MWS)</span>
                             <span class="badge-chip" onclick="setModel('gpt-4o-mini')">gpt-4o-mini</span>
                             <span class="badge-chip" onclick="setModel('gpt-4o')">gpt-4o</span>
                             <span class="badge-chip" onclick="setModel('gpt-3.5-turbo')">gpt-3.5-turbo</span>
