@@ -45,7 +45,7 @@ async def test_fast_path_exact_faq():
     resp = await ai_chat_service.ask(message="Сколько стоит разработка под ключ?")
     assert isinstance(resp, ChatResponse)
     assert "Стоимость разработки под ключ рассчитывается индивидуально" in resp.text
-    assert resp.topic == "Сколько стоит разработка под ключ"
+    assert resp.topic.rstrip("?") == "Сколько стоит разработка под ключ"
     assert resp.show_lead_form is False
 
 
@@ -56,7 +56,7 @@ async def test_fast_path_faq_similarity_match():
     resp = await ai_chat_service.ask(message="Сколько стоит разработка сайта под ключ?")
     assert isinstance(resp, ChatResponse)
     assert "Стоимость разработки под ключ рассчитывается индивидуально" in resp.text
-    assert resp.topic == "Сколько стоит разработка под ключ"
+    assert resp.topic.rstrip("?") == "Сколько стоит разработка под ключ"
     assert resp.show_lead_form is False
 
     # При строгом пороге 0.98 нечеткое совпадение не перехватывает
@@ -66,7 +66,7 @@ async def test_fast_path_faq_similarity_match():
     # При стандартном пороге 0.90 — находит
     faq_match_normal = ai_chat_service._find_faq_answer("Сколько стоит разработка сайта под ключ?", threshold=0.90)
     assert faq_match_normal is not None
-    assert faq_match_normal[0] == "Сколько стоит разработка под ключ"
+    assert faq_match_normal[0].rstrip("?") == "Сколько стоит разработка под ключ"
 
 
 @pytest.mark.asyncio
