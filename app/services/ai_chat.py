@@ -454,20 +454,11 @@ class AiChatService:
         # Убираем случайный markdown жирный шрифт/курсив от модели (** или __), но сохраняем ссылки
         text = re.sub(r'\*\*([^*]+)\*\*', r'\1', text)
         text = re.sub(r'__([^_]+)__', r'\1', text)
-        # Нормализуем полные доменные ссылки сайта в относительные
-        text = re.sub(
-            r'https?://(?:www\.)?velcode\.ru/(portfolio[a-zA-Z0-9_/-]*|services|contacts|advantages|privacy|consent|cookies)',
-            r'/\1',
-            text,
-        )
         # Превращаем любые случайные голые ссылки в валидные markdown-ссылки
         text = re.sub(r'(?<!\()(?<!\[)(/portfolio/[a-zA-Z0-9_-]+)', r'[Кейс в портфолио](\1)', text)
         text = re.sub(r'(?<!\()(?<!\[)(/contacts)(?![a-zA-Z0-9_/-])', r'[Контакты](/contacts)', text)
         text = re.sub(r'(?<!\()(?<!\[)(/portfolio)(?![a-zA-Z0-9_/-])', r'[Портфолио](/portfolio)', text)
         text = re.sub(r'(?<!\()(?<!\[)(/services)(?![a-zA-Z0-9_/-])', r'[Услуги](/services)', text)
-        text = re.sub(r'(?<!\()(?<!\[)(/advantages)(?![a-zA-Z0-9_/-])', r'[Преимущества](/advantages)', text)
-        # Железная защита от латиницы: заменяем Velcode на Велкод в обычном тексте, не затрагивая email и url
-        text = re.sub(r'(?<![@/a-zA-Z0-9_.-])Velcode(?![@a-zA-Z0-9_.-])', 'Велкод', text, flags=re.IGNORECASE)
         return text
 
     def _match_conversational_fast_path(

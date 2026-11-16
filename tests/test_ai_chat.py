@@ -26,15 +26,6 @@ async def test_fast_path_gratitude():
         assert resp.show_lead_form is False
 
 
-@pytest.mark.asyncio
-async def test_auto_format_links_and_velcode_sanitization():
-    """Тест: защита от английского написания Velcode и нормализация ссылок."""
-    raw = "Я консультант Velcode по разработке сайтов. Пишите на velcode@inbox.ru или в https://velcode.ru/advantages"
-    formatted = ai_chat_service._auto_format_links(raw)
-    assert "Я консультант Велкод по разработке сайтов." in formatted
-    assert "velcode@inbox.ru" in formatted
-    assert "[Преимущества](/advantages)" in formatted
-
 
 @pytest.mark.asyncio
 async def test_fast_path_exact_faq():
