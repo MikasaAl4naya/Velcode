@@ -748,13 +748,13 @@
 
 .lead-form--chat .lead-form__input {
   height: 58px !important;
-  font-size: 15px !important;
+  font-size: 16px !important;
   padding: 18px 28px 0 8px !important;
 }
 
 .lead-form--chat .lead-form__label {
   left: 8px !important;
-  font-size: 15px !important;
+  font-size: 16px !important;
 }
 
 .lead-form--chat .lead-form__dot {
@@ -855,7 +855,7 @@
   border: none;
   background: transparent;
   outline: none;
-  font-size: 14px;
+  font-size: 16px;
   font-family: inherit;
   color: var(--color-dark, #171819);
   padding-right: 10px;

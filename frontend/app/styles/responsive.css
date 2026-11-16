@@ -403,15 +403,18 @@
   }
 
   .modal[open] {
-    padding: var(--space-m) var(--container-pad);
+    padding: max(16px, env(safe-area-inset-top)) var(--container-pad) max(20px, env(safe-area-inset-bottom));
     width: 100%;
     height: 100%;
+    height: 100dvh;
     max-width: 100%;
     max-height: 100%;
     background: transparent;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .modal__overlay {

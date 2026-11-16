@@ -147,14 +147,36 @@ body.page,
   -webkit-font-smoothing: antialiased;
 }
 
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
 a {
   text-decoration: none;
   color: inherit;
 }
 
 button,
-input {
+input,
+textarea,
+select {
   font-family: inherit;
+}
+
+/* Защита от принудительного масштабирования (auto-zoom) и прыжков экрана
+   на iPhone (iOS Safari, Telegram, Chrome) и Android при появлении клавиатуры */
+@media (max-width: 768px) {
+  input[type="text"],
+  input[type="tel"],
+  input[type="email"],
+  input[type="password"],
+  input[type="search"],
+  input[type="number"],
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
 }
 
 img,

@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import Script from 'next/script';
 import './globals.css';
 import { ModalProvider } from '@/components/ModalProvider';
@@ -6,8 +6,16 @@ import { CompanyContactsProvider } from '@/components/CompanyContactsProvider';
 import { SvgSprite } from '@/components/ui/SvgSprite';
 import { CookieBanner } from '@/components/ui/CookieBanner';
 import { AiChatWidget } from '@/components/ui/AiChatWidget';
+import { MobileViewportFix } from '@/components/ui/MobileViewportFix';
 import { COMPANY_CONFIG } from '@/lib/company';
 import { getCompanyContacts } from '@/lib/api';
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+  interactiveWidget: 'resizes-content',
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://velcode.ru'),
@@ -107,6 +115,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         />
       </head>
       <body className="page">
+        <MobileViewportFix />
         <SvgSprite />
         <CompanyContactsProvider initialContacts={contacts}>
           <ModalProvider>
