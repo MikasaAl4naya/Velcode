@@ -79,15 +79,70 @@ async def test_chat_api_endpoint_via_http():
 
 @pytest.mark.asyncio
 async def test_ai_settings_custom_fast_path():
-    """Тест: изменение текста быстрого ответа в настройках динамически меняет ответ бота."""
+    """Тест: изменение текста быстрого ответа в правилах динамически меняет ответ бота."""
     settings_obj = await ai_chat_service.get_settings()
-    original_greeting = settings_obj.greeting_fast_path
+    original_rules = list(settings_obj.fast_responses)
     try:
-        settings_obj.greeting_fast_path = "Кастомное приветствие от администратора Велкод!"
+        from app.services.ai_chat import FastResponseRule
+        settings_obj.fast_responses = [
+            FastResponseRule(
+                id="custom_greeting",
+                title="Приветствие",
+                triggers=["привет", "здравствуйте"],
+                response="Кастомное приветствие от администратора Велкод!",
+                is_active=True,
+            )
+        ]
         resp = await ai_chat_service.ask(message="Привет")
         assert "Кастомное приветствие от администратора Велкод!" in resp.text
     finally:
-        settings_obj.greeting_fast_path = original_greeting
+        settings_obj.fast_responses = original_rules
+
+
+@pytest.mark.asyncio
+async def test_dynamic_fast_path_farewells():
+    """Тест: прощание перехватывается динамическим правилом без вызова LLM."""
+    for bye in ["Пока", "До свидания!", "до скорого", "всего доброго", "bye"]:
+        resp = await ai_chat_service.ask(message=bye)
+        assert isinstance(resp, ChatResponse)
+        assert "Всего доброго!" in resp.text
+        assert resp.topic == "Прощание"
+        assert resp.show_lead_form is False
+
+
+@pytest.mark.asyncio
+async def test_dynamic_fast_path_add_arbitrary_rule():
+    """Тест: создание совершенно нового динамического набора слов (например 'где офис') срабатывает мгновенно."""
+    from app.services.ai_chat import FastResponseRule
+    settings_obj = await ai_chat_service.get_settings()
+    original_rules = list(settings_obj.fast_responses)
+    try:
+        new_rule = FastResponseRule(
+            id="rule_location",
+            title="Офис",
+            triggers=["где находитесь", "где ваш офис", "ваш адрес"],
+            response="Наш центральный офис в Иркутске, работаем онлайн по всей России!",
+            is_active=True,
+        )
+        settings_obj.fast_responses.append(new_rule)
+        resp = await ai_chat_service.ask(message="где ваш офис")
+        assert "Наш центральный офис в Иркутске" in resp.text
+        assert resp.topic == "Офис"
+    finally:
+        settings_obj.fast_responses = original_rules
+
+
+def test_rate_limiter_minute_only_no_burst():
+    """Тест: 6-секундный burst убран — несколько разных быстрых вопросов в пределах минуты разрешены."""
+    from app.services.rate_limiter import ChatRateLimiter
+    limiter = ChatRateLimiter(minute_limit=5)
+    for i in range(4):
+        limiter.check("1.2.3.4", f"Вопрос номер {i}")
+
+    limiter.check("1.2.3.4", "Вопрос номер 5")
+    with pytest.raises(Exception) as exc:
+        limiter.check("1.2.3.4", "Вопрос номер 6")
+    assert "Слишком много запросов в минуту" in str(exc.value)
 
 
 @pytest.mark.asyncio

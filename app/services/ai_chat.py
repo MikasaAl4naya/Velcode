@@ -66,6 +66,63 @@ RUSSIAN_STOP_WORDS = {
 }
 
 
+DEFAULT_FAST_RESPONSES = [
+    {
+        "id": "rule_greeting",
+        "title": "Приветствие",
+        "triggers": [
+            "привет", "здравствуйте", "добрый день", "добрый вечер", "доброе утро",
+            "приветствую", "хай", "салам", "хей", "ку", "йоу", "hello", "hi"
+        ],
+        "response": (
+            "Здравствуйте! Чем можем вам помочь? Мы создаем современные сайты под ключ, "
+            "разрабатываем чат-ботов и автоматизируем бизнес. Подсказать по услугам или рассчитать проект?"
+        ),
+        "is_active": True,
+    },
+    {
+        "id": "rule_gratitude",
+        "title": "Благодарность",
+        "triggers": [
+            "спасибо", "благодарю", "спасибо большое", "от души", "огромное спасибо",
+            "сяп", "спс", "спасибочки", "благодарен", "благодарна", "thanks", "thank you"
+        ],
+        "response": "Пожалуйста! Если появятся вопросы или захотите обсудить проект — мы всегда на связи.",
+        "is_active": True,
+    },
+    {
+        "id": "rule_confirmation",
+        "title": "Согласие / Договорились",
+        "triggers": [
+            "отлично", "супер", "хорошо", "понял", "понятно", "договорились",
+            "ясненько", "ладно", "ок", "добро", "принято", "круто"
+        ],
+        "response": "Договорились! Если потребуется расчёт или возникнут вопросы — напишите, я помогу сориентироваться.",
+        "is_active": True,
+    },
+    {
+        "id": "rule_farewell",
+        "title": "Прощание",
+        "triggers": [
+            "пока", "до свидания", "до скорого", "прощай", "всего хорошего",
+            "всего доброго", "счастливо", "бай", "пока пока", "увидимся",
+            "спокойной ночи", "bye", "goodbye"
+        ],
+        "response": "Всего доброго! Будем рады сотрудничеству. Если возникнут вопросы или потребуется проект — мы всегда на связи!",
+        "is_active": True,
+    },
+]
+
+
+@dataclass
+class FastResponseRule:
+    id: str
+    title: str
+    triggers: list[str]
+    response: str
+    is_active: bool = True
+
+
 @dataclass
 class CachedAiSettings:
     is_active: bool = True
@@ -77,19 +134,41 @@ class CachedAiSettings:
     rag_top_k: int = 2
     custom_stop_words: set[str] = field(default_factory=set)
     system_prompt: str = ""
-    greeting_fast_path: str = (
-        "Здравствуйте! Чем можем вам помочь? Мы создаем современные сайты под ключ, "
-        "разрабатываем чат-ботов и автоматизируем бизнес. Подсказать по услугам или рассчитать проект?"
-    )
-    gratitude_fast_path: str = (
-        "Пожалуйста! Если появятся вопросы или захотите обсудить проект — мы всегда на связи."
-    )
-    confirmation_fast_path: str = (
-        "Договорились! Если потребуется расчёт или возникнут вопросы — напишите, я помогу сориентироваться."
-    )
-    burst_limit: int = 4
+    fast_responses: list[FastResponseRule] = field(default_factory=list)
     minute_limit: int = 15
-    hourly_limit: int = 60
+
+
+def _parse_fast_responses(raw_json: str | None) -> list[FastResponseRule]:
+    if not raw_json:
+        return [FastResponseRule(**r) for r in DEFAULT_FAST_RESPONSES]
+    try:
+        items = json.loads(raw_json)
+        if not isinstance(items, list) or not items:
+            return [FastResponseRule(**r) for r in DEFAULT_FAST_RESPONSES]
+        rules = []
+        for i, item in enumerate(items):
+            rule_id = str(item.get("id", f"rule_{i+1}"))
+            title = str(item.get("title", f"Правило {i+1}"))
+            raw_trigs = item.get("triggers", [])
+            if isinstance(raw_trigs, str):
+                triggers = [t.strip() for t in re.split(r"[,\n]+", raw_trigs) if t.strip()]
+            elif isinstance(raw_trigs, list):
+                triggers = [str(t).strip() for t in raw_trigs if str(t).strip()]
+            else:
+                triggers = []
+            response = str(item.get("response", ""))
+            is_active = bool(item.get("is_active", True))
+            rules.append(FastResponseRule(
+                id=rule_id,
+                title=title,
+                triggers=triggers,
+                response=response,
+                is_active=is_active,
+            ))
+        return rules
+    except Exception as e:
+        logger.warning(f"Ошибка парсинга fast_responses: {e}")
+        return [FastResponseRule(**r) for r in DEFAULT_FAST_RESPONSES]
 
 
 def _parse_custom_stop_words(raw: str | None) -> set[str]:
@@ -182,12 +261,10 @@ class AiChatService:
 
         self._settings = await self._load_settings_from_db()
 
-        # Синхронизируем параметры rate-лимитера
+        # Синхронизируем параметры rate-лимитера (минутный лимит)
         try:
             from app.services.rate_limiter import chat_rate_limiter
-            chat_rate_limiter.burst_limit = self._settings.burst_limit
             chat_rate_limiter.minute_limit = self._settings.minute_limit
-            chat_rate_limiter.hourly_limit = self._settings.hourly_limit
         except Exception as e:
             logger.warning(f"Не удалось обновить параметры rate-лимитера: {e}")
 
@@ -214,10 +291,22 @@ class AiChatService:
                         rag_top_k=2,
                         custom_stop_words="",
                         system_prompt=default_prompt,
+                        fast_responses_json=json.dumps(DEFAULT_FAST_RESPONSES, ensure_ascii=False),
+                        minute_limit=15,
                     )
                     session.add(row)
                     await session.commit()
                     await session.refresh(row)
+
+                fast_resp_raw = getattr(row, "fast_responses_json", None)
+                parsed_rules = _parse_fast_responses(fast_resp_raw)
+                if not fast_resp_raw or fast_resp_raw == "[]":
+                    row.fast_responses_json = json.dumps([
+                        {"id": r.id, "title": r.title, "triggers": r.triggers, "response": r.response, "is_active": r.is_active}
+                        for r in parsed_rules
+                    ], ensure_ascii=False)
+                    session.add(row)
+                    await session.commit()
 
                 return CachedAiSettings(
                     is_active=row.is_active,
@@ -229,18 +318,15 @@ class AiChatService:
                     rag_top_k=row.rag_top_k,
                     custom_stop_words=_parse_custom_stop_words(row.custom_stop_words),
                     system_prompt=row.system_prompt or self._load_system_prompt(),
-                    greeting_fast_path=row.greeting_fast_path,
-                    gratitude_fast_path=row.gratitude_fast_path,
-                    confirmation_fast_path=row.confirmation_fast_path,
-                    burst_limit=row.burst_limit,
-                    minute_limit=row.minute_limit,
-                    hourly_limit=row.hourly_limit,
+                    fast_responses=parsed_rules,
+                    minute_limit=row.minute_limit if hasattr(row, "minute_limit") else 15,
                 )
         except Exception as e:
             logger.warning(f"Не удалось прочитать AiSettings из БД, используются значения по умолчанию: {e}")
             return CachedAiSettings(
                 system_prompt=self._load_system_prompt(),
                 model=settings.ai_model,
+                fast_responses=[FastResponseRule(**r) for r in DEFAULT_FAST_RESPONSES],
             )
 
     def _build_core_summary(self) -> str:
@@ -360,54 +446,47 @@ class AiChatService:
         existing_prefill: ChatPrefill | None = None,
         cfg: CachedAiSettings | None = None,
     ) -> ChatResponse | None:
-        """Быстрый ответ без вызова LLM на стандартные приветствия, благодарности и подтверждения."""
+        """Быстрый ответ без вызова LLM на основе динамических наборов слов (правил)."""
         clean = re.sub(r"[?!.,;:«»\"'()~`\-_/\\]", " ", message).strip().lower()
         clean_compact = " ".join(clean.split())
         if not clean_compact:
             return None
 
-        greeting_text = (
-            cfg.greeting_fast_path
-            if cfg and cfg.greeting_fast_path
-            else "Здравствуйте! Чем можем вам помочь? Мы создаем современные сайты под ключ, разрабатываем чат-ботов и автоматизируем бизнес. Подсказать по услугам или рассчитать проект?"
-        )
-        gratitude_text = (
-            cfg.gratitude_fast_path
-            if cfg and cfg.gratitude_fast_path
-            else "Пожалуйста! Если появятся вопросы или захотите обсудить проект — мы всегда на связи."
-        )
-        confirm_text = (
-            cfg.confirmation_fast_path
-            if cfg and cfg.confirmation_fast_path
-            else "Договорились! Если потребуется расчёт или возникнут вопросы — напишите, я помогу сориентироваться."
-        )
+        rules = cfg.fast_responses if (cfg and cfg.fast_responses) else [
+            FastResponseRule(**r) for r in DEFAULT_FAST_RESPONSES
+        ]
 
-        if clean_compact in GREETINGS:
-            return ChatResponse(
-                text=greeting_text,
-                topic=topic or "Консультация",
-                actions=[ChatAction(label="Обсудить проект", actionKey="show_lead_form", primary=True)],
-                show_lead_form=False,
-                prefill=existing_prefill,
-            )
+        clean_words = set(clean_compact.split())
 
-        if clean_compact in GRATITUDES:
-            return ChatResponse(
-                text=gratitude_text,
-                topic=topic or "Консультация",
-                actions=[ChatAction(label="Обсудить проект", actionKey="show_lead_form", primary=True)],
-                show_lead_form=False,
-                prefill=existing_prefill,
-            )
+        for rule in rules:
+            if not rule.is_active:
+                continue
 
-        if clean_compact in CONFIRMATIONS:
-            return ChatResponse(
-                text=confirm_text,
-                topic=topic or "Консультация",
-                actions=[ChatAction(label="Обсудить проект", actionKey="show_lead_form", primary=True)],
-                show_lead_form=False,
-                prefill=existing_prefill,
-            )
+            for raw_trig in rule.triggers:
+                clean_trig = re.sub(r"[?!.,;:«»\"'()~`\-_/\\]", " ", raw_trig).strip().lower()
+                clean_trig = " ".join(clean_trig.split())
+                if not clean_trig:
+                    continue
+
+                matched = False
+                # 1. Точное совпадение всей фразы сообщения (например, «до свидания», «привет»)
+                if clean_compact == clean_trig:
+                    matched = True
+                # 2. Если фраза триггера многословная (например «до скорого») и целиком содержится в коротком сообщении
+                elif len(clean_trig.split()) > 1 and clean_trig in clean_compact and len(clean_compact.split()) <= len(clean_trig.split()) + 1:
+                    matched = True
+                # 3. Если сообщение состоит из 1-2 вводных слов и ключевого слова (например, «ну пока», «да спасибо»)
+                elif len(clean_compact.split()) <= 2 and clean_trig in clean_words:
+                    matched = True
+
+                if matched:
+                    return ChatResponse(
+                        text=rule.response,
+                        topic=topic or rule.title,
+                        actions=[ChatAction(label="Обсудить проект", actionKey="show_lead_form", primary=True)],
+                        show_lead_form=False,
+                        prefill=existing_prefill,
+                    )
 
         return None
 

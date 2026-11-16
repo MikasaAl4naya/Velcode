@@ -1,5 +1,6 @@
 import html
 import hmac
+import json
 import re
 from datetime import datetime
 from pathlib import Path
@@ -8,11 +9,12 @@ from uuid import uuid4
 from markupsafe import Markup
 from sqladmin import Admin, BaseView, ModelView, expose
 from sqladmin.authentication import AuthenticationBackend
+from sqlalchemy import select
 from starlette.requests import Request
-from starlette.responses import HTMLResponse, JSONResponse
+from starlette.responses import HTMLResponse, JSONResponse, RedirectResponse
 
 from app.config import settings
-from app.database import engine
+from app.database import AsyncSessionLocal, engine
 from app.models import AiSettings, CompanyContact, Faq, Lead, Portfolio, Service, Tag
 
 UPLOADS_DIR = Path("uploads")
@@ -533,63 +535,489 @@ class CompanyContactAdmin(ModelView, model=CompanyContact):
             print(f"[Admin] Ошибка пересборки базы знаний ИИ: {e}")
 
 
-class AiSettingsAdmin(ModelView, model=AiSettings):
+class AiSettingsView(BaseView):
     name = "Настройки ИИ"
-    name_plural = "Настройки ИИ"
     icon = "fa-solid fa-robot"
 
-    can_delete = False
+    @expose("/ai-settings", methods=["GET", "POST"])
+    async def ai_settings_page(self, request: Request) -> HTMLResponse | JSONResponse:
+        if not request.session.get("authenticated"):
+            return RedirectResponse(url="/admin/login", status_code=302)
 
-    column_list = [
-        AiSettings.id,
-        AiSettings.is_active,
-        AiSettings.model,
-        AiSettings.temperature,
-        AiSettings.max_tokens,
-        AiSettings.rag_threshold,
-    ]
-    column_labels = {
-        "id": "ID",
-        "is_active": "Включен",
-        "model": "Модель LLM (например: gpt-4o-mini)",
-        "temperature": "Температура / креативность (0.0 — точные, 1.0 — свободные)",
-        "max_tokens": "Максимум токенов на ответ (max_tokens)",
-        "base_url": "API Base URL (если пусто — из .env)",
-        "rag_threshold": "Порог уверенности RAG (score >= 0.5)",
-        "rag_top_k": "Количество блоков базы знаний (top_k)",
-        "custom_stop_words": "Дополнительные стоп-слова для поиска (через запятую)",
-        "system_prompt": "Системный промпт (роль и инструкции ИИ-консультанта)",
-        "greeting_fast_path": "Быстрый ответ: Приветствие (0 токенов)",
-        "gratitude_fast_path": "Быстрый ответ: Благодарность (0 токенов)",
-        "confirmation_fast_path": "Быстрый ответ: Согласие / Договорились (0 токенов)",
-        "burst_limit": "Защита: макс. запросов за 6 сек (burst)",
-        "minute_limit": "Защита: макс. запросов в минуту",
-        "hourly_limit": "Защита: макс. запросов в час",
-    }
-    form_columns = [
-        AiSettings.is_active,
-        AiSettings.model,
-        AiSettings.temperature,
-        AiSettings.max_tokens,
-        AiSettings.base_url,
-        AiSettings.rag_threshold,
-        AiSettings.rag_top_k,
-        AiSettings.custom_stop_words,
-        AiSettings.system_prompt,
-        AiSettings.greeting_fast_path,
-        AiSettings.gratitude_fast_path,
-        AiSettings.confirmation_fast_path,
-        AiSettings.burst_limit,
-        AiSettings.minute_limit,
-        AiSettings.hourly_limit,
-    ]
+        async with AsyncSessionLocal() as session:
+            res = await session.execute(select(AiSettings).limit(1))
+            row = res.scalars().first()
+            if not row:
+                from app.services.ai_chat import DEFAULT_FAST_RESPONSES
+                prompt_file = Path("knowledge_base/system_prompt.md")
+                def_prompt = prompt_file.read_text(encoding="utf-8").strip() if prompt_file.exists() else ""
+                row = AiSettings(
+                    is_active=True,
+                    model="gpt-4o-mini",
+                    temperature=0.4,
+                    max_tokens=450,
+                    base_url=None,
+                    rag_threshold=0.5,
+                    rag_top_k=2,
+                    custom_stop_words="",
+                    system_prompt=def_prompt,
+                    fast_responses_json=json.dumps(DEFAULT_FAST_RESPONSES, ensure_ascii=False),
+                    minute_limit=15,
+                )
+                session.add(row)
+                await session.commit()
+                await session.refresh(row)
 
-    async def after_model_change(self, data: dict, model, is_created: bool, request: Request) -> None:
-        try:
-            from app.services.ai_chat import ai_chat_service
-            await ai_chat_service.reload_settings()
-        except Exception as e:
-            print(f"[Admin] Ошибка обновления настроек ИИ: {e}")
+            if request.method == "POST":
+                try:
+                    content_type = request.headers.get("content-type", "")
+                    if "application/json" in content_type:
+                        payload = await request.json()
+                    else:
+                        form = await request.form()
+                        payload = dict(form)
+                        if "fast_responses" in payload and isinstance(payload["fast_responses"], str):
+                            try:
+                                payload["fast_responses"] = json.loads(payload["fast_responses"])
+                            except Exception:
+                                pass
+
+                    row.is_active = bool(payload.get("is_active", True))
+                    row.model = str(payload.get("model", "gpt-4o-mini")).strip() or "gpt-4o-mini"
+                    row.temperature = float(payload.get("temperature", 0.4))
+                    row.max_tokens = int(payload.get("max_tokens", 450))
+                    row.base_url = str(payload.get("base_url", "")).strip() or None
+                    row.rag_threshold = float(payload.get("rag_threshold", 0.5))
+                    row.rag_top_k = int(payload.get("rag_top_k", 2))
+                    row.custom_stop_words = str(payload.get("custom_stop_words", "")).strip()
+                    row.system_prompt = str(payload.get("system_prompt", "")).strip()
+                    row.minute_limit = int(payload.get("minute_limit", 15))
+
+                    raw_rules = payload.get("fast_responses")
+                    if raw_rules is not None:
+                        if isinstance(raw_rules, str):
+                            row.fast_responses_json = raw_rules
+                        elif isinstance(raw_rules, list):
+                            row.fast_responses_json = json.dumps(raw_rules, ensure_ascii=False)
+
+                    session.add(row)
+                    await session.commit()
+
+                    from app.services.ai_chat import ai_chat_service
+                    await ai_chat_service.reload_settings()
+
+                    if "application/json" in content_type:
+                        return JSONResponse({"ok": True, "message": "Настройки успешно сохранены!"})
+                    return RedirectResponse(url="/admin/ai-settings?saved=1", status_code=303)
+                except Exception as e:
+                    if "application/json" in request.headers.get("content-type", ""):
+                        return JSONResponse({"ok": False, "error": str(e)}, status_code=400)
+                    return HTMLResponse(f"Ошибка сохранения: {e}", status_code=500)
+
+            # GET: подготовка данных для интерфейса
+            from app.services.ai_chat import _parse_fast_responses
+            rules = _parse_fast_responses(row.fast_responses_json)
+            rules_data = [
+                {
+                    "id": r.id,
+                    "title": r.title,
+                    "triggers": ", ".join(r.triggers) if isinstance(r.triggers, list) else str(r.triggers),
+                    "response": r.response,
+                    "is_active": r.is_active,
+                }
+                for r in rules
+            ]
+            rules_json_str = json.dumps(rules_data, ensure_ascii=False)
+
+            is_active_checked = "checked" if row.is_active else ""
+            model_val = html.escape(row.model or "gpt-4o-mini")
+            temp_val = f"{row.temperature:.2f}"
+            max_tokens_val = str(row.max_tokens)
+            base_url_val = html.escape(row.base_url or "")
+            rag_threshold_val = f"{row.rag_threshold:.2f}"
+            rag_top_k_val = str(row.rag_top_k)
+            custom_stops_val = html.escape(row.custom_stop_words or "")
+            system_prompt_val = html.escape(row.system_prompt or "")
+            minute_limit_val = str(getattr(row, "minute_limit", 15))
+
+        html_content = f"""<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Настройки ИИ — Велкод Admin</title>
+    <link rel="stylesheet" href="/admin/statics/css/tabler.min.css">
+    <link rel="stylesheet" href="/admin/statics/css/fontawesome.min.css">
+    <style>
+        body {{ background: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }}
+        .settings-container {{ max-width: 980px; margin: 32px auto; padding: 0 20px 80px; }}
+        .card {{ border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); margin-bottom: 24px; background: #fff; }}
+        .card-header {{ background: #f8fafc; border-bottom: 1px solid #e2e8f0; padding: 16px 20px; border-radius: 12px 12px 0 0; }}
+        .card-title {{ font-size: 16px; font-weight: 600; color: #1e293b; margin: 0; display: flex; align-items: center; gap: 8px; }}
+        .card-body {{ padding: 20px; }}
+        .form-label {{ font-weight: 500; font-size: 13.5px; color: #334155; margin-bottom: 6px; }}
+        .form-hint {{ font-size: 12px; color: #64748b; margin-top: 4px; }}
+        .form-control {{ border-radius: 8px; border: 1px solid #cbd5e1; font-size: 14px; padding: 8px 12px; }}
+        .form-control:focus {{ border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.15); }}
+        .rule-card {{ border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; margin-bottom: 16px; background: #f8fafc; transition: all .2s; }}
+        .rule-card:hover {{ border-color: #cbd5e1; background: #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.03); }}
+        .badge-chip {{ cursor: pointer; padding: 3px 8px; background: #e2e8f0; border-radius: 6px; font-size: 12px; color: #475569; display: inline-block; margin-right: 4px; transition: background .15s; }}
+        .badge-chip:hover {{ background: #cbd5e1; color: #0f172a; }}
+        .sticky-footer {{ position: sticky; bottom: 20px; background: rgba(255,255,255,0.95); backdrop-filter: blur(8px); border: 1px solid #cbd5e1; border-radius: 12px; padding: 14px 20px; box-shadow: 0 4px 14px rgba(0,0,0,0.08); display: flex; align-items: center; justify-content: space-between; z-index: 100; }}
+        .btn-save {{ background: #2563eb; color: #fff; border: none; padding: 10px 24px; border-radius: 8px; font-weight: 600; font-size: 14px; cursor: pointer; transition: background .2s; }}
+        .btn-save:hover {{ background: #1d4ed8; }}
+        .btn-save:disabled {{ opacity: 0.6; cursor: not-allowed; }}
+        .top-nav {{ display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }}
+        .back-link {{ color: #475569; text-decoration: none; font-size: 14px; display: inline-flex; align-items: center; gap: 6px; font-weight: 500; }}
+        .back-link:hover {{ color: #2563eb; }}
+        #alert-box {{ display: none; padding: 14px 18px; border-radius: 8px; margin-bottom: 20px; font-size: 14px; font-weight: 500; }}
+        #alert-box.success {{ display: block; background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }}
+        #alert-box.danger {{ display: block; background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }}
+    </style>
+</head>
+<body>
+    <div class="settings-container">
+        <div class="top-nav">
+            <a href="/admin" class="back-link">
+                <i class="fa-solid fa-arrow-left"></i> Назад в панель администратора
+            </a>
+            <span class="badge bg-blue-lt px-3 py-2" style="font-size:13px">Панель управления ИИ</span>
+        </div>
+
+        <div class="d-flex align-items-center justify-content-between mb-4">
+            <div>
+                <h1 style="font-size:24px;font-weight:700;color:#0f172a;margin:0 0 6px 0">
+                    🤖 Настройки ИИ-консультанта
+                </h1>
+                <p style="color:#64748b;margin:0;font-size:14px">
+                    Управляйте параметрами языковой модели, системным промптом, динамическими быстрыми ответами и защитой от спама.
+                </p>
+            </div>
+        </div>
+
+        <div id="alert-box"></div>
+
+        <!-- 1. Основное и языковая модель -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fa-solid fa-sliders text-primary"></i> Параметры нейросети (LLM)
+                </h3>
+            </div>
+            <div class="card-body">
+                <div class="mb-3 d-flex align-items-center justify-content-between p-3 rounded" style="background:#f1f5f9">
+                    <div>
+                        <strong style="color:#0f172a;font-size:14px">ИИ-консультант активен на сайте</strong>
+                        <div class="form-hint">Если выключить — чат покажет вежливую заглушку и форму заявки</div>
+                    </div>
+                    <label class="form-check form-switch cursor-pointer m-0">
+                        <input class="form-check-input" type="checkbox" id="field-is-active" {is_active_checked} style="width:40px;height:22px">
+                    </label>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Модель нейросети</label>
+                        <input type="text" class="form-control" id="field-model" value="{model_val}" placeholder="например: gpt-4o-mini">
+                        <div class="mt-2">
+                            <span class="badge-chip" onclick="setModel('gpt-4o-mini')">gpt-4o-mini</span>
+                            <span class="badge-chip" onclick="setModel('gpt-4o')">gpt-4o</span>
+                            <span class="badge-chip" onclick="setModel('gpt-3.5-turbo')">gpt-3.5-turbo</span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Температура (креативность)</label>
+                        <input type="number" step="0.05" min="0.0" max="1.0" class="form-control" id="field-temperature" value="{temp_val}">
+                        <div class="form-hint">0.0 — строгие ответы, 0.4 — баланс, 0.8+ — свободные</div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Максимум токенов</label>
+                        <input type="number" step="50" min="100" max="2000" class="form-control" id="field-max-tokens" value="{max_tokens_val}">
+                        <div class="form-hint">Лимит длины одного ответа (по умолч. 450)</div>
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label">API Base URL (опционально)</label>
+                        <input type="text" class="form-control" id="field-base-url" value="{base_url_val}" placeholder="Оставьте пустым, чтобы использовать адрес из .env">
+                        <div class="form-hint">Позволяет переопределить эндпоинт провайдера без правки файлов сервера</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Системный промпт -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fa-solid fa-scroll text-primary"></i> Системный промпт (Инструкция для роли ИИ)
+                </h3>
+            </div>
+            <div class="card-body">
+                <textarea id="field-system-prompt" class="form-control" rows="12" style="font-family:monospace;font-size:13px;line-height:1.5;resize:vertical">{system_prompt_val}</textarea>
+                <div class="form-hint mt-2">
+                    Здесь задается характер консультанта, правила форматирования ссылок <code>[Текст](/url)</code> и регламент сбора заявок.
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. База знаний и RAG -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fa-solid fa-brain text-primary"></i> Поиск по базе знаний (RAG)
+                </h3>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Порог уверенности RAG (score threshold)</label>
+                        <input type="number" step="0.05" min="0.0" max="2.0" class="form-control" id="field-rag-threshold" value="{rag_threshold_val}">
+                        <div class="form-hint">По умолчанию 0.5. Отсекает нерелевантные статьи базы знаний для простых фраз, экономя токены.</div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Количество статей базы знаний (top_k)</label>
+                        <input type="number" min="1" max="5" class="form-control" id="field-rag-top-k" value="{rag_top_k_val}">
+                        <div class="form-hint">Сколько наиболее точных фрагментов подмешивать к вопросу (по умолчанию 2).</div>
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label">Дополнительные стоп-слова для поиска</label>
+                        <textarea id="field-custom-stop-words" class="form-control" rows="2" placeholder="например: сайт, разработка, вопрос">{custom_stops_val}</textarea>
+                        <div class="form-hint">Слова через запятую или пробел, которые поисковик базы знаний должен игнорировать.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. Динамические быстрые ответы -->
+        <div class="card">
+            <div class="card-header d-flex align-items-center justify-content-between">
+                <div>
+                    <h3 class="card-title">
+                        <i class="fa-solid fa-bolt text-warning"></i> Динамические быстрые ответы (Fast-Path)
+                    </h3>
+                    <div class="form-hint mt-1">
+                        Если сообщение пользователя совпадает с ключевыми словами правила, ответ выдается мгновенно (0 мс, 0 токенов нейросети).
+                    </div>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-primary" onclick="addRule()">
+                    <i class="fa-solid fa-plus me-1"></i> Добавить правило
+                </button>
+            </div>
+            <div class="card-body">
+                <div id="rules-container"></div>
+            </div>
+        </div>
+
+        <!-- 5. Защита от спама -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fa-solid fa-shield-halved text-success"></i> Защита от спама (Rate Limiter)
+                </h3>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Лимит запросов в минуту на один IP</label>
+                        <input type="number" min="1" max="120" class="form-control" id="field-minute-limit" value="{minute_limit_val}">
+                        <div class="form-hint">По умолчанию 15 обращений в минуту. Достаточно для живого человека и надежно отсекает скрипты.</div>
+                    </div>
+                    <div class="col-md-6 d-flex align-items-center">
+                        <div class="p-3 rounded text-muted" style="background:#f1f5f9;font-size:12.5px;line-height:1.4">
+                            <i class="fa-solid fa-check text-success me-1"></i> <strong>Оптимизированная защита:</strong> избыточные 6-секундный и часовой фильтры отключены, чтобы не блокировать реальных клиентов из офисов и мобильных сетей. Защита от повторных кликов (&lt; 3 сек) включена автоматически.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sticky action footer -->
+        <div class="sticky-footer">
+            <div class="d-flex align-items-center gap-2">
+                <i class="fa-solid fa-cloud-arrow-up text-primary"></i>
+                <span style="font-size:13px;color:#475569">Изменения применятся в памяти работающего бота мгновенно</span>
+            </div>
+            <button type="button" class="btn-save" id="save-btn" onclick="saveAll()">
+                <i class="fa-solid fa-floppy-disk me-1"></i> Сохранить все настройки
+            </button>
+        </div>
+    </div>
+
+    <script>
+    var initialRules = {rules_json_str};
+
+    function setModel(name) {{
+        document.getElementById('field-model').value = name;
+    }}
+
+    function showAlert(type, text) {{
+        var box = document.getElementById('alert-box');
+        box.className = type;
+        box.textContent = text;
+        window.scrollTo({{ top: 0, behavior: 'smooth' }});
+        if (type === 'success') {{
+            setTimeout(function() {{ box.style.display = 'none'; }}, 4000);
+        }}
+    }}
+
+    function renderRules() {{
+        var container = document.getElementById('rules-container');
+        container.innerHTML = '';
+
+        if (!initialRules.length) {{
+            container.innerHTML = '<p class="text-muted text-center py-3">Нет активных правил. Нажмите «Добавить правило», чтобы создать.</p>';
+            return;
+        }}
+
+        initialRules.forEach(function(rule, idx) {{
+            var card = document.createElement('div');
+            card.className = 'rule-card';
+            card.dataset.id = rule.id || ('rule_' + idx);
+
+            var isChecked = rule.is_active ? 'checked' : '';
+
+            card.innerHTML = `
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <div class="d-flex align-items-center gap-2" style="flex:1;max-width:400px">
+                        <span class="badge bg-secondary-lt" style="font-size:11px">Правило #${{idx + 1}}</span>
+                        <input type="text" class="form-control form-control-sm rule-title" value="${{escapeHtml(rule.title || '')}}" placeholder="Название (например, Прощание)">
+                    </div>
+                    <div class="d-flex align-items-center gap-3">
+                        <label class="form-check form-switch cursor-pointer m-0" title="Включить / выключить правило">
+                            <input class="form-check-input rule-active" type="checkbox" ${{isChecked}}>
+                        </label>
+                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeRule(${{idx}})" title="Удалить правило">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="mb-2">
+                    <label class="form-label" style="font-size:12px;margin-bottom:3px">Ключевые слова и фразы (через запятую или новую строку):</label>
+                    <textarea class="form-control form-control-sm rule-triggers" rows="2" placeholder="пока, до свидания, до скорого, прощай">${{escapeHtml(rule.triggers || '')}}</textarea>
+                </div>
+
+                <div>
+                    <label class="form-label" style="font-size:12px;margin-bottom:3px">Готовый ответ консультанта (0 токенов):</label>
+                    <textarea class="form-control form-control-sm rule-response" rows="2" placeholder="Текст ответа бота клиенту...">${{escapeHtml(rule.response || '')}}</textarea>
+                </div>
+            `;
+            container.appendChild(card);
+        }});
+    }}
+
+    function addRule() {{
+        syncRulesFromDOM();
+        initialRules.push({{
+            id: 'rule_' + Date.now(),
+            title: 'Новое правило',
+            triggers: 'фраза 1, фраза 2',
+            response: 'Ответ на это правило...',
+            is_active: true
+        }});
+        renderRules();
+    }}
+
+    function removeRule(idx) {{
+        syncRulesFromDOM();
+        if (confirm('Удалить правило «' + (initialRules[idx].title || '') + '»?')) {{
+            initialRules.splice(idx, 1);
+            renderRules();
+        }}
+    }}
+
+    function syncRulesFromDOM() {{
+        var cards = document.querySelectorAll('.rule-card');
+        var updated = [];
+        cards.forEach(function(card, idx) {{
+            var id = card.dataset.id || ('rule_' + idx);
+            var title = card.querySelector('.rule-title').value.trim();
+            var triggers = card.querySelector('.rule-triggers').value.trim();
+            var response = card.querySelector('.rule-response').value.trim();
+            var isActive = card.querySelector('.rule-active').checked;
+            updated.push({{
+                id: id,
+                title: title,
+                triggers: triggers,
+                response: response,
+                is_active: isActive
+            }});
+        }});
+        if (cards.length) {{
+            initialRules = updated;
+        }}
+    }}
+
+    function escapeHtml(text) {{
+        return (text || '').toString()
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }}
+
+    async function saveAll() {{
+        syncRulesFromDOM();
+
+        var saveBtn = document.getElementById('save-btn');
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<i class="fa fa-spinner fa-spin me-1"></i> Сохраняем...';
+
+        var formattedRules = initialRules.map(function(r) {{
+            var trigList = (r.triggers || '').split(/[\n,]+/).map(function(s) {{ return s.trim(); }}).filter(Boolean);
+            return {{
+                id: r.id,
+                title: r.title,
+                triggers: trigList,
+                response: r.response,
+                is_active: r.is_active
+            }};
+        }});
+
+        var payload = {{
+            is_active: document.getElementById('field-is-active').checked,
+            model: document.getElementById('field-model').value.trim(),
+            temperature: parseFloat(document.getElementById('field-temperature').value) || 0.4,
+            max_tokens: parseInt(document.getElementById('field-max-tokens').value) || 450,
+            base_url: document.getElementById('field-base-url').value.trim(),
+            rag_threshold: parseFloat(document.getElementById('field-rag-threshold').value) || 0.5,
+            rag_top_k: parseInt(document.getElementById('field-rag-top-k').value) || 2,
+            custom_stop_words: document.getElementById('field-custom-stop-words').value.trim(),
+            system_prompt: document.getElementById('field-system-prompt').value.trim(),
+            minute_limit: parseInt(document.getElementById('field-minute-limit').value) || 15,
+            fast_responses: formattedRules
+        }};
+
+        try {{
+            var res = await fetch('/admin/ai-settings', {{
+                method: 'POST',
+                headers: {{ 'Content-Type': 'application/json' }},
+                body: JSON.stringify(payload)
+            }});
+            var data = await res.json();
+            if (data.ok) {{
+                showAlert('success', '✓ Все настройки ИИ успешно сохранены и применены!');
+            }} else {{
+                showAlert('danger', 'Ошибка при сохранении: ' + (data.error || 'неизвестная ошибка'));
+            }}
+        }} catch(err) {{
+            showAlert('danger', 'Сетевая ошибка: ' + err.message);
+        }} finally {{
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = '<i class="fa-solid fa-floppy-disk me-1"></i> Сохранить все настройки';
+        }}
+    }}
+
+    renderRules();
+    </script>
+</body>
+</html>"""
+        return HTMLResponse(html_content)
 
 
 def create_admin(app) -> Admin:
@@ -601,7 +1029,7 @@ def create_admin(app) -> Admin:
     admin.add_view(ServiceAdmin)
     admin.add_view(FaqAdmin)
     admin.add_view(CompanyContactAdmin)
-    admin.add_view(AiSettingsAdmin)
+    admin.add_base_view(AiSettingsView)
     admin.add_base_view(UploadView)
     admin.add_base_view(UploadsManagerView)
     return admin

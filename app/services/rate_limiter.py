@@ -25,23 +25,15 @@ def get_client_ip(request: Request) -> str:
 
 
 class ChatRateLimiter:
-    """Многоуровневый rate-лимитер для защиты чата с ИИ от спама и исчерпания квоты."""
+    """Rate-лимитер с защитой от спама в минуту и защитой от повторных кликов (дублей)."""
 
     def __init__(
         self,
-        burst_limit: int = 4,
-        burst_window: float = 6.0,
         minute_limit: int = 15,
         minute_window: float = 60.0,
-        hourly_limit: int = 60,
-        hourly_window: float = 3600.0,
     ):
-        self.burst_limit = burst_limit
-        self.burst_window = burst_window
         self.minute_limit = minute_limit
         self.minute_window = minute_window
-        self.hourly_limit = hourly_limit
-        self.hourly_window = hourly_window
 
         self._history: dict[str, deque[float]] = defaultdict(deque)
         self._last_message: dict[str, tuple[str, float]] = {}
@@ -56,43 +48,25 @@ class ChatRateLimiter:
         normalized_msg = message.strip().lower()
 
         with self._lock:
-            # 1. Защита от дублей: то же самое сообщение чаще раза в 4 секунды
+            # 1. Защита от дублей: то же самое сообщение чаще раза в 3 секунды
             last_text, last_time = self._last_message.get(ip, ("", 0.0))
-            if normalized_msg == last_text and (now - last_time) < 4.0:
+            if normalized_msg == last_text and (now - last_time) < 3.0:
                 raise HTTPException(
                     status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-                    detail="Вы уже отправили этот вопрос. Пожалуйста, подождите несколько секунд.",
+                    detail="Вы уже отправили этот вопрос. Пожалуйста, подождите пару секунд.",
                 )
 
-            # Очистка устаревших отметок времени старше 1 часа
+            # Очистка устаревших отметок времени старше 1 минуты
             timestamps = self._history[ip]
-            cutoff = now - self.hourly_window
+            cutoff = now - self.minute_window
             while timestamps and timestamps[0] < cutoff:
                 timestamps.popleft()
 
-            # 2. Часовой лимит (максимум 60 обращений в час на 1 IP)
-            if len(timestamps) >= self.hourly_limit:
+            # 2. Минутный лимит (по умолчанию до 15 обращений в минуту на 1 IP)
+            if len(timestamps) >= self.minute_limit:
                 raise HTTPException(
                     status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-                    detail="Превышен часовой лимит обращений к ИИ-консультанту. Пожалуйста, свяжитесь с нами напрямую по контактам на сайте.",
-                )
-
-            # 3. Минутный лимит (максимум 15 обращений в минуту на 1 IP)
-            minute_cutoff = now - self.minute_window
-            minute_count = sum(1 for t in timestamps if t >= minute_cutoff)
-            if minute_count >= self.minute_limit:
-                raise HTTPException(
-                    status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-                    detail="Слишком много запросов. Пожалуйста, подождите минуту перед следующим вопросом.",
-                )
-
-            # 4. Burst лимит (максимум 4 обращения за 6 секунд — от кликеров и скриптов)
-            burst_cutoff = now - self.burst_window
-            burst_count = sum(1 for t in timestamps if t >= burst_cutoff)
-            if burst_count >= self.burst_limit:
-                raise HTTPException(
-                    status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-                    detail="Вы отправляете вопросы слишком быстро. Подождите пару секунд.",
+                    detail="Слишком много запросов в минуту. Пожалуйста, подождите немного перед следующим вопросом.",
                 )
 
             # Фиксируем запрос
@@ -104,7 +78,7 @@ class ChatRateLimiter:
                 self._prune_stale(now)
 
     def _prune_stale(self, now: float) -> None:
-        cutoff = now - self.hourly_window
+        cutoff = now - self.minute_window
         stale_ips = [ip for ip, q in self._history.items() if not q or q[-1] < cutoff]
         for ip in stale_ips:
             self._history.pop(ip, None)

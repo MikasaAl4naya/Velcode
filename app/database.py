@@ -1,5 +1,6 @@
 from collections.abc import AsyncGenerator
 
+import sqlalchemy as sa
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase
 
@@ -22,3 +23,11 @@ async def init_models() -> None:
     """Создаёт таблицы, если их ещё нет. Для прод-раскатки лучше Alembic-миграции."""
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+
+        def _migrate(connection):
+            try:
+                connection.execute(sa.text("ALTER TABLE ai_settings ADD COLUMN fast_responses_json TEXT DEFAULT '[]'"))
+            except Exception:
+                pass
+
+        await conn.run_sync(_migrate)

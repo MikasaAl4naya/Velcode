@@ -182,7 +182,10 @@ class AiSettings(Base):
     # Системный промпт
     system_prompt: Mapped[str] = mapped_column(Text, nullable=False, default="")
 
-    # Шаблоны быстрых ответов (fast-path без вызова LLM)
+    # Динамические правила быстрых ответов (наборы фраз и реакция в JSON)
+    fast_responses_json: Mapped[str] = mapped_column(Text, nullable=False, default="[]")
+
+    # Шаблоны быстрых ответов (fast-path без вызова LLM, совместимость)
     greeting_fast_path: Mapped[str] = mapped_column(
         Text,
         nullable=False,
