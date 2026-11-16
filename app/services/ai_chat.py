@@ -197,6 +197,24 @@ class AiChatService:
         text = re.sub(r'(?<!\()(?<!\[)(/services)(?![a-zA-Z0-9_/-])', r'[Услуги](/services)', text)
         return text
 
+    def _find_exact_faq_answer(self, query: str) -> tuple[str, str] | None:
+        """Ищет прямое совпадение с вопросом из таблицы FAQ базы данных."""
+        self._ensure_kb_index()
+        clean_query = re.sub(r"[?!.,;:«»\"']", "", query).strip().lower()
+        if not clean_query:
+            return None
+
+        for chunk in self._chunks:
+            if chunk.get("category") == "faq":
+                title = chunk.get("title", "")
+                clean_title = re.sub(r"[?!.,;:«»\"']", "", title).strip().lower()
+                if clean_query == clean_title:
+                    content = chunk.get("content", "")
+                    match = re.search(r"Ответ:\s*(.+)", content, re.DOTALL)
+                    answer = match.group(1).strip() if match else content
+                    return title, answer
+        return None
+
     def _fallback_response(self, topic: str | None = None) -> ChatResponse:
         """Резервный ответ на случай сетевого сбоя или временной недоступности модели."""
         return ChatResponse(
@@ -218,6 +236,18 @@ class AiChatService:
         topic: str | None = None,
         existing_prefill: ChatPrefill | None = None,
     ) -> ChatResponse:
+        # 1. Если вопрос точно соответствует вопросу из FAQ в БД — возвращаем готовый ответ без вызова LLM
+        faq_match = self._find_exact_faq_answer(message)
+        if faq_match:
+            faq_title, faq_answer = faq_match
+            return ChatResponse(
+                text=self._auto_format_links(faq_answer),
+                topic=topic or faq_title,
+                actions=[ChatAction(label="Обсудить проект", actionKey="show_lead_form", primary=True)],
+                show_lead_form=False,
+                prefill=existing_prefill,
+            )
+
         api_key = self._get_api_key()
         if not api_key:
             return self._fallback_response(topic)
