@@ -2,63 +2,352 @@
    AI CHAT WIDGET STYLES (Velcode Brand Style)
 ============================================================ */
 
-/* ---------- Плавающая кнопка вызова (лаунчер) ---------- */
-.ai-widget-launcher {
-  position: fixed;
-  bottom: 28px;
-  right: 28px;
-  z-index: 990;
+:root {
+  --vel-primary: var(--color-blue-pill, #7183bd);
+  --vel-accent: var(--color-accent, #7d98f0);
+  --vel-white: #ffffff;
+  --vel-deep: var(--color-deep-blue, #1c314c);
+  --vel-blush: var(--color-blush, #ff85b3);
+  --vel-primary-rgb: var(--color-blue-pill-rgb, 113, 131, 189);
+  --vel-accent-rgb: var(--color-accent-rgb, 125, 152, 240);
+  --vel-deep-rgb: var(--color-deep-blue-rgb, 28, 49, 76);
+  --vel-blush-rgb: var(--color-blush-rgb, 255, 133, 179);
+  --orb-size: 76px;
+}
+
+/* ---------- Сфера-персонаж Velcode AI ---------- */
+.velcode-ai-widget {
+  position: relative;
+  width: var(--orb-size, 76px);
+  height: var(--orb-size, 76px);
+  cursor: pointer;
+  user-select: none;
   display: flex;
   align-items: center;
-  gap: 12px;
-  height: 60px;
-  padding: 0 24px 0 14px;
-  background: var(--color-dark, #171819);
-  color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: var(--radius-btn, 9999px);
-  box-shadow: 0 12px 32px -4px rgba(23, 24, 25, 0.32), 0 6px 18px rgba(125, 152, 240, 0.28);
-  cursor: pointer;
-  transition: transform 0.25s var(--ease-out, ease), box-shadow 0.25s ease, background-color 0.25s ease;
-  user-select: none;
-  font-family: var(--font-family-base, sans-serif);
-}
-
-.ai-widget-launcher:hover {
-  transform: translateY(-3px) scale(1.03);
-  box-shadow: 0 16px 36px -4px rgba(23, 24, 25, 0.4), 0 8px 24px rgba(125, 152, 240, 0.42);
-  background: #202224;
-}
-
-.ai-widget-launcher:active {
-  transform: scale(0.97);
-}
-
-.ai-widget-launcher__orb {
-  position: relative;
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 35% 35%, #ffffff 0%, #f0f3ff 25%, #a4b6f4 60%, #7d98f0 85%, #5366a4 100%);
-  box-shadow: 0 0 14px rgba(125, 152, 240, 0.65);
-  animation: ai-orb-glow 3s ease-in-out infinite alternate;
+  justify-content: center;
+  perspective: 400px;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   flex-shrink: 0;
 }
 
-.ai-widget-launcher__text {
-  font-size: 16px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
+.velcode-ai-widget:hover {
+  transform: scale(1.08);
 }
 
-.ai-widget-launcher__badge {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
+.velcode-ai-widget:active {
+  transform: scale(0.95);
+}
+
+/* Легкое покачивание сферы при смущении */
+.velcode-ai-widget.is-shy {
+  animation: vShyWiggle 0.6s ease-in-out;
+}
+
+/* Внешний ореол вокруг виджета */
+.v-orb-ambient {
+  position: absolute;
+  inset: -14px;
   border-radius: 50%;
-  background: #43d417;
-  box-shadow: 0 0 8px rgba(67, 212, 23, 0.8);
-  margin-left: 2px;
+  background: radial-gradient(
+    circle,
+    rgba(var(--vel-accent-rgb), 0.55) 0%,
+    rgba(var(--vel-primary-rgb), 0.25) 50%,
+    transparent 75%
+  );
+  filter: blur(10px);
+  animation: vPulse 4s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+/* Контейнер внешних жидких колец */
+.v-orb-waves {
+  position: absolute;
+  inset: -5px;
+  pointer-events: none;
+}
+
+.v-wave {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  filter: blur(4px);
+  opacity: 0.85;
+}
+
+.v-wave-1 {
+  background: conic-gradient(
+    from 0deg,
+    transparent 0%,
+    var(--vel-accent) 25%,
+    var(--vel-white) 45%,
+    var(--vel-primary) 70%,
+    transparent 100%
+  );
+  animation: vMorphRotate 6s linear infinite;
+}
+
+.v-wave-2 {
+  inset: -2px;
+  background: conic-gradient(
+    from 180deg,
+    var(--vel-primary) 0%,
+    transparent 35%,
+    var(--vel-accent) 65%,
+    var(--vel-white) 85%,
+    var(--vel-primary) 100%
+  );
+  filter: blur(6px);
+  opacity: 0.75;
+  animation: vMorphRotateReverse 8s linear infinite;
+}
+
+.v-wave-3 {
+  inset: 2px;
+  border: 2.5px solid rgba(255, 255, 255, 0.55);
+  box-shadow: 0 0 12px var(--vel-accent), inset 0 0 12px var(--vel-primary);
+  filter: blur(2px);
+  animation: vLiquidWave 5s ease-in-out infinite;
+}
+
+/* Основная полупрозрачная сфера */
+.v-orb-core {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  overflow: hidden;
+  background: radial-gradient(
+    circle at 35% 30%,
+    rgba(var(--vel-accent-rgb), 0.42) 0%,
+    rgba(var(--vel-primary-rgb), 0.65) 55%,
+    rgba(var(--vel-deep-rgb), 0.82) 100%
+  );
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow:
+    inset 0 2px 5px rgba(255, 255, 255, 0.65),
+    inset 0 -6px 14px rgba(var(--vel-accent-rgb), 0.55),
+    0 6px 20px rgba(var(--vel-primary-rgb), 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s ease-out, box-shadow 0.25s ease;
+}
+
+/* Теплый розоватый отсвет внутри сферы при смущении */
+.velcode-ai-widget.is-shy .v-orb-core {
+  box-shadow:
+    inset 0 2px 5px rgba(255, 255, 255, 0.75),
+    inset 0 -8px 18px rgba(var(--vel-blush-rgb), 0.5),
+    0 6px 22px rgba(var(--vel-primary-rgb), 0.55);
+}
+
+/* Внутренние полупрозрачные волны */
+.v-inner-ribbon {
+  position: absolute;
+  width: 130%;
+  height: 130%;
+  border-radius: 42% 58% 63% 37% / 45% 42% 58% 55%;
+  pointer-events: none;
+}
+
+.v-ribbon-1 {
+  background: radial-gradient(
+    circle at 50% 20%,
+    rgba(255, 255, 255, 0.45),
+    rgba(var(--vel-accent-rgb), 0.25) 45%,
+    transparent 70%
+  );
+  border: 1.5px solid rgba(255, 255, 255, 0.3);
+  filter: blur(3px);
+  animation: vMorphRotate 7s linear infinite;
+}
+
+.v-ribbon-2 {
+  background: radial-gradient(
+    circle at 30% 75%,
+    rgba(var(--vel-accent-rgb), 0.55),
+    rgba(var(--vel-primary-rgb), 0.2) 55%,
+    transparent 75%
+  );
+  border: 1.5px solid rgba(var(--vel-accent-rgb), 0.4);
+  filter: blur(4px);
+  animation: vMorphRotateReverse 9s linear infinite;
+}
+
+/* Контейнер глаз и щечек */
+.v-eyes-wrapper {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(var(--orb-size, 76px) * 0.14);
+  will-change: transform;
+  transform-style: preserve-3d;
+}
+
+/* Глазки-капсулы */
+.v-eye {
+  position: relative;
+  display: block;
+  width: calc(var(--orb-size, 76px) * 0.072);
+  height: calc(var(--orb-size, 76px) * 0.197);
+  background: var(--vel-white);
+  border-radius: 99px;
+  box-sizing: border-box;
+  border-top: 0px solid rgba(255, 255, 255, 0);
+  border-left: 0px solid rgba(255, 255, 255, 0);
+  border-right: 0px solid rgba(255, 255, 255, 0);
+  box-shadow:
+    0 0 8px rgba(255, 255, 255, 0.95),
+    0 0 16px var(--vel-accent);
+  transition:
+    transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1),
+    width 0.15s ease,
+    height 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+/* Обычное моргание */
+.v-eyes-wrapper.is-blinking .v-eye {
+  transform: scaleY(0.12);
+}
+
+/* Милый смущенный прищур дугой (^ ^) */
+.v-eyes-wrapper.is-shy .v-eye {
+  width: calc(var(--orb-size, 76px) * 0.145);
+  height: calc(var(--orb-size, 76px) * 0.12);
+  background: rgba(255, 255, 255, 0);
+  border-top: calc(var(--orb-size, 76px) * 0.042) solid var(--vel-white);
+  border-left: calc(var(--orb-size, 76px) * 0.02) solid rgba(255, 255, 255, 0);
+  border-right: calc(var(--orb-size, 76px) * 0.02) solid rgba(255, 255, 255, 0);
+  border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+  box-shadow: 0 -3px 8px rgba(255, 255, 255, 0.85);
+}
+
+/* Легкий наклон дуг наружу (/ \ вместо злого \ /), чтобы взгляд был добрым и застенчивым */
+.v-eyes-wrapper.is-shy .v-eye-left {
+  transform: translateY(2px) rotate(6deg) !important;
+}
+
+.v-eyes-wrapper.is-shy .v-eye-right {
+  transform: translateY(2px) rotate(-6deg) !important;
+}
+
+/* Щечки (румянец) */
+.v-cheek {
+  position: absolute;
+  bottom: -6px;
+  width: calc(var(--orb-size, 76px) * 0.16);
+  height: calc(var(--orb-size, 76px) * 0.09);
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(var(--vel-blush-rgb), 0.95) 0%,
+    rgba(var(--vel-blush-rgb), 0.5) 55%,
+    transparent 100%
+  );
+  filter: blur(1.6px);
+  opacity: 0;
+  transform: scale(0.4);
+  transition:
+    opacity 0.18s ease,
+    transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  pointer-events: none;
+}
+
+.v-cheek-left {
+  left: calc(var(--orb-size, 76px) * -0.12);
+}
+
+.v-cheek-right {
+  right: calc(var(--orb-size, 76px) * -0.12);
+}
+
+/* Появление румянца при смущении */
+.v-eyes-wrapper.is-shy .v-cheek {
+  opacity: 1;
+  transform: scale(1.18);
+}
+
+@keyframes vShyWiggle {
+  0% { transform: scale(0.93) rotate(0deg); }
+  30% { transform: scale(1.05) rotate(-5deg); }
+  65% { transform: scale(1.05) rotate(5deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+@keyframes vMorphRotate {
+  0% {
+    transform: rotate(0deg) scale(1);
+    border-radius: 46% 54% 49% 51% / 52% 45% 55% 48%;
+  }
+  50% {
+    transform: rotate(180deg) scale(1.04);
+    border-radius: 55% 45% 43% 57% / 44% 56% 44% 56%;
+  }
+  100% {
+    transform: rotate(360deg) scale(1);
+    border-radius: 46% 54% 49% 51% / 52% 45% 55% 48%;
+  }
+}
+
+@keyframes vMorphRotateReverse {
+  0% {
+    transform: rotate(360deg) scale(1.03);
+    border-radius: 53% 47% 56% 44% / 46% 55% 45% 54%;
+  }
+  50% {
+    transform: rotate(180deg) scale(0.97);
+    border-radius: 44% 56% 45% 55% / 55% 44% 56% 45%;
+  }
+  100% {
+    transform: rotate(0deg) scale(1.03);
+    border-radius: 53% 47% 56% 44% / 46% 55% 45% 54%;
+  }
+}
+
+@keyframes vLiquidWave {
+  0%, 100% {
+    border-radius: 52% 48% 45% 55% / 48% 54% 46% 52%;
+    transform: rotate(0deg) scale(1);
+  }
+  33% {
+    border-radius: 45% 55% 53% 47% / 54% 46% 54% 46%;
+    transform: rotate(15deg) scale(1.03, 0.97);
+  }
+  66% {
+    border-radius: 55% 45% 48% 52% / 44% 52% 48% 56%;
+    transform: rotate(-12deg) scale(0.98, 1.03);
+  }
+}
+
+@keyframes vPulse {
+  0% {
+    transform: scale(0.94);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+}
+
+/* ---------- Плавающая кнопка вызова (чисто сам персонаж) ---------- */
+.ai-widget-launcher {
+  position: fixed;
+  bottom: 32px;
+  right: 32px;
+  z-index: 990;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  user-select: none;
 }
 
 /* ---------- Основной контейнер окна чата ---------- */
@@ -185,44 +474,6 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Центровая бело-фиолетовая сфера */
-.ai-hero-orb {
-  position: relative;
-  width: 76px;
-  height: 76px;
-  margin-bottom: 18px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, #ffffff 0%, #f0f3ff 28%, #a4b6f4 60%, #7d98f0 85%, #5366a4 100%);
-  box-shadow: 0 0 32px rgba(125, 152, 240, 0.45), 0 0 16px rgba(164, 182, 244, 0.35);
-  animation: ai-orb-pulse 4s ease-in-out infinite alternate;
-}
-
-.ai-hero-orb::after {
-  content: '';
-  position: absolute;
-  inset: -6px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(125, 152, 240, 0.3) 0%, transparent 70%);
-  filter: blur(8px);
-  z-index: -1;
-}
-
-@keyframes ai-orb-glow {
-  0% { transform: scale(1); filter: brightness(1); }
-  100% { transform: scale(1.05); filter: brightness(1.15); }
-}
-
-@keyframes ai-orb-pulse {
-  0% {
-    transform: scale(0.96);
-    box-shadow: 0 0 24px rgba(125, 152, 240, 0.35), 0 0 12px rgba(164, 182, 244, 0.25);
-  }
-  100% {
-    transform: scale(1.04);
-    box-shadow: 0 0 38px rgba(125, 152, 240, 0.6), 0 0 20px rgba(164, 182, 244, 0.45);
-  }
-}
-
 .ai-welcome-title {
   font-size: 20px;
   font-weight: 600;
@@ -275,7 +526,7 @@
 }
 
 .ai-tag {
-   opacity: 0.85;
+  opacity: 0.85;
 }
 
 .ai-frequent-tags button.tag:hover,
@@ -399,7 +650,7 @@
   40% { transform: scale(1); opacity: 1; }
 }
 
-/* Кнопки действий внутри сообщения (используют стандартный класс btn btn--primary-lg) */
+/* Кнопки действий внутри сообщения */
 .ai-msg__actions {
   display: flex;
   flex-direction: column;
@@ -477,7 +728,7 @@
   margin-top: 4px;
 }
 
-/* Специальные стили для LeadForm в контексте чата (отступы и размеры как в обычной форме) */
+/* Специальные стили для LeadForm в контексте чата */
 .lead-form--chat {
   width: 100% !important;
   --lf-input-height: 58px !important;
@@ -653,18 +904,10 @@
   .ai-widget-launcher {
     bottom: 16px;
     right: 16px;
-    height: 48px;
-    padding: 0 16px 0 10px;
-    gap: 10px;
   }
 
-  .ai-widget-launcher__orb {
-    width: 26px;
-    height: 26px;
-  }
-
-  .ai-widget-launcher__text {
-    font-size: 14px;
+  .ai-widget-launcher .velcode-ai-widget {
+    --orb-size: 64px;
   }
 
   .ai-chat-window {

@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { ymGoal } from '@/lib/ym';
 import { Tag } from '@/components/ui/Tag';
 import { LeadForm } from '@/components/ui/LeadForm';
+import { AiOrbAvatar } from '@/components/ui/AiOrbAvatar';
 import { getFaq, FaqItem, sendChatMessage } from '@/lib/api';
 
 interface Message {
@@ -371,7 +372,7 @@ export function AiChatWidget() {
 
   return (
     <>
-      {/* Кнопка открытия виджета (Лаунчер) */}
+      {/* Кнопка открытия виджета: чисто сам персонаж до клика на чат */}
       {!isOpen && (
         <button
           type="button"
@@ -379,15 +380,7 @@ export function AiChatWidget() {
           onClick={handleToggle}
           aria-label="Открыть AI чат"
         >
-          <div
-            className="ai-widget-launcher__orb"
-            aria-hidden="true"
-            style={{
-              background: 'radial-gradient(circle at 35% 35%, #ffffff 0%, #f0f3ff 25%, #a4b6f4 60%, #7d98f0 85%, #5366a4 100%)',
-              boxShadow: '0 0 12px rgba(125, 152, 240, 0.55)',
-            }}
-          />
-          <span className="ai-widget-launcher__text">AI Чат</span>
+          <AiOrbAvatar size={76} trackScope="window" enableShyOnClick={false} />
         </button>
       )}
 
@@ -435,17 +428,12 @@ export function AiChatWidget() {
 
           {/* Тело чата */}
           <div ref={chatBodyRef} className="ai-chat-body">
-            {/* Начальный экран с бело-фиолетовой сферой и вопросами в виде компонентов Tag */}
+            {/* Начальный экран со сферой-персонажем и вопросами в виде компонентов Tag */}
             {messages.length === 0 ? (
               <div className="ai-welcome-view">
-                <div
-                  className="ai-hero-orb"
-                  aria-hidden="true"
-                  style={{
-                    background: 'radial-gradient(circle at 35% 30%, #ffffff 0%, #f0f3ff 28%, #a4b6f4 60%, #7d98f0 85%, #5366a4 100%)',
-                    boxShadow: '0 0 32px rgba(125, 152, 240, 0.45), 0 0 16px rgba(164, 182, 244, 0.35)',
-                  }}
-                />
+                <div style={{ marginBottom: '18px' }}>
+                  <AiOrbAvatar size={76} trackScope="chat" enableShyOnClick={true} isTyping={isTyping} />
+                </div>
                 <h3 className="ai-welcome-title">Задайте вопрос ИИ</h3>
                 <p className="ai-welcome-subtitle">
                   Ответит на любой вопрос по нашим услугам

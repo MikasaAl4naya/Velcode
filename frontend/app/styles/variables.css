@@ -10,6 +10,12 @@
   --color-blue-accent: #5366a4;
   --color-blue-pill: #7183bd;
   --color-accent: #7d98f0;             /* фиолетовые кнопки и цвет наведения */
+  --color-deep-blue: #1c314c;          /* глубокий синий для ядра виджета */
+  --color-accent-rgb: 125, 152, 240;
+  --color-blue-pill-rgb: 113, 131, 189;
+  --color-deep-blue-rgb: 28, 49, 76;
+  --color-blush: #ff85b3;              /* румянец при смущении сферы */
+  --color-blush-rgb: 255, 133, 179;
   --color-border: #d0d1d1;
   --color-muted: rgba(23, 24, 25, 0.7);
   --color-muted-light: rgba(255, 255, 255, 0.7);
