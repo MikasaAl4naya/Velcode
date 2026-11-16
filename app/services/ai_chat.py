@@ -480,9 +480,10 @@ class AiChatService:
                     matched = True
 
                 if matched:
+                    rule_topic = "Консультация" if rule.id in ("rule_greeting", "rule_gratitude", "rule_confirmation", "greeting", "gratitude", "confirmation", "custom_greeting") else rule.title
                     return ChatResponse(
                         text=rule.response,
-                        topic=topic or rule.title,
+                        topic=topic or rule_topic,
                         actions=[ChatAction(label="Обсудить проект", actionKey="show_lead_form", primary=True)],
                         show_lead_form=False,
                         prefill=existing_prefill,
