@@ -638,7 +638,7 @@ export function AiChatWidget() {
                 ref={inputRef}
                 type="text"
                 className="ai-chat-input-bar__field"
-                placeholder={isTyping ? "ИИ печатает ответ..." : "Ваш вопрос..."}
+                placeholder={isTyping ? "ИИ печатает ответ" : "Ваш вопрос"}
                 maxLength={MAX_INPUT_LENGTH}
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}

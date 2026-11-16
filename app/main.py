@@ -17,6 +17,11 @@ from app.routers import catalog, chat, leads
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await init_models()
+    try:
+        from app.services.ai_chat import ai_chat_service
+        await ai_chat_service.get_settings()
+    except Exception as e:
+        print(f"[Lifespan] Ошибка инициализации настроек ИИ: {e}")
     yield
 
 

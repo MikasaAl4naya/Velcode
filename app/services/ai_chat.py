@@ -6,6 +6,7 @@ import math
 import os
 import re
 from collections import Counter
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -65,9 +66,43 @@ RUSSIAN_STOP_WORDS = {
 }
 
 
-def _tokenize(text: str) -> list[str]:
+@dataclass
+class CachedAiSettings:
+    is_active: bool = True
+    model: str = "gpt-4o-mini"
+    temperature: float = 0.4
+    max_tokens: int = 450
+    base_url: str | None = None
+    rag_threshold: float = 0.5
+    rag_top_k: int = 2
+    custom_stop_words: set[str] = field(default_factory=set)
+    system_prompt: str = ""
+    greeting_fast_path: str = (
+        "Здравствуйте! Чем можем вам помочь? Мы создаем современные сайты под ключ, "
+        "разрабатываем чат-ботов и автоматизируем бизнес. Подсказать по услугам или рассчитать проект?"
+    )
+    gratitude_fast_path: str = (
+        "Пожалуйста! Если появятся вопросы или захотите обсудить проект — мы всегда на связи."
+    )
+    confirmation_fast_path: str = (
+        "Договорились! Если потребуется расчёт или возникнут вопросы — напишите, я помогу сориентироваться."
+    )
+    burst_limit: int = 4
+    minute_limit: int = 15
+    hourly_limit: int = 60
+
+
+def _parse_custom_stop_words(raw: str | None) -> set[str]:
+    if not raw:
+        return set()
+    items = re.split(r"[,\s\n]+", raw)
+    return {w.strip().lower() for w in items if w.strip()}
+
+
+def _tokenize(text: str, custom_stops: set[str] | None = None) -> list[str]:
+    stops = RUSSIAN_STOP_WORDS if not custom_stops else (RUSSIAN_STOP_WORDS | custom_stops)
     words = re.findall(r"[a-zA-Zа-яА-Я0-9]+", text.lower())
-    return [_stem_word(w) for w in words if w not in RUSSIAN_STOP_WORDS and len(w) >= 3]
+    return [_stem_word(w) for w in words if w not in stops and len(w) >= 3]
 
 
 GREETINGS = {
@@ -130,6 +165,83 @@ class AiChatService:
         self._chunks: list[dict[str, Any]] = []
         self._bm25: SimpleBM25 | None = None
         self._core_summary: str = ""
+        self._settings: CachedAiSettings | None = None
+
+    def invalidate_settings_cache(self) -> None:
+        """Сбрасывает кэш настроек ИИ для немедленного перечитывания из БД."""
+        self._settings = None
+
+    async def reload_settings(self) -> CachedAiSettings:
+        """Принудительно перезагружает настройки ИИ из базы данных."""
+        self._settings = None
+        return await self.get_settings()
+
+    async def get_settings(self) -> CachedAiSettings:
+        if self._settings is not None:
+            return self._settings
+
+        self._settings = await self._load_settings_from_db()
+
+        # Синхронизируем параметры rate-лимитера
+        try:
+            from app.services.rate_limiter import chat_rate_limiter
+            chat_rate_limiter.burst_limit = self._settings.burst_limit
+            chat_rate_limiter.minute_limit = self._settings.minute_limit
+            chat_rate_limiter.hourly_limit = self._settings.hourly_limit
+        except Exception as e:
+            logger.warning(f"Не удалось обновить параметры rate-лимитера: {e}")
+
+        return self._settings
+
+    async def _load_settings_from_db(self) -> CachedAiSettings:
+        try:
+            from app.database import AsyncSessionLocal
+            from app.models import AiSettings
+            from sqlalchemy import select
+
+            async with AsyncSessionLocal() as session:
+                res = await session.execute(select(AiSettings).limit(1))
+                row = res.scalars().first()
+                if not row:
+                    default_prompt = self._load_system_prompt()
+                    row = AiSettings(
+                        is_active=True,
+                        model=settings.ai_model,
+                        temperature=0.4,
+                        max_tokens=450,
+                        base_url=None,
+                        rag_threshold=0.5,
+                        rag_top_k=2,
+                        custom_stop_words="",
+                        system_prompt=default_prompt,
+                    )
+                    session.add(row)
+                    await session.commit()
+                    await session.refresh(row)
+
+                return CachedAiSettings(
+                    is_active=row.is_active,
+                    model=row.model or settings.ai_model,
+                    temperature=row.temperature,
+                    max_tokens=row.max_tokens,
+                    base_url=row.base_url,
+                    rag_threshold=row.rag_threshold,
+                    rag_top_k=row.rag_top_k,
+                    custom_stop_words=_parse_custom_stop_words(row.custom_stop_words),
+                    system_prompt=row.system_prompt or self._load_system_prompt(),
+                    greeting_fast_path=row.greeting_fast_path,
+                    gratitude_fast_path=row.gratitude_fast_path,
+                    confirmation_fast_path=row.confirmation_fast_path,
+                    burst_limit=row.burst_limit,
+                    minute_limit=row.minute_limit,
+                    hourly_limit=row.hourly_limit,
+                )
+        except Exception as e:
+            logger.warning(f"Не удалось прочитать AiSettings из БД, используются значения по умолчанию: {e}")
+            return CachedAiSettings(
+                system_prompt=self._load_system_prompt(),
+                model=settings.ai_model,
+            )
 
     def _build_core_summary(self) -> str:
         service_lines: list[str] = []
@@ -166,7 +278,7 @@ class AiChatService:
         self._cached_prompt = None
         self._ensure_kb_index()
 
-    def _ensure_kb_index(self) -> None:
+    def _ensure_kb_index(self, custom_stops: set[str] | None = None) -> None:
         if self._bm25 is not None and self._chunks:
             return
 
@@ -180,26 +292,32 @@ class AiChatService:
             doc_tokens: list[list[str]] = []
             for c in self._chunks:
                 text = f"{c.get('title', '')} {c.get('category', '')} {c.get('content', '')}"
-                doc_tokens.append(_tokenize(text))
+                doc_tokens.append(_tokenize(text, custom_stops=custom_stops))
             self._bm25 = SimpleBM25(doc_tokens)
             self._core_summary = self._build_core_summary()
         except Exception as e:
             logger.warning(f"Не удалось инициализировать RAG индекс базы знаний: {e}")
 
-    def _retrieve_relevant_kb(self, query: str, top_k: int = 2) -> str:
-        self._ensure_kb_index()
+    def _retrieve_relevant_kb(
+        self,
+        query: str,
+        top_k: int = 2,
+        threshold: float = 0.5,
+        custom_stops: set[str] | None = None,
+    ) -> str:
+        self._ensure_kb_index(custom_stops=custom_stops)
         if not self._bm25 or not self._chunks:
             return self._core_summary
 
-        tokens = _tokenize(query)
+        tokens = _tokenize(query, custom_stops=custom_stops)
         if not tokens:
             return "Digital-агентство Велкод: разработка сайтов под ключ, чат-ботов и автоматизация бизнеса."
 
         scores = self._bm25.get_scores(tokens)
         top_indices = sorted(range(len(scores)), key=lambda i: scores[i], reverse=True)[:top_k]
 
-        # Адаптивный RAG: отбираем только чанки с достаточной уверенностью (score >= 0.5)
-        selected = [self._chunks[i] for i in top_indices if scores[i] >= 0.5]
+        # Адаптивный RAG: отбираем только чанки с достаточной уверенностью (score >= threshold)
+        selected = [self._chunks[i] for i in top_indices if scores[i] >= threshold]
         if not selected:
             # Для общих и коммуникационных фраз экономим токены — не раздуваем контекст полной базой
             return "Digital-агентство Велкод: разработка сайтов под ключ, чат-ботов и автоматизация бизнеса."
@@ -236,7 +354,11 @@ class AiChatService:
         return text
 
     def _match_conversational_fast_path(
-        self, message: str, topic: str | None = None, existing_prefill: ChatPrefill | None = None
+        self,
+        message: str,
+        topic: str | None = None,
+        existing_prefill: ChatPrefill | None = None,
+        cfg: CachedAiSettings | None = None,
     ) -> ChatResponse | None:
         """Быстрый ответ без вызова LLM на стандартные приветствия, благодарности и подтверждения."""
         clean = re.sub(r"[?!.,;:«»\"'()~`\-_/\\]", " ", message).strip().lower()
@@ -244,9 +366,25 @@ class AiChatService:
         if not clean_compact:
             return None
 
+        greeting_text = (
+            cfg.greeting_fast_path
+            if cfg and cfg.greeting_fast_path
+            else "Здравствуйте! Чем можем вам помочь? Мы создаем современные сайты под ключ, разрабатываем чат-ботов и автоматизируем бизнес. Подсказать по услугам или рассчитать проект?"
+        )
+        gratitude_text = (
+            cfg.gratitude_fast_path
+            if cfg and cfg.gratitude_fast_path
+            else "Пожалуйста! Если появятся вопросы или захотите обсудить проект — мы всегда на связи."
+        )
+        confirm_text = (
+            cfg.confirmation_fast_path
+            if cfg and cfg.confirmation_fast_path
+            else "Договорились! Если потребуется расчёт или возникнут вопросы — напишите, я помогу сориентироваться."
+        )
+
         if clean_compact in GREETINGS:
             return ChatResponse(
-                text="Здравствуйте! Чем можем вам помочь? Мы создаем современные сайты под ключ, разрабатываем чат-ботов и автоматизируем бизнес. Подсказать по услугам или рассчитать проект?",
+                text=greeting_text,
                 topic=topic or "Консультация",
                 actions=[ChatAction(label="Обсудить проект", actionKey="show_lead_form", primary=True)],
                 show_lead_form=False,
@@ -255,7 +393,7 @@ class AiChatService:
 
         if clean_compact in GRATITUDES:
             return ChatResponse(
-                text="Пожалуйста! Если появятся вопросы или захотите обсудить проект — мы всегда на связи.",
+                text=gratitude_text,
                 topic=topic or "Консультация",
                 actions=[ChatAction(label="Обсудить проект", actionKey="show_lead_form", primary=True)],
                 show_lead_form=False,
@@ -264,7 +402,7 @@ class AiChatService:
 
         if clean_compact in CONFIRMATIONS:
             return ChatResponse(
-                text="Договорились! Если потребуется расчёт или возникнут вопросы — напишите, я помогу сориентироваться.",
+                text=confirm_text,
                 topic=topic or "Консультация",
                 actions=[ChatAction(label="Обсудить проект", actionKey="show_lead_form", primary=True)],
                 show_lead_form=False,
@@ -312,8 +450,18 @@ class AiChatService:
         topic: str | None = None,
         existing_prefill: ChatPrefill | None = None,
     ) -> ChatResponse:
+        cfg = await self.get_settings()
+        if not cfg.is_active:
+            return ChatResponse(
+                text="ИИ-консультант временно отключен. Вы можете оставить заявку через форму ниже или связаться с нами напрямую по контактам на сайте.",
+                topic=topic or "Консультация",
+                actions=[ChatAction(label="Оставить заявку", actionKey="show_lead_form", primary=True)],
+                show_lead_form=True,
+                prefill=existing_prefill,
+            )
+
         # 1. Быстрый ответ на типовые реплики (приветствия, благодарности, подтверждения) без вызова LLM
-        fast_conv = self._match_conversational_fast_path(message, topic, existing_prefill)
+        fast_conv = self._match_conversational_fast_path(message, topic, existing_prefill, cfg=cfg)
         if fast_conv:
             return fast_conv
 
@@ -333,9 +481,14 @@ class AiChatService:
         if not api_key:
             return self._fallback_response(topic)
 
-        system_prompt = self._load_system_prompt()
+        system_prompt = cfg.system_prompt or self._load_system_prompt()
         search_query = f"{topic or ''} {message}".strip()
-        kb_summary = self._retrieve_relevant_kb(search_query, top_k=2)
+        kb_summary = self._retrieve_relevant_kb(
+            search_query,
+            top_k=cfg.rag_top_k,
+            threshold=cfg.rag_threshold,
+            custom_stops=cfg.custom_stop_words,
+        )
 
         topic_context = f"\nТЕКУЩАЯ ТЕМА ДИАЛОГА: {topic}\n" if topic else ""
         client_context = []
@@ -362,17 +515,17 @@ class AiChatService:
             payload_messages.append({"role": role, "content": m.text})
         payload_messages.append({"role": "user", "content": message})
 
-        base_url = settings.ai_base_url.rstrip("/")
+        base_url = (cfg.base_url or settings.ai_base_url).rstrip("/")
         headers = {
             "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json",
         }
         body: dict[str, Any] = {
-            "model": settings.ai_model,
+            "model": cfg.model,
             "messages": payload_messages,
             "response_format": {"type": "json_object"},
-            "temperature": 0.4,
-            "max_tokens": 450,
+            "temperature": cfg.temperature,
+            "max_tokens": cfg.max_tokens,
         }
 
         try:

@@ -75,3 +75,48 @@ async def test_chat_api_endpoint_via_http():
         assert "text" in data
         assert "Здравствуйте!" in data["text"]
         assert data["topic"] == "Консультация"
+
+
+@pytest.mark.asyncio
+async def test_ai_settings_custom_fast_path():
+    """Тест: изменение текста быстрого ответа в настройках динамически меняет ответ бота."""
+    settings_obj = await ai_chat_service.get_settings()
+    original_greeting = settings_obj.greeting_fast_path
+    try:
+        settings_obj.greeting_fast_path = "Кастомное приветствие от администратора Велкод!"
+        resp = await ai_chat_service.ask(message="Привет")
+        assert "Кастомное приветствие от администратора Велкод!" in resp.text
+    finally:
+        settings_obj.greeting_fast_path = original_greeting
+
+
+@pytest.mark.asyncio
+async def test_ai_settings_custom_stop_words():
+    """Тест: кастомные стоп-слова из админки успешно исключаются при поиске RAG."""
+    from app.services.ai_chat import _parse_custom_stop_words, _tokenize
+
+    raw = "кастомное, стопслово тест"
+    parsed = _parse_custom_stop_words(raw)
+    assert parsed == {"кастомное", "стопслово", "тест"}
+
+    tokens_without = _tokenize("кастомное стопслово сайт")
+    assert "кастомн" in tokens_without or "кастомное" in tokens_without
+
+    tokens_with = _tokenize("кастомное стопслово сайт", custom_stops=parsed)
+    assert "кастомн" not in tokens_with
+    assert "стопслов" not in tokens_with
+    assert len(tokens_with) == 1  # остался только "сайт"
+
+
+@pytest.mark.asyncio
+async def test_ai_settings_disabled_switch():
+    """Тест: тумблер is_active=False выключает консультанта без ошибок."""
+    settings_obj = await ai_chat_service.get_settings()
+    original_state = settings_obj.is_active
+    try:
+        settings_obj.is_active = False
+        resp = await ai_chat_service.ask(message="Привет")
+        assert "временно отключен" in resp.text
+        assert resp.show_lead_form is True
+    finally:
+        settings_obj.is_active = original_state

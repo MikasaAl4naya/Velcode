@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import datetime as dt
 
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, Table, Text
+from sqlalchemy import Boolean, Column, DateTime, Float, ForeignKey, Integer, String, Table, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
@@ -160,6 +160,51 @@ class CompanyContact(Base):
     )
 
 
+class AiSettings(Base):
+    """Глобальные настройки ИИ-консультанта, языковой модели и RAG."""
+
+    __tablename__ = "ai_settings"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+
+    # Параметры LLM
+    model: Mapped[str] = mapped_column(String(100), default="gpt-4o-mini")
+    temperature: Mapped[float] = mapped_column(Float, default=0.4)
+    max_tokens: Mapped[int] = mapped_column(Integer, default=450)
+    base_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
+
+    # RAG и поиск по базе знаний
+    rag_threshold: Mapped[float] = mapped_column(Float, default=0.5)
+    rag_top_k: Mapped[int] = mapped_column(Integer, default=2)
+    custom_stop_words: Mapped[str | None] = mapped_column(Text, nullable=True, default="")
+
+    # Системный промпт
+    system_prompt: Mapped[str] = mapped_column(Text, nullable=False, default="")
+
+    # Шаблоны быстрых ответов (fast-path без вызова LLM)
+    greeting_fast_path: Mapped[str] = mapped_column(
+        Text,
+        nullable=False,
+        default="Здравствуйте! Чем можем вам помочь? Мы создаем современные сайты под ключ, разрабатываем чат-ботов и автоматизируем бизнес. Подсказать по услугам или рассчитать проект?",
+    )
+    gratitude_fast_path: Mapped[str] = mapped_column(
+        Text,
+        nullable=False,
+        default="Пожалуйста! Если появятся вопросы или захотите обсудить проект — мы всегда на связи.",
+    )
+    confirmation_fast_path: Mapped[str] = mapped_column(
+        Text,
+        nullable=False,
+        default="Договорились! Если потребуется расчёт или возникнут вопросы — напишите, я помогу сориентироваться.",
+    )
+
+    # Защита от спама (лимиты на IP)
+    burst_limit: Mapped[int] = mapped_column(Integer, default=4)
+    minute_limit: Mapped[int] = mapped_column(Integer, default=15)
+    hourly_limit: Mapped[int] = mapped_column(Integer, default=60)
+
+
 # ---------------------------------------------------------------------------
 # Автоматический триггер пересборки базы знаний ИИ при любых изменениях в БД
 # ---------------------------------------------------------------------------
@@ -174,7 +219,18 @@ def _trigger_kb_rebuild(mapper, connection, target):
         print(f"[DB Trigger] Ошибка автообновления базы знаний: {e}")
 
 
+def _trigger_ai_settings_reload(mapper, connection, target):
+    try:
+        from app.services.ai_chat import ai_chat_service
+        ai_chat_service.invalidate_settings_cache()
+    except Exception as e:
+        print(f"[DB Trigger] Ошибка сброса кэша настроек ИИ: {e}")
+
+
 for _model in (Service, Portfolio, Tag, Faq, CompanyContact):
     event.listen(_model, "after_insert", _trigger_kb_rebuild)
     event.listen(_model, "after_update", _trigger_kb_rebuild)
     event.listen(_model, "after_delete", _trigger_kb_rebuild)
+
+event.listen(AiSettings, "after_update", _trigger_ai_settings_reload)
+event.listen(AiSettings, "after_insert", _trigger_ai_settings_reload)

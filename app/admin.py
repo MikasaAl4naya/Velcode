@@ -13,7 +13,7 @@ from starlette.responses import HTMLResponse, JSONResponse
 
 from app.config import settings
 from app.database import engine
-from app.models import CompanyContact, Faq, Lead, Portfolio, Service, Tag
+from app.models import AiSettings, CompanyContact, Faq, Lead, Portfolio, Service, Tag
 
 UPLOADS_DIR = Path("uploads")
 ALLOWED_IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".webp", ".gif", ".avif", ".ico"}
@@ -533,6 +533,65 @@ class CompanyContactAdmin(ModelView, model=CompanyContact):
             print(f"[Admin] Ошибка пересборки базы знаний ИИ: {e}")
 
 
+class AiSettingsAdmin(ModelView, model=AiSettings):
+    name = "Настройки ИИ"
+    name_plural = "Настройки ИИ"
+    icon = "fa-solid fa-robot"
+
+    can_delete = False
+
+    column_list = [
+        AiSettings.id,
+        AiSettings.is_active,
+        AiSettings.model,
+        AiSettings.temperature,
+        AiSettings.max_tokens,
+        AiSettings.rag_threshold,
+    ]
+    column_labels = {
+        "id": "ID",
+        "is_active": "Включен",
+        "model": "Модель LLM (например: gpt-4o-mini)",
+        "temperature": "Температура / креативность (0.0 — точные, 1.0 — свободные)",
+        "max_tokens": "Максимум токенов на ответ (max_tokens)",
+        "base_url": "API Base URL (если пусто — из .env)",
+        "rag_threshold": "Порог уверенности RAG (score >= 0.5)",
+        "rag_top_k": "Количество блоков базы знаний (top_k)",
+        "custom_stop_words": "Дополнительные стоп-слова для поиска (через запятую)",
+        "system_prompt": "Системный промпт (роль и инструкции ИИ-консультанта)",
+        "greeting_fast_path": "Быстрый ответ: Приветствие (0 токенов)",
+        "gratitude_fast_path": "Быстрый ответ: Благодарность (0 токенов)",
+        "confirmation_fast_path": "Быстрый ответ: Согласие / Договорились (0 токенов)",
+        "burst_limit": "Защита: макс. запросов за 6 сек (burst)",
+        "minute_limit": "Защита: макс. запросов в минуту",
+        "hourly_limit": "Защита: макс. запросов в час",
+    }
+    form_columns = [
+        AiSettings.is_active,
+        AiSettings.model,
+        AiSettings.temperature,
+        AiSettings.max_tokens,
+        AiSettings.base_url,
+        AiSettings.rag_threshold,
+        AiSettings.rag_top_k,
+        AiSettings.custom_stop_words,
+        AiSettings.system_prompt,
+        AiSettings.greeting_fast_path,
+        AiSettings.gratitude_fast_path,
+        AiSettings.confirmation_fast_path,
+        AiSettings.burst_limit,
+        AiSettings.minute_limit,
+        AiSettings.hourly_limit,
+    ]
+
+    async def after_model_change(self, data: dict, model, is_created: bool, request: Request) -> None:
+        try:
+            from app.services.ai_chat import ai_chat_service
+            await ai_chat_service.reload_settings()
+        except Exception as e:
+            print(f"[Admin] Ошибка обновления настроек ИИ: {e}")
+
+
 def create_admin(app) -> Admin:
     auth = AdminAuth(secret_key=settings.admin_secret_key)
     admin = Admin(app=app, engine=engine, authentication_backend=auth, title="Велкод — Admin")
@@ -542,6 +601,7 @@ def create_admin(app) -> Admin:
     admin.add_view(ServiceAdmin)
     admin.add_view(FaqAdmin)
     admin.add_view(CompanyContactAdmin)
+    admin.add_view(AiSettingsAdmin)
     admin.add_base_view(UploadView)
     admin.add_base_view(UploadsManagerView)
     return admin
