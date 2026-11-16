@@ -29,5 +29,9 @@ async def init_models() -> None:
                 connection.execute(sa.text("ALTER TABLE ai_settings ADD COLUMN fast_responses_json TEXT DEFAULT '[]'"))
             except Exception:
                 pass
+            try:
+                connection.execute(sa.text("ALTER TABLE ai_settings ADD COLUMN faq_threshold FLOAT DEFAULT 0.9"))
+            except Exception:
+                pass
 
         await conn.run_sync(_migrate)

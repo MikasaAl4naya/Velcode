@@ -50,6 +50,26 @@ async def test_fast_path_exact_faq():
 
 
 @pytest.mark.asyncio
+async def test_fast_path_faq_similarity_match():
+    """Тест: вопрос с вариацией слов находит FAQ по сходству RAG/диффлиб (порог >= 0.9)."""
+    # Вариация вопроса с дополнительным словом, дающая сходство > 0.90
+    resp = await ai_chat_service.ask(message="Сколько стоит разработка сайта под ключ?")
+    assert isinstance(resp, ChatResponse)
+    assert "Стоимость разработки под ключ рассчитывается индивидуально" in resp.text
+    assert resp.topic == "Сколько стоит разработка под ключ"
+    assert resp.show_lead_form is False
+
+    # При строгом пороге 0.98 нечеткое совпадение не перехватывает
+    faq_match_high = ai_chat_service._find_faq_answer("Сколько стоит разработка сайта под ключ?", threshold=0.98)
+    assert faq_match_high is None
+
+    # При стандартном пороге 0.90 — находит
+    faq_match_normal = ai_chat_service._find_faq_answer("Сколько стоит разработка сайта под ключ?", threshold=0.90)
+    assert faq_match_normal is not None
+    assert faq_match_normal[0] == "Сколько стоит разработка под ключ"
+
+
+@pytest.mark.asyncio
 async def test_adaptive_rag_saves_tokens_on_conversational_queries():
     """Тест: адаптивный RAG экономит токены и не раздувает промпт базой знаний при простых фразах."""
     # Для разговорных запросов не должны подмешиваться тяжелые чанки (экономия 500+ токенов)

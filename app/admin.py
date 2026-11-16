@@ -589,6 +589,7 @@ class AiSettingsView(BaseView):
                     row.base_url = str(payload.get("base_url", "")).strip() or None
                     row.rag_threshold = float(payload.get("rag_threshold", 0.5))
                     row.rag_top_k = int(payload.get("rag_top_k", 2))
+                    row.faq_threshold = float(payload.get("faq_threshold", 0.9))
                     row.custom_stop_words = str(payload.get("custom_stop_words", "")).strip()
                     row.system_prompt = str(payload.get("system_prompt", "")).strip()
                     row.minute_limit = int(payload.get("minute_limit", 15))
@@ -636,6 +637,7 @@ class AiSettingsView(BaseView):
             base_url_val = html.escape(row.base_url or "")
             rag_threshold_val = f"{row.rag_threshold:.2f}"
             rag_top_k_val = str(row.rag_top_k)
+            faq_threshold_val = f"{getattr(row, 'faq_threshold', 0.9):.2f}"
             custom_stops_val = html.escape(row.custom_stop_words or "")
             system_prompt_val = html.escape(row.system_prompt or "")
             minute_limit_val = str(getattr(row, "minute_limit", 15))
@@ -766,21 +768,27 @@ class AiSettingsView(BaseView):
         <div class="card">
             <div class="card-header">
                 <h3 class="card-title">
-                    <i class="fa-solid fa-brain text-primary"></i> Поиск по базе знаний (RAG)
+                    <i class="fa-solid fa-brain text-primary"></i> Поиск по базе знаний (RAG) и FAQ
                 </h3>
             </div>
             <div class="card-body">
                 <div class="row g-3">
-                    <div class="col-md-6">
-                        <label class="form-label">Порог уверенности RAG (score threshold)</label>
+                    <div class="col-md-4">
+                        <label class="form-label">Порог уверенности RAG (score)</label>
                         <input type="number" step="0.05" min="0.0" max="2.0" class="form-control" id="field-rag-threshold" value="{rag_threshold_val}">
-                        <div class="form-hint">По умолчанию 0.5. Отсекает нерелевантные статьи базы знаний для простых фраз, экономя токены.</div>
+                        <div class="form-hint">Отсекает нерелевантные статьи базы знаний для простых фраз (по умолч. 0.5).</div>
                     </div>
 
-                    <div class="col-md-6">
-                        <label class="form-label">Количество статей базы знаний (top_k)</label>
+                    <div class="col-md-4">
+                        <label class="form-label">Статей базы знаний (top_k)</label>
                         <input type="number" min="1" max="5" class="form-control" id="field-rag-top-k" value="{rag_top_k_val}">
-                        <div class="form-hint">Сколько наиболее точных фрагментов подмешивать к вопросу (по умолчанию 2).</div>
+                        <div class="form-hint">Сколько наиболее точных фрагментов подмешивать к вопросу (по умолч. 2).</div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">Порог совпадения FAQ (0.5 — 1.0)</label>
+                        <input type="number" step="0.05" min="0.5" max="1.0" class="form-control" id="field-faq-threshold" value="{faq_threshold_val}">
+                        <div class="form-hint">Если вопрос похож на FAQ из БД на этот процент (по умолч. 0.9), выдается готовый ответ (0 токенов).</div>
                     </div>
 
                     <div class="col-12">
@@ -864,6 +872,15 @@ class AiSettingsView(BaseView):
         }}
     }}
 
+    function escapeHtml(text) {{
+        return (text || '').toString()
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }}
+
     function renderRules() {{
         var container = document.getElementById('rules-container');
         container.innerHTML = '';
@@ -873,41 +890,43 @@ class AiSettingsView(BaseView):
             return;
         }}
 
-        initialRules.forEach(function(rule, idx) {{
+        for (var i = 0; i < initialRules.length; i++) {{
+            var rule = initialRules[i];
             var card = document.createElement('div');
             card.className = 'rule-card';
-            card.dataset.id = rule.id || ('rule_' + idx);
+            card.dataset.id = rule.id || ('rule_' + i);
 
             var isChecked = rule.is_active ? 'checked' : '';
+            var titleVal = escapeHtml(rule.title || '');
+            var triggersVal = escapeHtml(Array.isArray(rule.triggers) ? rule.triggers.join(', ') : (rule.triggers || ''));
+            var responseVal = escapeHtml(rule.response || '');
 
-            card.innerHTML = `
-                <div class="d-flex align-items-center justify-content-between mb-2">
-                    <div class="d-flex align-items-center gap-2" style="flex:1;max-width:400px">
-                        <span class="badge bg-secondary-lt" style="font-size:11px">Правило #${{idx + 1}}</span>
-                        <input type="text" class="form-control form-control-sm rule-title" value="${{escapeHtml(rule.title || '')}}" placeholder="Название (например, Прощание)">
-                    </div>
-                    <div class="d-flex align-items-center gap-3">
-                        <label class="form-check form-switch cursor-pointer m-0" title="Включить / выключить правило">
-                            <input class="form-check-input rule-active" type="checkbox" ${{isChecked}}>
-                        </label>
-                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeRule(${{idx}})" title="Удалить правило">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
-                    </div>
-                </div>
+            card.innerHTML =
+                '<div class="d-flex align-items-center justify-content-between mb-2">' +
+                    '<div class="d-flex align-items-center gap-2" style="flex:1;max-width:400px">' +
+                        '<span class="badge bg-secondary-lt" style="font-size:11px">Правило #' + (i + 1) + '</span>' +
+                        '<input type="text" class="form-control form-control-sm rule-title" value="' + titleVal + '" placeholder="Название (например, Прощание)">' +
+                    '</div>' +
+                    '<div class="d-flex align-items-center gap-3">' +
+                        '<label class="form-check form-switch cursor-pointer m-0" title="Включить / выключить правило">' +
+                            '<input class="form-check-input rule-active" type="checkbox" ' + isChecked + '>' +
+                        '</label>' +
+                        '<button type="button" class="btn btn-sm btn-outline-danger" onclick="removeRule(' + i + ')" title="Удалить правило">' +
+                            '<i class="fa-solid fa-trash"></i>' +
+                        '</button>' +
+                    '</div>' +
+                '</div>' +
+                '<div class="mb-2">' +
+                    '<label class="form-label" style="font-size:12px;margin-bottom:3px">Ключевые слова и фразы (через запятую или новую строку):</label>' +
+                    '<textarea class="form-control form-control-sm rule-triggers" rows="2" placeholder="пока, до свидания, до скорого">' + triggersVal + '</textarea>' +
+                '</div>' +
+                '<div>' +
+                    '<label class="form-label" style="font-size:12px;margin-bottom:3px">Готовый ответ консультанта (0 токенов):</label>' +
+                    '<textarea class="form-control form-control-sm rule-response" rows="2" placeholder="Текст ответа бота...">' + responseVal + '</textarea>' +
+                '</div>';
 
-                <div class="mb-2">
-                    <label class="form-label" style="font-size:12px;margin-bottom:3px">Ключевые слова и фразы (через запятую или новую строку):</label>
-                    <textarea class="form-control form-control-sm rule-triggers" rows="2" placeholder="пока, до свидания, до скорого, прощай">${{escapeHtml(rule.triggers || '')}}</textarea>
-                </div>
-
-                <div>
-                    <label class="form-label" style="font-size:12px;margin-bottom:3px">Готовый ответ консультанта (0 токенов):</label>
-                    <textarea class="form-control form-control-sm rule-response" rows="2" placeholder="Текст ответа бота клиенту...">${{escapeHtml(rule.response || '')}}</textarea>
-                </div>
-            `;
             container.appendChild(card);
-        }});
+        }}
     }}
 
     function addRule() {{
@@ -916,7 +935,7 @@ class AiSettingsView(BaseView):
             id: 'rule_' + Date.now(),
             title: 'Новое правило',
             triggers: 'фраза 1, фраза 2',
-            response: 'Ответ на это правило...',
+            response: 'Ответ консультанта...',
             is_active: true
         }});
         renderRules();
@@ -924,7 +943,8 @@ class AiSettingsView(BaseView):
 
     function removeRule(idx) {{
         syncRulesFromDOM();
-        if (confirm('Удалить правило «' + (initialRules[idx].title || '') + '»?')) {{
+        var r = initialRules[idx];
+        if (confirm('Удалить правило «' + (r.title || ('#' + (idx + 1))) + '»?')) {{
             initialRules.splice(idx, 1);
             renderRules();
         }}
@@ -932,6 +952,7 @@ class AiSettingsView(BaseView):
 
     function syncRulesFromDOM() {{
         var cards = document.querySelectorAll('.rule-card');
+        if (!cards.length) return;
         var updated = [];
         cards.forEach(function(card, idx) {{
             var id = card.dataset.id || ('rule_' + idx);
@@ -947,29 +968,20 @@ class AiSettingsView(BaseView):
                 is_active: isActive
             }});
         }});
-        if (cards.length) {{
-            initialRules = updated;
-        }}
-    }}
-
-    function escapeHtml(text) {{
-        return (text || '').toString()
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#039;');
+        initialRules = updated;
     }}
 
     async function saveAll() {{
         syncRulesFromDOM();
 
         var saveBtn = document.getElementById('save-btn');
+        var origHtml = saveBtn.innerHTML;
         saveBtn.disabled = true;
         saveBtn.innerHTML = '<i class="fa fa-spinner fa-spin me-1"></i> Сохраняем...';
 
         var formattedRules = initialRules.map(function(r) {{
-            var trigList = (r.triggers || '').split(/[\n,]+/).map(function(s) {{ return s.trim(); }}).filter(Boolean);
+            var triggersStr = Array.isArray(r.triggers) ? r.triggers.join(',') : (r.triggers || '');
+            var trigList = triggersStr.replace(/[\r\n]+/g, ',').split(',').map(function(s) {{ return s.trim(); }}).filter(Boolean);
             return {{
                 id: r.id,
                 title: r.title,
@@ -987,6 +999,7 @@ class AiSettingsView(BaseView):
             base_url: document.getElementById('field-base-url').value.trim(),
             rag_threshold: parseFloat(document.getElementById('field-rag-threshold').value) || 0.5,
             rag_top_k: parseInt(document.getElementById('field-rag-top-k').value) || 2,
+            faq_threshold: parseFloat(document.getElementById('field-faq-threshold').value) || 0.9,
             custom_stop_words: document.getElementById('field-custom-stop-words').value.trim(),
             system_prompt: document.getElementById('field-system-prompt').value.trim(),
             minute_limit: parseInt(document.getElementById('field-minute-limit').value) || 15,
@@ -1003,13 +1016,13 @@ class AiSettingsView(BaseView):
             if (data.ok) {{
                 showAlert('success', '✓ Все настройки ИИ успешно сохранены и применены!');
             }} else {{
-                showAlert('danger', 'Ошибка при сохранении: ' + (data.error || 'неизвестная ошибка'));
+                showAlert('danger', 'Ошибка сохранения: ' + (data.error || 'неизвестная ошибка'));
             }}
         }} catch(err) {{
             showAlert('danger', 'Сетевая ошибка: ' + err.message);
         }} finally {{
             saveBtn.disabled = false;
-            saveBtn.innerHTML = '<i class="fa-solid fa-floppy-disk me-1"></i> Сохранить все настройки';
+            saveBtn.innerHTML = origHtml;
         }}
     }}
 

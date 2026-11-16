@@ -177,6 +177,7 @@ class AiSettings(Base):
     # RAG и поиск по базе знаний
     rag_threshold: Mapped[float] = mapped_column(Float, default=0.5)
     rag_top_k: Mapped[int] = mapped_column(Integer, default=2)
+    faq_threshold: Mapped[float] = mapped_column(Float, default=0.9)
     custom_stop_words: Mapped[str | None] = mapped_column(Text, nullable=True, default="")
 
     # Системный промпт

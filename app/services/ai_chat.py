@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import difflib
 import json
 import logging
 import math
@@ -132,6 +133,7 @@ class CachedAiSettings:
     base_url: str | None = None
     rag_threshold: float = 0.5
     rag_top_k: int = 2
+    faq_threshold: float = 0.9
     custom_stop_words: set[str] = field(default_factory=set)
     system_prompt: str = ""
     fast_responses: list[FastResponseRule] = field(default_factory=list)
@@ -238,6 +240,40 @@ class SimpleBM25:
         return scores
 
 
+        return None
+
+
+def _calculate_faq_similarity(query: str, faq_title: str) -> float:
+    """Вычисляет сходство вопроса пользователя с вопросом FAQ от 0.0 до 1.0."""
+    clean_q = re.sub(r"[?!.,;:«»\"'()~`\-_/\\]", " ", query).strip().lower()
+    clean_f = re.sub(r"[?!.,;:«»\"'()~`\-_/\\]", " ", faq_title).strip().lower()
+    if not clean_q or not clean_f:
+        return 0.0
+
+    clean_q_compact = " ".join(clean_q.split())
+    clean_f_compact = " ".join(clean_f.split())
+
+    if clean_q_compact == clean_f_compact:
+        return 1.0
+
+    q_tokens = set(_tokenize(clean_q_compact))
+    f_tokens = set(_tokenize(clean_f_compact))
+    if not q_tokens or not f_tokens:
+        return 0.0
+
+    intersection = q_tokens & f_tokens
+    if not intersection:
+        return 0.0
+
+    containment = len(intersection) / len(f_tokens)
+    jaccard = len(intersection) / len(q_tokens | f_tokens)
+    seq_ratio = difflib.SequenceMatcher(None, clean_q_compact, clean_f_compact).ratio()
+
+    # Взвешенная оценка сходства
+    score = (containment * 0.5) + (jaccard * 0.3) + (seq_ratio * 0.2)
+    return round(score, 3)
+
+
 class AiChatService:
     def __init__(self) -> None:
         self._cached_prompt: str | None = None
@@ -316,6 +352,7 @@ class AiChatService:
                     base_url=row.base_url,
                     rag_threshold=row.rag_threshold,
                     rag_top_k=row.rag_top_k,
+                    faq_threshold=row.faq_threshold if hasattr(row, "faq_threshold") else 0.9,
                     custom_stop_words=_parse_custom_stop_words(row.custom_stop_words),
                     system_prompt=row.system_prompt or self._load_system_prompt(),
                     fast_responses=parsed_rules,
@@ -327,6 +364,7 @@ class AiChatService:
                 system_prompt=self._load_system_prompt(),
                 model=settings.ai_model,
                 fast_responses=[FastResponseRule(**r) for r in DEFAULT_FAST_RESPONSES],
+                faq_threshold=0.9,
             )
 
     def _build_core_summary(self) -> str:
@@ -491,22 +529,26 @@ class AiChatService:
 
         return None
 
-    def _find_exact_faq_answer(self, query: str) -> tuple[str, str] | None:
-        """Ищет прямое совпадение с вопросом из таблицы FAQ базы данных."""
+    def _find_faq_answer(self, query: str, threshold: float = 0.9) -> tuple[str, str] | None:
+        """Ищет совпадение с вопросом FAQ по порогу сходства (по умолчанию >= 0.9)."""
         self._ensure_kb_index()
-        clean_query = re.sub(r"[?!.,;:«»\"']", "", query).strip().lower()
-        if not clean_query:
-            return None
+        best_title = None
+        best_answer = None
+        best_score = 0.0
 
         for chunk in self._chunks:
             if chunk.get("category") == "faq":
                 title = chunk.get("title", "")
-                clean_title = re.sub(r"[?!.,;:«»\"']", "", title).strip().lower()
-                if clean_query == clean_title:
+                score = _calculate_faq_similarity(query, title)
+                if score > best_score:
+                    best_score = score
                     content = chunk.get("content", "")
                     match = re.search(r"Ответ:\s*(.+)", content, re.DOTALL)
-                    answer = match.group(1).strip() if match else content
-                    return title, answer
+                    best_answer = match.group(1).strip() if match else content
+                    best_title = title
+
+        if best_score >= threshold and best_title and best_answer:
+            return best_title, best_answer
         return None
 
     def _fallback_response(self, topic: str | None = None) -> ChatResponse:
@@ -545,8 +587,8 @@ class AiChatService:
         if fast_conv:
             return fast_conv
 
-        # 2. Если вопрос точно соответствует вопросу из FAQ в БД — возвращаем готовый ответ без вызова LLM
-        faq_match = self._find_exact_faq_answer(message)
+        # 2. Поиск ответа в FAQ по порогу сходства (по умолчанию >= 0.9) без вызова LLM
+        faq_match = self._find_faq_answer(message, threshold=cfg.faq_threshold)
         if faq_match:
             faq_title, faq_answer = faq_match
             return ChatResponse(
