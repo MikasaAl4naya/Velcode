@@ -53,6 +53,22 @@ def _tokenize(text: str) -> list[str]:
     return [_stem_word(w) for w in words if len(w) >= 2]
 
 
+GREETINGS = {
+    "привет", "здравствуйте", "добрый день", "добрый вечер", "доброе утро",
+    "приветствую", "хай", "салам", "хей", "ку", "йоу", "hello", "hi"
+}
+
+GRATITUDES = {
+    "спасибо", "благодарю", "спасибо большое", "от души", "огромное спасибо",
+    "сяп", "спс", "спасибочки", "благодарен", "благодарна", "thanks", "thank you"
+}
+
+CONFIRMATIONS = {
+    "отлично", "супер", "хорошо", "понял", "понятно", "договорились",
+    "ясненько", "ладно", "ок", "добро", "принято", "круто"
+}
+
+
 class SimpleBM25:
     """Компактный и быстрый ретривер BM25 для базы знаний без сторонних зависимостей."""
 
@@ -158,17 +174,22 @@ class AiChatService:
         if not self._bm25 or not self._chunks:
             return self._core_summary
 
-        scores = self._bm25.get_scores(_tokenize(query))
-        top_indices = sorted(range(len(scores)), key=lambda i: scores[i], reverse=True)[:top_k]
-        selected = [self._chunks[i] for i in top_indices if scores[i] > 0.1]
-        if not selected and top_indices:
-            selected = [self._chunks[top_indices[0]]]
+        tokens = _tokenize(query)
+        if not tokens:
+            return "Digital-агентство Велкод: разработка сайтов под ключ, чат-ботов и автоматизация бизнеса."
 
-        parts = [self._core_summary]
-        if selected:
-            parts.append("\n### Справочная информация по вопросу:")
-            for ch in selected:
-                parts.append(f"#### {ch.get('title', '')}\n{ch.get('content', '')}\n")
+        scores = self._bm25.get_scores(tokens)
+        top_indices = sorted(range(len(scores)), key=lambda i: scores[i], reverse=True)[:top_k]
+
+        # Адаптивный RAG: отбираем только чанки с достаточной уверенностью (score >= 0.5)
+        selected = [self._chunks[i] for i in top_indices if scores[i] >= 0.5]
+        if not selected:
+            # Для общих и коммуникационных фраз экономим токены — не раздуваем контекст полной базой
+            return "Digital-агентство Велкод: разработка сайтов под ключ, чат-ботов и автоматизация бизнеса."
+
+        parts = [self._core_summary, "\n### Справочная информация по вопросу:"]
+        for ch in selected:
+            parts.append(f"#### {ch.get('title', '')}\n{ch.get('content', '')}\n")
         return "\n".join(parts)
 
     def _load_system_prompt(self) -> str:
@@ -196,6 +217,44 @@ class AiChatService:
         text = re.sub(r'(?<!\()(?<!\[)(/portfolio)(?![a-zA-Z0-9_/-])', r'[Портфолио](/portfolio)', text)
         text = re.sub(r'(?<!\()(?<!\[)(/services)(?![a-zA-Z0-9_/-])', r'[Услуги](/services)', text)
         return text
+
+    def _match_conversational_fast_path(
+        self, message: str, topic: str | None = None, existing_prefill: ChatPrefill | None = None
+    ) -> ChatResponse | None:
+        """Быстрый ответ без вызова LLM на стандартные приветствия, благодарности и подтверждения."""
+        clean = re.sub(r"[?!.,;:«»\"'()~`\-_/\\]", " ", message).strip().lower()
+        clean_compact = " ".join(clean.split())
+        if not clean_compact:
+            return None
+
+        if clean_compact in GREETINGS:
+            return ChatResponse(
+                text="Здравствуйте! Чем можем вам помочь? Мы создаем современные сайты под ключ, разрабатываем чат-ботов и автоматизируем бизнес. Подсказать по услугам или рассчитать проект?",
+                topic=topic or "Консультация",
+                actions=[ChatAction(label="Обсудить проект", actionKey="show_lead_form", primary=True)],
+                show_lead_form=False,
+                prefill=existing_prefill,
+            )
+
+        if clean_compact in GRATITUDES:
+            return ChatResponse(
+                text="Пожалуйста! Если появятся вопросы или захотите обсудить проект — мы всегда на связи.",
+                topic=topic or "Консультация",
+                actions=[ChatAction(label="Обсудить проект", actionKey="show_lead_form", primary=True)],
+                show_lead_form=False,
+                prefill=existing_prefill,
+            )
+
+        if clean_compact in CONFIRMATIONS:
+            return ChatResponse(
+                text="Договорились! Если потребуется расчёт или возникнут вопросы — напишите, я помогу сориентироваться.",
+                topic=topic or "Консультация",
+                actions=[ChatAction(label="Обсудить проект", actionKey="show_lead_form", primary=True)],
+                show_lead_form=False,
+                prefill=existing_prefill,
+            )
+
+        return None
 
     def _find_exact_faq_answer(self, query: str) -> tuple[str, str] | None:
         """Ищет прямое совпадение с вопросом из таблицы FAQ базы данных."""
@@ -236,7 +295,12 @@ class AiChatService:
         topic: str | None = None,
         existing_prefill: ChatPrefill | None = None,
     ) -> ChatResponse:
-        # 1. Если вопрос точно соответствует вопросу из FAQ в БД — возвращаем готовый ответ без вызова LLM
+        # 1. Быстрый ответ на типовые реплики (приветствия, благодарности, подтверждения) без вызова LLM
+        fast_conv = self._match_conversational_fast_path(message, topic, existing_prefill)
+        if fast_conv:
+            return fast_conv
+
+        # 2. Если вопрос точно соответствует вопросу из FAQ в БД — возвращаем готовый ответ без вызова LLM
         faq_match = self._find_exact_faq_answer(message)
         if faq_match:
             faq_title, faq_answer = faq_match
