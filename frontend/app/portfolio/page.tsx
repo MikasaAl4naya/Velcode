@@ -64,7 +64,7 @@ export default async function PortfolioPage() {
               </p>
             </div>
 
-            <div className="portfolio-grid">
+            <div className="portfolio-list">
               {items.map((item) => (
                 <article key={item.id} className="portfolio-card">
                   <Link
