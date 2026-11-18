@@ -110,7 +110,7 @@ class UploadView(BaseView):
             </div>
             """
 
-        html = f"""
+        page_html = f"""
         <!DOCTYPE html>
         <html>
         <head>
@@ -205,7 +205,7 @@ class UploadView(BaseView):
         </body>
         </html>
         """
-        return HTMLResponse(html)
+        return HTMLResponse(page_html)
 
 
 class UploadsManagerView(BaseView):
@@ -256,7 +256,7 @@ class UploadsManagerView(BaseView):
                 </td>
             </tr>"""
 
-        html = f"""
+        page_html = f"""
         <!DOCTYPE html>
         <html>
         <head>
@@ -300,7 +300,7 @@ class UploadsManagerView(BaseView):
         </body>
         </html>
         """
-        return HTMLResponse(html)
+        return HTMLResponse(page_html)
 
 
 class LeadAdmin(ModelView, model=Lead):
