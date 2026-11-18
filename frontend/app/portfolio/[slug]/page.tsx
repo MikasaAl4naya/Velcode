@@ -1,27 +1,28 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { Header } from '@/components/sections/Header';
-import { Contacts } from '@/components/sections/Contacts';
 import { Footer } from '@/components/sections/Footer';
-import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
-import { SplitText } from '@/components/ui/SplitText';
-import { Tag } from '@/components/ui/Tag';
-import { BrowserMockup } from '@/components/ui/BrowserMockup';
-import { FadeImage } from '@/components/ui/FadeImage';
-import { CaseContactButton } from '@/components/ui/CaseContactButton';
+import { CasePageClient, type CaseItem } from './CasePageClient';
 
-interface CaseItem {
-  id: number;
-  slug: string | null;
-  title: string;
-  description: string;
-  image_url: string | null;
-  hero_image_url: string | null;
-  site_url: string | null;
-  tags: string | null;
-  what_was_done: string | null;
-  screenshots?: string[];
-}
+const MOCK_CASE: CaseItem = {
+  id: 1,
+  slug: 'trattoria-landing',
+  title: 'Trattoria — премиальный сайт ресторана',
+  description:
+    'Разработка современного адаптивного лендинга для ресторана итальянской кухни с интерактивным меню, онлайн-бронированием столов и плавной анимацией.',
+  image_url: '/assets/case-trattoria.png',
+  hero_image_url: '/assets/case-trattoria-hero.png',
+  site_url: 'trattoria-demo.velcode.ru',
+  tags: 'Веб-разработка, UI/UX дизайн, Next.js, Анимации, Адаптивная верстка',
+  what_was_done:
+    'Спроектировали уникальную дизайн-систему в минималистичном стиле, отражающую атмосферу уютной итальянской траттории.\n\nРазработали интерактивную карту меню с удобной фильтрацией блюд по категориям, аллергенам и калорийности.\n\nИнтегрировали систему онлайн-бронирования столиков в реальном времени с подтверждением через Telegram-бота.\n\nОптимизировали производительность и скорость загрузки страниц (Core Web Vitals: 95+ баллов).',
+  screenshots: [
+    '/assets/portfolio-site-preview-1.png',
+    '/assets/portfolio-site-preview-2.png',
+    '/assets/portfolio-site-preview-3.png',
+    '/assets/case-elite-stay.png',
+  ],
+};
 
 async function fetchCase(slug: string): Promise<CaseItem | null> {
   const base =
@@ -34,7 +35,8 @@ async function fetchCase(slug: string): Promise<CaseItem | null> {
   } catch {
     // network error
   }
-  return null;
+  // Временная заглушка, если сервер/БД недоступны
+  return { ...MOCK_CASE, slug };
 }
 
 export async function generateMetadata({
@@ -75,104 +77,10 @@ export default async function CasePage({
   const item = await fetchCase(slug);
   if (!item) notFound();
 
-  const tags = (item!.tags ?? '')
-    .split(',')
-    .filter(Boolean)
-    .map((t) => t.trim());
-
   return (
     <>
       <Header currentPath="/portfolio" />
-      <main className="page__main case-page">
-        <div className="case-page__container">
-          <Breadcrumbs
-            items={[
-              { label: 'Главная', href: '/' },
-              { label: 'Портфолио', href: '/portfolio' },
-              { label: item!.title, current: true },
-            ]}
-          />
-
-          <h1 className="case-page__title">
-            <SplitText text={item!.title} />
-          </h1>
-
-          <div className="case-page__tags">
-            {tags.map((tag, idx) => (
-              <Tag key={idx}>{tag}</Tag>
-            ))}
-          </div>
-        </div>
-
-        {item!.hero_image_url && (
-          <div className="case-page__hero-wrap img-skeleton">
-            <FadeImage
-              src={item!.hero_image_url}
-              alt={`${item!.title} — макет на ноутбуке`}
-              title={`${item!.title} — студия Велкод`}
-              className="case-page__hero-img"
-              loading="eager"
-            />
-          </div>
-        )}
-
-        {item!.image_url ? (
-          <div className="case-page__container">
-            <p className="case-page__lead">{item!.description}</p>
-            <div className="case-content-flex">
-              <div className="case-mockup-col">
-                <div className="case-page__mockup-wrap">
-                  <BrowserMockup url={item!.site_url || 'velcode.ru/'} scrollable>
-                    <FadeImage
-                      src={item!.image_url}
-                      alt={`${item!.title} — интерфейс сайта в браузере`}
-                      title={`Интерфейс сайта — ${item!.title}`}
-                      loading="lazy"
-                      draggable={false}
-                    />
-                  </BrowserMockup>
-                </div>
-              </div>
-              <div className="case-what-col">
-                {item!.what_was_done && (
-                  <div className="case-page__what">
-                    <h2 className="case-page__what-title">Что было сделано</h2>
-                    <div className="case-page__what-body">
-                      {item!.what_was_done.split(/(?:\r?\n){2,}/).filter(Boolean).map((para, idx) => (
-                        <p key={idx} className="case-page__what-text">{para}</p>
-                      ))}
-                    </div>
-                    <CaseContactButton />
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="case-page__container case-page__container--no-mockup">
-            <div className="case-content-flex">
-              <div className="case-desc-col">
-                <h2 className="case-page__what-title">Описание проекта</h2>
-                <p className="case-page__lead">{item!.description}</p>
-              </div>
-              <div className="case-what-col">
-                {item!.what_was_done && (
-                  <div className="case-page__what">
-                    <h2 className="case-page__what-title">Что было сделано</h2>
-                    <div className="case-page__what-body">
-                      {item!.what_was_done.split(/(?:\r?\n){2,}/).filter(Boolean).map((para, idx) => (
-                        <p key={idx} className="case-page__what-text">{para}</p>
-                      ))}
-                    </div>
-                    <CaseContactButton />
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-        <Contacts />
-      </main>
+      <CasePageClient item={item} />
       <Footer />
     </>
   );

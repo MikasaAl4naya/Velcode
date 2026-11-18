@@ -434,8 +434,8 @@
 }
 
 .ai-chat-header__btn--close:hover {
-  background: #f1f3f7;
-  color: #000000;
+  background: transparent;
+  color: var(--color-blue-pill);
 }
 
 /* ---------- Тело чата (скроллируемая область) ---------- */

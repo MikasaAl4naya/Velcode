@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 
 type Props = React.ImgHTMLAttributes<HTMLImageElement>;
 
-export function FadeImage({ style, onLoad, ...props }: Props) {
+export function FadeImage({ style, onLoad, className = '', ...props }: Props) {
   const [loaded, setLoaded] = useState(false);
   const ref = useRef<HTMLImageElement>(null);
 
@@ -16,7 +16,8 @@ export function FadeImage({ style, onLoad, ...props }: Props) {
     <img
       ref={ref}
       {...props}
-      style={{ ...style, opacity: loaded ? 1 : 0, transition: 'opacity 0.35s ease' }}
+      className={`fade-image ${loaded ? 'is-loaded' : ''} ${className}`.trim()}
+      style={style}
       onLoad={(e) => {
         setLoaded(true);
         onLoad?.(e);

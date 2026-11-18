@@ -40,7 +40,7 @@
 .browser-mockup__dots {
   display: flex;
   gap: 5px;
-  margin-right: 4px;
+  margin-right: var(--space-3xs);
 }
 
 .browser-mockup__dot {

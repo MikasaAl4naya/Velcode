@@ -5,6 +5,7 @@ import { SERVICES_DATA, CONSULTATION_SERVICE, type ServiceData } from '@/lib/sit
 import { ServiceCard } from '@/components/ui/ServiceCard';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { SplitText } from '@/components/ui/SplitText';
+import { SliderArrow } from '@/components/ui/SliderArrow';
 
 const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
 
@@ -446,40 +447,16 @@ export function Services({ isStandalone = false, items }: ServicesProps) {
                 Мы предлагаем широкий спектр digital-услуг: от создания чат-ботов до сложных сайтов с интеграциями 1С и Битрикс.
               </p>
               <div className="services__controls">
-                <button
-                  className="services__control-btn"
-                  type="button"
-                  aria-label="Назад"
+                <SliderArrow
+                  direction="prev"
                   disabled={!canGoPrev}
                   onClick={() => goTo(-1)}
-                >
-                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                    <path
-                      d="M12 4L6 10L12 16"
-                      stroke="#171819"
-                      strokeWidth="1.8"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </button>
-                <button
-                  className="services__control-btn"
-                  type="button"
-                  aria-label="Вперёд"
+                />
+                <SliderArrow
+                  direction="next"
                   disabled={!canGoNext}
                   onClick={() => goTo(1)}
-                >
-                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                    <path
-                      d="M8 4L14 10L8 16"
-                      stroke="#171819"
-                      strokeWidth="1.8"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </button>
+                />
               </div>
             </div>
           </div>

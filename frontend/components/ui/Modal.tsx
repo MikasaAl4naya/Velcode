@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useModal } from '@/hooks/useModal';
 import { LeadForm } from './LeadForm';
+import { CloseButton } from './CloseButton';
 
 export function Modal() {
   const { isOpen, service, closeModal } = useModal();
@@ -78,24 +79,20 @@ export function Modal() {
         className={`modal__panel ${hasService ? 'modal__panel--has-service' : ''}`}
         tabIndex={-1}
       >
-        <button
-          className={`modal__close ${hasService ? 'modal__close--panel-service' : ''}`}
-          type="button"
+        <CloseButton
+          className={hasService ? 'modal__close--panel-service' : ''}
           onClick={handleClose}
-          aria-label="Закрыть"
-        ></button>
+        />
 
         {hasService && service && (
           <div
             className={`modal__service-badge modal__service-badge--${service.badgeTheme || service.theme || 'dark'}${service.decor ? ' modal__service-badge--decor' : ''}`}
             id="modalServiceBadge"
           >
-            <button
-              className="modal__close modal__close--badge"
-              type="button"
+            <CloseButton
+              variant="badge"
               onClick={handleClose}
-              aria-label="Закрыть"
-            ></button>
+            />
             <div className="modal__service-badge-head">
               <span className="modal__service-badge-num">{service.num || '00'}</span>
               <h3

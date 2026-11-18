@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ymGoal } from '@/lib/ym';
 import { Tag } from '@/components/ui/Tag';
+import { CloseButton } from '@/components/ui/CloseButton';
 import { LeadForm } from '@/components/ui/LeadForm';
 import { AiOrbAvatar } from '@/components/ui/AiOrbAvatar';
 import { getFaq, FaqItem, sendChatMessage } from '@/lib/api';
@@ -411,18 +412,12 @@ export function AiChatWidget() {
                   </svg>
                 </button>
               )}
-              <button
-                type="button"
-                className="ai-chat-header__btn ai-chat-header__btn--close"
+              <CloseButton
+                variant="chat"
                 onClick={handleToggle}
                 title="Закрыть чат"
                 aria-label="Закрыть чат"
-              >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
-                </svg>
-              </button>
+              />
             </div>
           </header>
 

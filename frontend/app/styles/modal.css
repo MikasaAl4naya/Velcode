@@ -206,37 +206,27 @@
   transform: none;
 }
 
-/* Крестик из двух линий (::before и ::after) */
+/* Крестик закрытия */
 .modal__close {
   position: absolute;
-  top: 26px;
-  right: 26px;
-  width: 30px;
-  height: 30px;
+  top: 22px;
+  right: 22px;
+  width: 42px;
+  height: 42px;
   padding: 0;
   border: none;
   background: transparent;
+  color: var(--modal-text);
   cursor: pointer;
-  transition: opacity var(--transition-base);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color var(--transition-base), opacity var(--transition-base);
   z-index: 10;
 }
 
-.modal__close::before,
-.modal__close::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 3px;
-  right: 3px;
-  height: 1.6px;
-  margin-top: -0.8px;
-  border-radius: 2px;
-  background: var(--modal-text);
-  transform: rotate(45deg);
-}
-
-.modal__close::after {
-  transform: rotate(-45deg);
+.close-btn__icon {
+  display: block;
 }
 
 /* Крестик внутри цветного бейджа услуги (на десктопе скрыт, крестик находится справа вверху панели) */
@@ -244,17 +234,26 @@
   display: none;
   top: 24px;
   right: 24px;
-}
-
-.modal__close--badge::before,
-.modal__close--badge::after {
-  background: #ffffff;
+  color: #ffffff;
 }
 
 /* Для темы 00 (outline) крестик серый под цвет обводки/текста */
-.modal__service-badge--outline .modal__close--badge::before,
-.modal__service-badge--outline .modal__close--badge::after {
-  background: #8b929d;
+.modal__service-badge--outline .modal__close--badge {
+  color: #8b929d;
+}
+
+/* Крестик в полноэкранных модалках (Lightbox) */
+.modal__close--screen {
+  position: fixed;
+  top: clamp(16px, 3vw, 28px);
+  right: clamp(16px, 3vw, 28px);
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.95);
+  color: var(--color-dark);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.25);
+  z-index: 1002;
 }
 
 .modal__close:focus-visible {
@@ -265,7 +264,12 @@
 
 @media (hover: hover) {
   .modal__close:hover {
-    opacity: 0.6;
+    color: var(--color-blue-pill);
+  }
+
+  .modal__close--screen:hover {
+    background: #ffffff;
+    color: var(--color-blue-pill);
   }
 }
 
@@ -425,7 +429,7 @@
 }
 
 .cookie-banner__btn--accept {
-  background: #7183bd;
+  background: var(--color-blue-pill);
   color: #ffffff;
 }
 

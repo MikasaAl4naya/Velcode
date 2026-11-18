@@ -19,7 +19,6 @@
   --color-border: #d0d1d1;
   --color-muted: rgba(23, 24, 25, 0.7);
   --color-muted-light: rgba(255, 255, 255, 0.7);
-  --color-folder-bg: #bbcbef;
   --color-folder-card: #8fa9dc;
 
   --header-bg: rgba(255, 255, 255, 0.85);
@@ -81,7 +80,7 @@
 
   --form-input-height: clamp(58px, 4vw, 64px);              /* высота полей ввода во всех формах */
   --form-input-pad-x: 8px;                                  /* внутренний отступ полей ввода по бокам */
-  --form-fields-gap: 4px;                                   /* зазор между строками полей формы */
+  --form-fields-gap: var(--space-3xs);                                   /* зазор между строками полей формы */
   --form-footer-gap: clamp(36px, 4vw, 48px);                /* отступ от полей до кнопки и согласия */
   --form-head-gap-b: clamp(14px, 1.5vw, 20px);              /* отступ под заголовком формы (поменьше) */
 
