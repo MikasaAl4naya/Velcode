@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-
-const COOKIE_STORAGE_KEY = 'velcode_cookie_consent';
+import { COOKIE_STORAGE_KEY, COOKIE_CONSENT_EVENT } from '@/components/analytics/YandexMetrika';
 
 export function CookieBanner() {
   const [isVisible, setIsVisible] = useState(false);
@@ -27,6 +26,7 @@ export function CookieBanner() {
     setIsClosing(true);
     try {
       localStorage.setItem(COOKIE_STORAGE_KEY, 'accepted');
+      window.dispatchEvent(new Event(COOKIE_CONSENT_EVENT));
     } catch {
       // ignore
     }
