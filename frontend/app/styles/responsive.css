@@ -16,6 +16,69 @@
 
 /* ---------- XL (< 1200px) ---------- */
 @media (max-width: 1199.98px) {
+
+    /* Шапка: бургер. Меню — часть шапки, шапка плавно вырастает вниз */
+    .header__container {
+        flex-wrap: wrap;
+        row-gap: 0;
+    }
+
+    .header__nav {
+        order: 1;
+        flex: 0 0 100%;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+        height: 0;
+        margin-right: 0;
+        overflow: hidden;
+        visibility: hidden;
+        transition: height 0.45s var(--ease-out), visibility 0s 0.45s;
+    }
+
+    .header__nav-link:first-child {
+        margin-top: var(--space-m);
+    }
+
+    .header__nav-socials {
+        display: flex;
+        gap: 5px;
+        margin-bottom: var(--space-2xs);
+    }
+
+    .header__socials {
+        display: none;
+    }
+
+    .header__burger {
+        display: block;
+    }
+
+    .header--menu-open {
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    }
+
+        .header--menu-open .header__nav {
+            visibility: visible;
+            transition: height 0.45s var(--ease-out);
+        }
+
+    .header__nav-link,
+    .header__nav-socials {
+        opacity: 0;
+        transform: translateY(-6px);
+        transition: opacity 0.25s ease, transform 0.35s var(--ease-out);
+    }
+
+    .header--menu-open .header__nav-link,
+    .header--menu-open .header__nav-socials {
+        opacity: 1;
+        transform: none;
+        transition-delay: 0.1s;
+    }
+
+
+
   .hero {
     --hero-card-offset: 20px;
   }
@@ -36,79 +99,23 @@
   .hero__tags {
     width: 100%;
   }
+
 }
 
 /* ---------- LG (< 992px: Планшеты) ---------- */
 @media (max-width: 991.98px) {
-  /* Шапка: бургер. Меню — часть шапки, шапка плавно вырастает вниз */
-  .header__container {
-    flex-wrap: wrap;
-    row-gap: 0;
-  }
 
-  .header__nav {
-    order: 1;
-    flex: 0 0 100%;
-    flex-direction: column;
-    align-items: center;
-    gap: 20px;
-    height: 0;
-    margin-right: 0;
-    overflow: hidden;
-    visibility: hidden;
-    transition: height 0.45s var(--ease-out), visibility 0s 0.45s;
-  }
+   .cookie-banner {
+     max-width: none;
+   }
 
-  .header__nav-link:first-child {
-    margin-top: var(--space-m);
-  }
-
-  .header__nav-socials {
-    display: flex;
-    gap: 5px;
-    margin-bottom: var(--space-2xs);
-  }
-
-  .header__socials {
-    display: none;
-  }
-
-  .header__burger {
-    display: block;
-  }
-
-  .header--menu-open {
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-  }
-
-  .header--menu-open .header__nav {
-    visibility: visible;
-    transition: height 0.45s var(--ease-out);
-  }
-
-  .header__nav-link,
-  .header__nav-socials {
-    opacity: 0;
-    transform: translateY(-6px);
-    transition: opacity 0.25s ease, transform 0.35s var(--ease-out);
-  }
-
-  .header--menu-open .header__nav-link,
-  .header--menu-open .header__nav-socials {
-    opacity: 1;
-    transform: none;
-    transition-delay: 0.1s;
-  }
-
-
-
-  /* Преимущества и портфолио */
-  .advantages__container,
-  .portfolio__container {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0;
-  }
+   /* Преимущества и портфолио */
+   .advantages__container,
+   .portfolio__container {
+     flex-direction: column;
+     align-items: stretch;
+     gap: 0;
+   }
 
   .advantages__intro,
   .portfolio__info {
@@ -249,7 +256,7 @@
     min-height: auto;
     padding-bottom: var(--hero-art-space);
     overflow-x: clip;
-    padding-top: calc(var(--header-height) + var(--section-pad));
+    padding-top: calc(var(--header-height) + var(--section-pad) - 20px);
   }
 
   .hero__top-row {

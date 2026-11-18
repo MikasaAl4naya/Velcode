@@ -45,7 +45,16 @@ export function CookieBanner() {
       aria-label="Использование файлов cookie"
     >
       <p className="cookie-banner__text">
-        Находясь на сайте, вы даете согласие на использование файлов cookie.
+        Находясь на сайте, вы даете согласие на использование файлов cookie в соответствии с{' '}
+        <Link
+          href="/privacy"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="cookie-banner__link"
+        >
+          Политикой
+        </Link>
+        .
       </p>
 
       <div className="cookie-banner__actions">
