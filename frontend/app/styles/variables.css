@@ -224,7 +224,9 @@ html:has(body.is-scroll-locked) {
 .legal-page__container,
 .advantages-page__container,
 .contacts-page__container,
-.case-page__container {
+.faq-page__container,
+.case-page__container,
+.faq__container {
   width: 100%;
   max-width: calc(var(--max-width) + var(--container-pad) * 2);
   margin-inline: auto;

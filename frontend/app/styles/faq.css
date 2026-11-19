@@ -1,0 +1,167 @@
+/* ============================================================
+   FAQ (Вопросы и ответы)
+============================================================ */
+
+.faq {
+  padding-block: var(--section-pad);
+}
+
+.faq__container {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--layout-gap);
+}
+
+.faq__intro {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  flex-shrink: 0;
+}
+
+.faq__title {
+  color: var(--color-blue-accent);
+  font-size: var(--fs-h2);
+  font-weight: 500;
+  line-height: 1.05;
+  letter-spacing: -1.4px;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.faq__subtitle {
+  color: var(--color-muted);
+  font-size: var(--fs-body);
+  font-weight: 400;
+  margin: 10px 0 0;
+  line-height: 1.4;
+}
+
+.faq__accordion {
+  display: flex;
+  flex-direction: column;
+}
+
+.faq__item {
+  border-bottom: 1px solid var(--color-border);
+  transition: border-color var(--transition-base);
+}
+
+.faq__trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: clamp(20px, 1.8vw, 28px) 0;
+  border: none;
+  background: transparent;
+  color: var(--color-dark);
+  font-size: clamp(16px, 1.25vw, 19px);
+  font-weight: 400;
+  line-height: 1.45;
+  text-align: left;
+  cursor: pointer;
+  transition: color var(--transition-base);
+}
+
+.faq__question {
+  flex: 1;
+}
+
+.faq__icon {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-blue-pill);
+  transition: transform 0.35s var(--ease-out), color var(--transition-base);
+}
+
+.faq__item.is-open .faq__icon {
+  transform: rotate(45deg);
+}
+
+@media (hover: hover) {
+  .faq__trigger:hover {
+    color: var(--color-blue-pill);
+  }
+
+  .faq__trigger:hover .faq__icon {
+    color: var(--color-accent);
+  }
+}
+
+.faq__body {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.35s var(--ease-out);
+}
+
+.faq__item.is-open .faq__body {
+  grid-template-rows: 1fr;
+}
+
+.faq__content {
+  overflow: hidden;
+}
+
+.faq__answer {
+  color: rgba(30, 32, 34, 0.75);
+  font-size: clamp(14px, 1.05vw, 16px);
+  font-weight: 300;
+  line-height: 1.6;
+  margin: 0;
+  padding-bottom: clamp(20px, 1.8vw, 28px);
+}
+
+/* ============================================================
+   СТРАНИЦА FAQ (/faq)
+============================================================ */
+
+.faq-page {
+  padding-top: calc(var(--header-offset) + clamp(30px, 4vw, 55px));
+  padding-bottom: 0;
+}
+
+.faq-page .faq {
+  padding-top: 0;
+}
+
+/* ============================================================
+   АДАПТИВНОСТЬ ДЛЯ FAQ
+============================================================ */
+
+@media (max-width: 991.98px) {
+  .faq__container {
+    flex-direction: column;
+    gap: var(--heading-gap);
+  }
+
+  .faq__intro {
+    width: 100%;
+  }
+
+  .faq__accordion {
+    width: 100%;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .faq-page {
+    padding-top: calc(var(--header-height) + clamp(24px, 5vw, 40px));
+  }
+
+  .faq__trigger {
+    font-size: 16px;
+    gap: 16px;
+    padding: 18px 0;
+  }
+
+  .faq__icon {
+    width: 20px;
+    height: 20px;
+  }
+}

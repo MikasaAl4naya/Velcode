@@ -3,10 +3,12 @@ import { Hero } from '@/components/sections/Hero';
 import { Services } from '@/components/sections/Services';
 import { Advantages } from '@/components/sections/Advantages';
 import { Portfolio, PortfolioItem } from '@/components/sections/Portfolio';
+import { Faq } from '@/components/sections/Faq';
 import { Contacts } from '@/components/sections/Contacts';
 import { Footer } from '@/components/sections/Footer';
 import { SmoothWheelProvider } from '@/components/SmoothWheelProvider';
 import { fetchServices } from '@/lib/fetchServices';
+import { fetchFaq } from '@/lib/fetchFaq';
 
 const API_BASE =
   process.env.INTERNAL_API_URL ||
@@ -35,9 +37,10 @@ async function fetchPortfolioItems(): Promise<PortfolioItem[]> {
 
 
 export default async function Page() {
-  const [portfolioItems, servicesItems] = await Promise.all([
+  const [portfolioItems, servicesItems, faqItems] = await Promise.all([
     fetchPortfolioItems(),
     fetchServices(),
+    fetchFaq(),
   ]);
 
   return (
@@ -48,6 +51,7 @@ export default async function Page() {
         <Services items={servicesItems} />
         <Advantages />
         <Portfolio items={portfolioItems} />
+        <Faq items={faqItems} />
         <Contacts />
       </main>
       <Footer />

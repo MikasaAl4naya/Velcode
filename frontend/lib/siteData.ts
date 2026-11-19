@@ -115,5 +115,6 @@ export const NAV_LINKS = [
   { href: '/services', label: 'Услуги' },
   { href: '/advantages', label: 'Преимущества' },
   { href: '/portfolio', label: 'Портфолио' },
+  { href: '/faq', label: 'FAQ' },
   { href: '/contacts', label: 'Контакты' },
 ];
