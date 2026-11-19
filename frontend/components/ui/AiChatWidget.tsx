@@ -9,6 +9,7 @@ import { CloseButton } from '@/components/ui/CloseButton';
 import { LeadForm } from '@/components/ui/LeadForm';
 import { AiOrbAvatar } from '@/components/ui/AiOrbAvatar';
 import { getFaq, FaqItem, sendChatMessage } from '@/lib/api';
+import { renderMarkdownLinks } from '@/lib/renderMarkdownLinks';
 
 interface Message {
   id: string;
@@ -41,38 +42,7 @@ const MAX_INPUT_LENGTH = 300;
  * Рендерит текст сообщения с поддержкой markdown-ссылок [текст](url)
  */
 function renderMessageContent(text: string) {
-  const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
-  const parts: React.ReactNode[] = [];
-  let lastIndex = 0;
-  let match;
-
-  while ((match = linkRegex.exec(text)) !== null) {
-    if (match.index > lastIndex) {
-      parts.push(text.substring(lastIndex, match.index));
-    }
-    const label = match[1];
-    const href = match[2];
-    const isInternal = href.startsWith('/');
-
-    parts.push(
-      <Link
-        key={match.index}
-        href={href}
-        className="ai-chat-link"
-        target={isInternal ? undefined : '_blank'}
-        rel={isInternal ? undefined : 'noopener noreferrer'}
-      >
-        {label}
-      </Link>
-    );
-    lastIndex = linkRegex.lastIndex;
-  }
-
-  if (lastIndex < text.length) {
-    parts.push(text.substring(lastIndex));
-  }
-
-  return parts;
+  return renderMarkdownLinks(text, 'ai-chat-link');
 }
 
 export function AiChatWidget() {

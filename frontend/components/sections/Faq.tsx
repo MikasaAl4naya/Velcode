@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import type { FaqData } from '@/lib/fetchFaq';
 import { SplitText } from '@/components/ui/SplitText';
+import { renderMarkdownLinks } from '@/lib/renderMarkdownLinks';
 
 type FaqProps = {
   isStandalone?: boolean;
@@ -69,7 +70,7 @@ export function Faq({ isStandalone = false, items }: FaqProps) {
 
                 <div className="faq__body">
                   <div className="faq__content">
-                    <p className="faq__answer">{item.answer}</p>
+                    <p className="faq__answer">{renderMarkdownLinks(item.answer, 'faq__link')}</p>
                   </div>
                 </div>
               </div>

@@ -117,6 +117,19 @@
   padding-bottom: clamp(20px, 1.8vw, 28px);
 }
 
+.faq__link {
+  color: var(--color-blue-pill);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: opacity var(--transition-base), color var(--transition-base);
+}
+
+@media (hover: hover) {
+  .faq__link:hover {
+    color: var(--color-accent);
+  }
+}
+
 /* ============================================================
    СТРАНИЦА FAQ (/faq)
 ============================================================ */
