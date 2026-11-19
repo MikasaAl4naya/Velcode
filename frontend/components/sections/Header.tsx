@@ -21,7 +21,7 @@ export function Header({ currentPath = '/' }: HeaderProps) {
 
   useEffect(() => {
     const handleResize = () => {
-      const isMobileMenu = window.matchMedia('(max-width: 991.98px)').matches;
+      const isMobileMenu = window.matchMedia('(max-width: 1199.98px)').matches;
       if (!isMobileMenu && isOpen) {
         setIsOpen(false);
       }
