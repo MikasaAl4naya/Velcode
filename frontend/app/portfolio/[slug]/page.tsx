@@ -24,6 +24,8 @@ const MOCK_CASE: CaseItem = {
   ],
 };
 
+export const dynamic = 'force-dynamic';
+
 async function fetchCase(slug: string): Promise<CaseItem | null> {
   const base =
     process.env.INTERNAL_API_URL ||

@@ -16,6 +16,8 @@ export const metadata: Metadata = {
   },
 };
 
+export const dynamic = 'force-dynamic';
+
 interface PortfolioItem {
   id: number | string;
   slug: string | null;

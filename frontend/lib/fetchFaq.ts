@@ -13,7 +13,7 @@ const API_BASE =
 
 export async function fetchFaq(): Promise<FaqData[]> {
   try {
-    const res = await fetch(`${API_BASE}/api/faq`, { next: { revalidate: 3600 } });
+    const res = await fetch(`${API_BASE}/api/faq`, { cache: 'no-store' });
     if (!res.ok) return [];
     const data: Array<{ id: number; question: string; answer: string; sort_order?: number }> = await res.json();
     if (!data || !data.length) return [];
