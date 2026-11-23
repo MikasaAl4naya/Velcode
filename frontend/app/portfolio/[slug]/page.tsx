@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
+import { redirect } from 'next/navigation';
 import { Header } from '@/components/sections/Header';
 import { Footer } from '@/components/sections/Footer';
 import { CasePageClient, type CaseItem } from './CasePageClient';
@@ -56,7 +56,9 @@ export default async function CasePage({
 }) {
   const { slug } = await params;
   const item = await fetchCase(slug);
-  if (!item) notFound();
+  if (!item) {
+    redirect('/portfolio');
+  }
 
   return (
     <>
