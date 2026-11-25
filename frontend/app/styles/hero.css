@@ -30,8 +30,10 @@
   top: 0;
   right: var(--container-pad);
   bottom: 0;
+  margin: auto 0;
   width: auto;
   max-width: 100%; /* ограничена ровно шириной контейнера сетки */
+  max-height: 80vw;
   aspect-ratio: 1 / 1;
   pointer-events: none;
   overflow: visible;
@@ -77,12 +79,20 @@
 }
 
 .hero__title {
-  display: flex;
-  flex-direction: column;
+  display: block;
   font-size: var(--fs-display);
   font-weight: 500;
   line-height: 1.1;
   letter-spacing: -1.4px;
+  max-width: 680px;
+}
+
+.hero__title .split-text-line-mask {
+  display: inline;
+}
+
+.hero__title-accent {
+  color: var(--color-blue-accent);
 }
 
 .hero__title-line--accent {

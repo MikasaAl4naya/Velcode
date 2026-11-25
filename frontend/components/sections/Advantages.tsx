@@ -21,26 +21,24 @@ export function Advantages({ isStandalone = false }: AdvantagesProps) {
           {isStandalone ? (
             <h1 className="advantages__title">
               <SplitText
-                text="Почему стоит"
-                className="advantages__title-line"
+                text="Почему стоит "
                 startDelay={0.01}
               />
               <SplitText
                 text="выбрать нас"
-                className="advantages__title-line advantages__title-line--accent"
+                className="advantages__title-line--accent"
                 startDelay={0.01}
               />
             </h1>
           ) : (
             <h2 className="advantages__title">
               <SplitText
-                text="Почему стоит"
-                className="advantages__title-line"
+                text="Почему стоит "
                 startDelay={0.01}
               />
               <SplitText
                 text="выбрать нас"
-                className="advantages__title-line advantages__title-line--accent"
+                className="advantages__title-line--accent"
                 startDelay={0.01}
               />
             </h2>

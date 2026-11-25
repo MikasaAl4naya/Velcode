@@ -24,13 +24,17 @@
 }
 
 .advantages__title {
-  display: flex;
-  flex-direction: column;
+  display: block;
   color: var(--color-dark-sub);
   font-size: var(--fs-h2);
   font-weight: 500;
   line-height: 1.15;
   letter-spacing: -1.4px;
+  max-width: 320px;
+}
+
+.advantages__title .split-text-line-mask {
+  display: inline;
 }
 
 .advantages__title-line--accent {

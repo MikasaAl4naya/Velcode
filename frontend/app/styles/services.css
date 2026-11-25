@@ -49,15 +49,16 @@
 }
 
 .services__title {
-  display: flex;
-  align-items: baseline;
-  gap: 0.28em;
+  display: block;
   color: var(--color-dark-sub);
   font-size: var(--fs-h2);
   font-weight: 500;
   line-height: 1;
   letter-spacing: -1.4px;
-  white-space: nowrap;
+}
+
+.services__title .split-text-line-mask {
+  display: inline;
 }
 
 .services__title-accent {

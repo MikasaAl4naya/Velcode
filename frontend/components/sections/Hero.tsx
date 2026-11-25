@@ -42,13 +42,12 @@ export function Hero({ services }: HeroProps) {
             <div className="hero__title-wrap">
               <h1 className="hero__title">
                 <SplitText
-                  text="Цифровые решения"
-                  className="hero__title-line hero__title-line--accent"
+                  text="Цифровые решения "
+                  className="hero__title-accent"
                   startDelay={0.01}
                 />
                 <SplitText
                   text="для роста бизнеса"
-                  className="hero__title-line"
                   startDelay={0.01}
                 />
               </h1>
