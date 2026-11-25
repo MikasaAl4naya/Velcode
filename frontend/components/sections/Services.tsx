@@ -435,12 +435,12 @@ export function Services({ isStandalone = false, items }: ServicesProps) {
           <div className="services__header">
             {isStandalone ? (
               <h1 className="services__title">
-                <SplitText text="Наши " />
+                <SplitText text="Наши" />
                 <SplitText text="услуги" className="services__title-accent" />
               </h1>
             ) : (
               <h2 className="services__title">
-                <SplitText text="Наши " />
+                <SplitText text="Наши" />
                 <SplitText text="услуги" className="services__title-accent" />
               </h2>
             )}
