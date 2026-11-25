@@ -89,6 +89,7 @@
     bottom: -15vh;
     right: -10vw;
     width: auto;
+    max-height: none;
     aspect-ratio: 1 / 1;
     transform: translate(6%, 14%);
     z-index: 0;

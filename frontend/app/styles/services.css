@@ -58,13 +58,8 @@
   max-width: 480px;
 }
 
-.services__title .split-text-line-mask,
-.services__title .split-text-line-content {
+.services__title .split-text-line-mask {
   display: inline;
-}
-
-.services__title-accent {
-  color: var(--color-blue-accent);
 }
 
 .services__header-side {

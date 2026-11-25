@@ -87,16 +87,11 @@
   max-width: 680px;
 }
 
-.hero__title .split-text-line-mask,
-.hero__title .split-text-line-content {
+.hero__title .split-text-line-mask {
   display: inline;
 }
 
 .hero__title-accent {
-  color: var(--color-blue-accent);
-}
-
-.hero__title-line--accent {
   color: var(--color-blue-accent);
 }
 

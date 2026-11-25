@@ -4,7 +4,7 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { SERVICES_DATA, CONSULTATION_SERVICE, type ServiceData } from '@/lib/siteData';
 import { ServiceCard } from '@/components/ui/ServiceCard';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
-import { SplitText } from '@/components/ui/SplitText';
+import { RevealTitle } from '@/components/ui/RevealTitle';
 import { SliderArrow } from '@/components/ui/SliderArrow';
 
 const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
@@ -434,15 +434,13 @@ export function Services({ isStandalone = false, items }: ServicesProps) {
           )}
           <div className="services__header">
             {isStandalone ? (
-              <h1 className="services__title">
-                <SplitText text="Наши " />
-                <SplitText text="услуги" className="services__title-accent" />
-              </h1>
+              <RevealTitle as="h1" className="services__title">
+                Наши услуги
+              </RevealTitle>
             ) : (
-              <h2 className="services__title">
-                <SplitText text="Наши " />
-                <SplitText text="услуги" className="services__title-accent" />
-              </h2>
+              <RevealTitle as="h2" className="services__title">
+                Наши услуги
+              </RevealTitle>
             )}
             <div className="services__header-side">
               <p className="services__desc">

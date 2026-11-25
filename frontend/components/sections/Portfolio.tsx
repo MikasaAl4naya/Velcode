@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { SplitText } from '@/components/ui/SplitText';
+import { RevealTitle } from '@/components/ui/RevealTitle';
 import { BrowserMockup } from '@/components/ui/BrowserMockup';
 
 export interface PortfolioItem {
@@ -133,9 +133,9 @@ export function Portfolio({ items }: Props) {
           </div>
         </div>
         <div className="portfolio__info">
-          <h2 className="portfolio__title">
-            <SplitText text="Наши кейсы" />
-          </h2>
+          <RevealTitle as="h2" className="portfolio__title">
+            Наши кейсы
+          </RevealTitle>
           <p className="portfolio__description">
             Сайты, интеграции, 1C и Битрикс24, автоматизация, ИИ, аналитика. Показываем, как идея превращается в систему.
           </p>

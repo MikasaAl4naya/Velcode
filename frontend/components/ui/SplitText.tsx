@@ -80,17 +80,9 @@ export function SplitText({
     <Component
       ref={containerRef}
       className={`split-text-line-mask ${isVisible ? 'is-visible' : ''} ${className}`.trim()}
-      aria-label={text}
-    >
-      <span
-        className="split-text-line-content"
-        style={{
-          animationDelay: `${startDelay}s`,
-          transitionDelay: `${startDelay}s`,
-        }}
-        dangerouslySetInnerHTML={{ __html: text }}
-      />
-    </Component>
+      aria-label={text.replace(/&nbsp;/g, ' ')}
+      dangerouslySetInnerHTML={{ __html: text }}
+    />
   );
 }
 

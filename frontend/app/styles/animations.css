@@ -3,25 +3,49 @@
    Заголовок появляется целиком сверху единым блоком
 ============================================================ */
 
+/* --- RevealTitle: весь заголовок единым блоком --- */
+.reveal-title {
+  opacity: 0;
+  transform: translateY(-40px);
+  will-change: transform, opacity;
+}
+
+.reveal-title.is-visible {
+  animation: revealTitleIn 0.75s cubic-bezier(0.16, 1, 0.3, 1) 0.15s forwards;
+}
+
+@keyframes revealTitleIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-40px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal-title {
+    opacity: 1;
+    transform: none;
+    animation: none !important;
+  }
+}
+
+/* --- Старый SplitText (оставлен для обратной совместимости) --- */
 .split-text-line-mask,
 .split-text-root {
   display: inline;
-  overflow: hidden;
   line-height: inherit;
   white-space: pre-wrap;
-}
-
-.split-text-line-content {
-  display: inline;
-  transform: translate3d(0, -115%, 0);
   opacity: 0;
+  transform: translate3d(0, -115%, 0);
   will-change: transform, opacity;
-  color: inherit;
-  white-space: pre-wrap;
 }
 
-.split-text-line-mask.is-visible .split-text-line-content,
-.split-text-root.is-visible .split-text-line-content {
+.split-text-line-mask.is-visible,
+.split-text-root.is-visible {
   animation: splitLineReveal 0.85s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 

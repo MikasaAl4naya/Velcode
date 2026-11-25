@@ -2,7 +2,7 @@
 
 import { useModal } from '@/hooks/useModal';
 import { ADVANTAGES_DATA } from '@/lib/siteData';
-import { SplitText } from '@/components/ui/SplitText';
+import { RevealTitle } from '@/components/ui/RevealTitle';
 
 type AdvantagesProps = {
   isStandalone?: boolean;
@@ -19,29 +19,15 @@ export function Advantages({ isStandalone = false }: AdvantagesProps) {
       <div className="advantages__container">
         <div className="advantages__intro">
           {isStandalone ? (
-            <h1 className="advantages__title">
-              <SplitText
-                text="Почему стоит "
-                startDelay={0.01}
-              />
-              <SplitText
-                text="выбрать нас"
-                className="advantages__title-line--accent"
-                startDelay={0.01}
-              />
-            </h1>
+            <RevealTitle as="h1" className="advantages__title">
+              Почему стоит{' '}
+              <span className="advantages__title-accent">выбрать нас</span>
+            </RevealTitle>
           ) : (
-            <h2 className="advantages__title">
-              <SplitText
-                text="Почему стоит "
-                startDelay={0.01}
-              />
-              <SplitText
-                text="выбрать нас"
-                className="advantages__title-line--accent"
-                startDelay={0.01}
-              />
-            </h2>
+            <RevealTitle as="h2" className="advantages__title">
+              Почему стоит{' '}
+              <span className="advantages__title-accent">выбрать нас</span>
+            </RevealTitle>
           )}
           <button
             type="button"

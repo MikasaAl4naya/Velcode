@@ -3,7 +3,7 @@
 import dynamic from 'next/dynamic';
 import { useModal } from '@/hooks/useModal';
 import { HERO_TAGS, type ServiceData } from '@/lib/siteData';
-import { SplitText } from '@/components/ui/SplitText';
+import { RevealTitle } from '@/components/ui/RevealTitle';
 import { Tag } from '@/components/ui/Tag';
 
 const HeroModel = dynamic(
@@ -40,17 +40,10 @@ export function Hero({ services }: HeroProps) {
         <div className="hero__top-row">
           <div className="hero__info">
             <div className="hero__title-wrap">
-              <h1 className="hero__title">
-                <SplitText
-                  text="Цифровые решения "
-                  className="hero__title-accent"
-                  startDelay={0.01}
-                />
-                <SplitText
-                  text="для&nbsp;роста бизнеса"
-                  startDelay={0.01}
-                />
-              </h1>
+              <RevealTitle as="h1" className="hero__title">
+                <span className="hero__title-accent">Цифровые решения </span>
+                для&nbsp;роста бизнеса
+              </RevealTitle>
               <p className="hero__description">
                 Веб-разработка и автоматизация процессов. Создадим и&nbsp;поддержим всю digital-инфраструктуру вашей компании.
               </p>

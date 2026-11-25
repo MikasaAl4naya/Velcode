@@ -1,7 +1,7 @@
 import { LeadForm } from '@/components/ui/LeadForm';
 import { SocialLinks } from '@/components/ui/SocialLinks';
 import { ContactChannels } from '@/components/ui/ContactChannels';
-import { SplitText } from '@/components/ui/SplitText';
+import { RevealTitle } from '@/components/ui/RevealTitle';
 
 
 type ContactsProps = {
@@ -18,13 +18,13 @@ export function Contacts({ isStandalone = false }: ContactsProps) {
         <div className="contacts__card">
           <div className="contacts__side">
             {isStandalone ? (
-              <h1 className="contacts__title">
-                <SplitText text="Контакты" />
-              </h1>
+              <RevealTitle as="h1" className="contacts__title">
+                Контакты
+              </RevealTitle>
             ) : (
-              <h2 className="contacts__title">
-                <SplitText text="Контакты" />
-              </h2>
+              <RevealTitle as="h2" className="contacts__title">
+                Контакты
+              </RevealTitle>
             )}
             <p className="contacts__subtitle">
               Остались вопросы? Свяжитесь с нами<br />любым удобным способом

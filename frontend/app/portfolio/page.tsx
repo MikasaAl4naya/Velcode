@@ -5,7 +5,7 @@ import { Contacts } from '@/components/sections/Contacts';
 import { Footer } from '@/components/sections/Footer';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { Tag } from '@/components/ui/Tag';
-import { SplitText } from '@/components/ui/SplitText';
+import { RevealTitle } from '@/components/ui/RevealTitle';
 import { FadeImage } from '@/components/ui/FadeImage';
 
 export const metadata: Metadata = {
@@ -58,9 +58,9 @@ export default async function PortfolioPage() {
             />
 
             <div className="portfolio-page__header">
-              <h1 className="portfolio-page__title">
-                <SplitText text="Портфолио" />
-              </h1>
+              <RevealTitle as="h1" className="portfolio-page__title">
+                Портфолио
+              </RevealTitle>
               <p className="portfolio-page__desc">
                 Сайты, интеграции, 1C и Битрикс24, автоматизация, ИИ, аналитика. Показываем, как идея превращается в систему.
               </p>

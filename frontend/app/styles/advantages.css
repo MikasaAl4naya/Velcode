@@ -33,12 +33,11 @@
   max-width: 490px;
 }
 
-.advantages__title .split-text-line-mask,
-.advantages__title .split-text-line-content {
+.advantages__title .split-text-line-mask {
   display: inline;
 }
 
-.advantages__title-line--accent {
+.advantages__title-accent {
   color: var(--color-blue-accent);
 }
 

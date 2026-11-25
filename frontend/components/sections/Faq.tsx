@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import type { FaqData } from '@/lib/fetchFaq';
-import { SplitText } from '@/components/ui/SplitText';
+import { RevealTitle } from '@/components/ui/RevealTitle';
 import { renderMarkdownLinks } from '@/lib/renderMarkdownLinks';
 
 type FaqProps = {
@@ -24,13 +24,13 @@ export function Faq({ isStandalone = false, items }: FaqProps) {
       <div className="faq__container">
         <div className="faq__intro">
           {isStandalone ? (
-            <h1 className="faq__title">
-              <SplitText text="FAQ" />
-            </h1>
+            <RevealTitle as="h1" className="faq__title">
+              FAQ
+            </RevealTitle>
           ) : (
-            <h2 className="faq__title">
-              <SplitText text="FAQ" />
-            </h2>
+            <RevealTitle as="h2" className="faq__title">
+              FAQ
+            </RevealTitle>
           )}
           <p className="faq__subtitle">Вопросы и ответы</p>
         </div>
