@@ -52,39 +52,7 @@
   display: block;
 }
 
-/* При портретной/квадратной ориентации планшета сдвигаем торус вправо-вниз точно как в reserve */
-.hero.is-tablet-ratio {
-  overflow: clip;
-}
 
-.hero.is-tablet-ratio .hero__bg-torus {
-  top: auto;
-  bottom: -15vh;
-  right: -10vw;
-  height: 70vh;
-  height: 70svh;
-  width: auto;
-  aspect-ratio: 1 / 1;
-  max-width: 90vw;
-  transform: translate(6%, 14%);
-  z-index: 0;
-}
-
-.hero.is-tablet-ratio .hero-model-container {
-  object-position: center;
-  overflow: visible;
-}
-
-.hero.is-tablet-ratio .hero__info {
-  width: min(580px, 85%);
-  position: relative;
-  z-index: 2;
-}
-
-.hero.is-tablet-ratio .hero__bottom-row {
-  position: relative;
-  z-index: 2;
-}
 
 .hero__top-row {
   position: relative;

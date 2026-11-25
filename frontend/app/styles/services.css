@@ -56,6 +56,10 @@
   letter-spacing: -1.4px;
 }
 
+.services__title-accent {
+  color: var(--color-blue-accent);
+}
+
 .services__header-side {
   display: flex;
   align-items: center;

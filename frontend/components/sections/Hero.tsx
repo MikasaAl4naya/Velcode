@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useModal } from '@/hooks/useModal';
 import { HERO_TAGS, type ServiceData } from '@/lib/siteData';
@@ -18,9 +17,6 @@ type HeroProps = {
 
 export function Hero({ services }: HeroProps) {
   const { openModal } = useModal();
-  const heroRef = useRef<HTMLElement>(null);
-  const torusRef = useRef<HTMLDivElement>(null);
-  const [isTabletRatio, setIsTabletRatio] = useState(false);
 
   // Формируем теги из услуг с short_title, либо из захардкоженных HERO_TAGS
   const serviceTags = services
@@ -29,55 +25,14 @@ export function Hero({ services }: HeroProps) {
 
   const hasDynamicTags = serviceTags && serviceTags.length > 0;
 
-  useEffect(() => {
-    const checkClearance = () => {
-      const w = window.innerWidth;
-      // На мобилках (<= 768px) работает своя мобильная верстка
-      if (w <= 768) {
-        setIsTabletRatio(false);
-        return;
-      }
-
-      const hero = heroRef.current;
-      const torus = torusRef.current;
-      if (!hero || !torus) return;
-
-      // Если класс уже стоит, временно снимаем его для честного замера
-      const hadClass = hero.classList.contains('is-tablet-ratio');
-      if (hadClass) {
-        hero.classList.remove('is-tablet-ratio');
-      }
-
-      const torusRect = torus.getBoundingClientRect();
-      const leftRatio = torusRect.left / w;
-
-      if (hadClass) {
-        hero.classList.add('is-tablet-ratio');
-      }
-
-      // Если свободного пространства слева от картинки меньше 20% ширины экрана
-      const shouldShift = leftRatio < 0.20;
-      setIsTabletRatio(shouldShift);
-    };
-
-    checkClearance();
-    window.addEventListener('resize', checkClearance, { passive: true });
-    window.addEventListener('orientationchange', checkClearance, { passive: true });
-    return () => {
-      window.removeEventListener('resize', checkClearance);
-      window.removeEventListener('orientationchange', checkClearance);
-    };
-  }, []);
-
   return (
     <section
-      className={`hero ${isTabletRatio ? 'is-tablet-ratio' : ''}`}
+      className="hero"
       id="main"
-      ref={heroRef}
     >
       <div className="hero__container">
         {/* Фоновая 3D-модель: справа на всю высоту контейнера */}
-        <div className="hero__bg-torus" ref={torusRef} aria-hidden="true">
+        <div className="hero__bg-torus" aria-hidden="true">
           <HeroModel />
         </div>
 
@@ -92,7 +47,7 @@ export function Hero({ services }: HeroProps) {
                   startDelay={0.01}
                 />
                 <SplitText
-                  text="для вашего бизнеса"
+                  text="для роста бизнеса"
                   className="hero__title-line"
                   startDelay={0.01}
                 />

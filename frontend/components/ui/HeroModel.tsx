@@ -286,26 +286,6 @@ export function HeroModel({ className = '' }: Props) {
     const resizeObserver = new ResizeObserver(updateSize);
     resizeObserver.observe(container);
 
-    let targetMouseX = 0;
-    let targetMouseY = 0;
-    let currentMouseX = 0;
-    let currentMouseY = 0;
-
-    const onPointerMove = (e: PointerEvent) => {
-      const w = window.innerWidth || 1;
-      const h = window.innerHeight || 1;
-      targetMouseX = Math.max(-1, Math.min(1, (e.clientX / w - 0.5) * 2));
-      targetMouseY = Math.max(-1, Math.min(1, -(e.clientY / h - 0.5) * 2));
-    };
-
-    const onPointerLeave = () => {
-      targetMouseX = 0;
-      targetMouseY = 0;
-    };
-
-    window.addEventListener('pointermove', onPointerMove, { passive: true });
-    window.addEventListener('pointerleave', onPointerLeave, { passive: true });
-
     const timer = new THREE.Timer();
     let animationFrameId: number;
 
@@ -314,30 +294,21 @@ export function HeroModel({ className = '' }: Props) {
       timer.update(timestamp);
       const t = timer.getElapsed();
 
-      currentMouseX += (targetMouseX - currentMouseX) * 0.014;
-      currentMouseY += (targetMouseY - currentMouseY) * 0.014;
-
-      const mouseTiltX = -currentMouseY * 0.10;
-      const mouseTiltY = currentMouseX * 0.13;
-      const mouseTiltZ = -currentMouseX * 0.035;
-
       const wobX = (k: number) => Math.sin(k * 0.22) * 0.14 + Math.sin(k * 0.11) * 0.05;
       const wobY = (k: number) => Math.sin(k * 0.18 + 1.2) * 0.15 + Math.cos(k * 0.09) * 0.04;
       const wobZ = (k: number) => Math.cos(k * 0.15 + 0.8) * 0.10 + Math.sin(k * 0.07) * 0.03;
 
-      const rotX = wobX(t) - wobX(0) + mouseTiltX;
-      const rotY = wobY(t) - wobY(0) + mouseTiltY;
-      const rotZ = wobZ(t) - wobZ(0) + mouseTiltZ;
+      const rotX = wobX(t) - wobX(0);
+      const rotY = wobY(t) - wobY(0);
+      const rotZ = wobZ(t) - wobZ(0);
 
       const wobbleQuat = new THREE.Quaternion().setFromEuler(
         new THREE.Euler(rotX, rotY, rotZ, 'YXZ')
       );
       mesh.quaternion.copy(baseQuat).multiply(wobbleQuat);
 
-      const parallaxX = currentMouseX * 0.013;
-      const parallaxY = currentMouseY * 0.013;
-      mesh.position.y = 0.045 + Math.sin(t * 0.19) * 0.008 + parallaxY;
-      mesh.position.x = -0.05 + (Math.cos(t * 0.15) - 1.0) * 0.008 + parallaxX;
+      mesh.position.y = 0.045 + Math.sin(t * 0.19) * 0.008;
+      mesh.position.x = -0.05 + (Math.cos(t * 0.15) - 1.0) * 0.008;
 
       renderer.render(scene, camera);
     };
@@ -347,8 +318,6 @@ export function HeroModel({ className = '' }: Props) {
     return () => {
       cancelAnimationFrame(animationFrameId);
       resizeObserver.disconnect();
-      window.removeEventListener('pointermove', onPointerMove);
-      window.removeEventListener('pointerleave', onPointerLeave);
       if (renderer.domElement && container.contains(renderer.domElement)) {
         container.removeChild(renderer.domElement);
       }
