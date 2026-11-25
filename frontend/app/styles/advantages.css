@@ -30,12 +30,13 @@
   font-weight: 500;
   line-height: 1.15;
   letter-spacing: -1.4px;
-  max-width: 320px;
+  max-width: 490px;
 }
 
 .advantages__title .split-text-line-mask,
 .advantages__title .split-text-line-content {
-  display: inline;
+  display: inline-block;
+  vertical-align: top;
 }
 
 .advantages__title-line--accent {

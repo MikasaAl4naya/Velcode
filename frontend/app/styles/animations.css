@@ -8,9 +8,7 @@
   display: inline-block;
   overflow: hidden;
   line-height: inherit;
-  vertical-align: bottom;
-  padding-bottom: 0.08em;
-  margin-bottom: -0.08em;
+  vertical-align: top;
 }
 
 .split-text-line-content {
