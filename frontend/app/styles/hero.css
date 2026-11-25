@@ -89,8 +89,7 @@
 
 .hero__title .split-text-line-mask,
 .hero__title .split-text-line-content {
-  display: inline-block;
-  vertical-align: top;
+  display: inline;
 }
 
 .hero__title-accent {

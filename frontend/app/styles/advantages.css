@@ -35,8 +35,7 @@
 
 .advantages__title .split-text-line-mask,
 .advantages__title .split-text-line-content {
-  display: inline-block;
-  vertical-align: top;
+  display: inline;
 }
 
 .advantages__title-line--accent {

@@ -5,18 +5,19 @@
 
 .split-text-line-mask,
 .split-text-root {
-  display: inline-block;
+  display: inline;
   overflow: hidden;
   line-height: inherit;
-  vertical-align: top;
+  white-space: pre-wrap;
 }
 
 .split-text-line-content {
-  display: inline-block;
+  display: inline;
   transform: translate3d(0, -115%, 0);
   opacity: 0;
   will-change: transform, opacity;
   color: inherit;
+  white-space: pre-wrap;
 }
 
 .split-text-line-mask.is-visible .split-text-line-content,

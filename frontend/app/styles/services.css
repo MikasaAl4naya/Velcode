@@ -60,8 +60,7 @@
 
 .services__title .split-text-line-mask,
 .services__title .split-text-line-content {
-  display: inline-block;
-  vertical-align: top;
+  display: inline;
 }
 
 .services__title-accent {
