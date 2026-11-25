@@ -87,7 +87,8 @@
   max-width: 680px;
 }
 
-.hero__title .split-text-line-mask {
+.hero__title .split-text-line-mask,
+.hero__title .split-text-line-content {
   display: inline;
 }
 

@@ -5,7 +5,7 @@
 
 .split-text-line-mask,
 .split-text-root {
-  display: block;
+  display: inline-block;
   overflow: hidden;
   line-height: inherit;
   vertical-align: bottom;
@@ -14,7 +14,7 @@
 }
 
 .split-text-line-content {
-  display: block;
+  display: inline-block;
   transform: translate3d(0, -115%, 0);
   opacity: 0;
   will-change: transform, opacity;

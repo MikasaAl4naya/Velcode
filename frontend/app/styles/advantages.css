@@ -33,7 +33,8 @@
   max-width: 320px;
 }
 
-.advantages__title .split-text-line-mask {
+.advantages__title .split-text-line-mask,
+.advantages__title .split-text-line-content {
   display: inline;
 }
 

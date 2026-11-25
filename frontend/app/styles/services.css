@@ -55,9 +55,11 @@
   font-weight: 500;
   line-height: 1;
   letter-spacing: -1.4px;
+  max-width: 480px;
 }
 
-.services__title .split-text-line-mask {
+.services__title .split-text-line-mask,
+.services__title .split-text-line-content {
   display: inline;
 }
 
