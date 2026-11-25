@@ -2,7 +2,7 @@
 
 import { useModal } from '@/hooks/useModal';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
-import { SplitText } from '@/components/ui/SplitText';
+import { RevealTitle } from '@/components/ui/RevealTitle';
 import { Tag } from '@/components/ui/Tag';
 import { BrowserMockup } from '@/components/ui/BrowserMockup';
 import { FadeImage } from '@/components/ui/FadeImage';
@@ -41,9 +41,9 @@ export function CasePageClient({ item }: { item: CaseItem }) {
           ]}
         />
 
-        <h1 className="case-page__title">
-          <SplitText text={item.title} />
-        </h1>
+        <RevealTitle as="h1" className="case-page__title">
+          {item.title}
+        </RevealTitle>
 
         <div className="case-page__tags">
           {tags.map((tag, idx) => (
