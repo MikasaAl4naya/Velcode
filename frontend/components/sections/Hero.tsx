@@ -47,7 +47,7 @@ export function Hero({ services }: HeroProps) {
                   startDelay={0.01}
                 />
                 <SplitText
-                  text="для роста бизнеса"
+                  text="для&nbsp;роста бизнеса"
                   startDelay={0.01}
                 />
               </h1>

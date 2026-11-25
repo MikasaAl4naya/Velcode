@@ -88,9 +88,8 @@ export function SplitText({
           animationDelay: `${startDelay}s`,
           transitionDelay: `${startDelay}s`,
         }}
-      >
-        {text}
-      </span>
+        dangerouslySetInnerHTML={{ __html: text }}
+      />
     </Component>
   );
 }
