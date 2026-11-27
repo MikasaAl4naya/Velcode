@@ -35,9 +35,6 @@ export function RevealTitle({
       setIsVisible(true);
     };
 
-    // Страховочный таймер: через 1.5 сек показываем в любом случае
-    const fallbackTimer = setTimeout(show, 1500);
-
     // Простая проверка: уже в зоне видимости?
     const check = () => {
       if (!ref.current) return false;
@@ -47,9 +44,14 @@ export function RevealTitle({
 
     if (check()) {
       show();
-      clearTimeout(fallbackTimer);
       return;
     }
+
+    // Страховочный таймер: через 2.5 сек показываем только если элемент уже виден
+    // (защита от случая когда Observer не сработал, но элемент в зоне видимости)
+    const fallbackTimer = setTimeout(() => {
+      if (check()) show();
+    }, 2500);
 
     // IntersectionObserver без отрицательных rootMargin
     let observer: IntersectionObserver | null = null;
