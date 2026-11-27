@@ -8,13 +8,61 @@
 }
 
 /* ---------- Заголовок ---------- */
+.case-page__title-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px 24px;
+  margin: 0 0 clamp(20px, 2vw, 32px);
+}
+
 .case-page__title {
   color: var(--color-dark);
   font-size: var(--fs-h2);
   font-weight: 500;
   line-height: 1.08;
   letter-spacing: -1.2px;
-  margin: 0 0 clamp(20px, 2vw, 32px);
+  margin: 0;
+}
+
+.case-watch-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.case-watch-btn__circle {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background-color: var(--color-blue-pill, #7183bd);
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.25s ease;
+}
+
+.case-watch-btn__pill {
+  height: 44px;
+  padding: 0 22px;
+  border-radius: 999px;
+  background-color: var(--color-blue-pill, #7183bd);
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.25s ease;
+}
+
+.case-watch-btn:hover .case-watch-btn__circle,
+.case-watch-btn:hover .case-watch-btn__pill {
+  background-color: var(--color-dark, #1c1c1c);
 }
 
 /* ---------- Теги — сразу под заголовком ---------- */

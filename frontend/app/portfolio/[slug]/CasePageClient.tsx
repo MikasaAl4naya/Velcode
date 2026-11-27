@@ -41,9 +41,32 @@ export function CasePageClient({ item }: { item: CaseItem }) {
           ]}
         />
 
-        <RevealTitle as="h1" className="case-page__title">
-          {item.title}
-        </RevealTitle>
+        <div className="case-page__title-row">
+          <RevealTitle as="h1" className="case-page__title">
+            {item.title}
+          </RevealTitle>
+          {item.site_url && (
+            <a
+              href={item.site_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="case-watch-btn"
+            >
+              <span className="case-watch-btn__circle" aria-hidden="true">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <path
+                    d="M2.5 11.5L11.5 2.5M11.5 2.5H4.5M11.5 2.5V9.5"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </span>
+              <span className="case-watch-btn__pill">Смотреть</span>
+            </a>
+          )}
+        </div>
 
         <div className="case-page__tags">
           {tags.map((tag, idx) => (
