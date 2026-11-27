@@ -79,7 +79,12 @@ async def get_yml_price(request: Request, db: AsyncSession = Depends(get_db)) ->
     )
     services = list(serv_res.scalars().unique().all())
 
-    base_url = str(request.base_url).rstrip("/")
+    host = request.headers.get("x-forwarded-host") or request.headers.get("host") or ""
+    proto = request.headers.get("x-forwarded-proto") or "https"
+    if not host or host.startswith("127.0.0.1") or host.startswith("localhost"):
+        base_url = "https://velcode.ru"
+    else:
+        base_url = f"{proto}://{host}".rstrip("/")
     now_str = dt.datetime.now().strftime("%Y-%m-%d %H:%M")
 
     lines = [
@@ -116,7 +121,7 @@ async def get_yml_price(request: Request, db: AsyncSession = Depends(get_db)) ->
 
         lines.append(f'      <offer id="{srv.id}" available="true">')
         lines.append(f"        <name>{escape(srv.title)}</name>")
-        lines.append(f"        <url>{escape(base_url)}/services</url>")
+        lines.append(f"        <url>{escape(base_url)}/services#service-{srv.id}</url>")
         lines.append(f"        <price>{price}</price>")
         if old_price is not None:
             lines.append(f"        <oldprice>{old_price}</oldprice>")
