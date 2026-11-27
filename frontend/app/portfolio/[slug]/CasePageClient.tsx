@@ -53,14 +53,8 @@ export function CasePageClient({ item }: { item: CaseItem }) {
               className="case-watch-btn"
             >
               <span className="case-watch-btn__circle" aria-hidden="true">
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                  <path
-                    d="M2.5 11.5L11.5 2.5M11.5 2.5H4.5M11.5 2.5V9.5"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <path d="M4 20 20 4M4 4h16v16" vectorEffect="non-scaling-stroke" />
                 </svg>
               </span>
               <span className="case-watch-btn__pill">Перейти</span>
