@@ -28,40 +28,33 @@
 .case-watch-btn {
   display: inline-flex;
   align-items: center;
-  gap: 0;
-  text-decoration: none;
-  flex-shrink: 0;
-}
-
-.case-watch-btn__circle {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background-color: var(--color-blue-pill, #7183bd);
-  color: #ffffff;
-  display: inline-flex;
-  align-items: center;
   justify-content: center;
-  transition: background-color 0.25s ease;
-}
-
-.case-watch-btn__pill {
+  gap: 10px;
   height: 44px;
-  padding: 0 22px;
+  padding: 0 24px;
   border-radius: 999px;
   background-color: var(--color-blue-pill, #7183bd);
   color: #ffffff;
   font-size: 15px;
   font-weight: 400;
   line-height: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  text-decoration: none;
+  flex-shrink: 0;
   transition: background-color 0.25s ease;
 }
 
-.case-watch-btn:hover .case-watch-btn__circle,
-.case-watch-btn:hover .case-watch-btn__pill {
+.case-watch-btn__circle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.case-watch-btn__pill {
+  display: inline-flex;
+  align-items: center;
+}
+
+.case-watch-btn:hover {
   background-color: var(--color-dark, #1c1c1c);
 }
 
