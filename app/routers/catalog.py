@@ -95,8 +95,11 @@ async def get_yml_price(request: Request, db: AsyncSession = Depends(get_db)) ->
         "    <categories>",
     ]
 
-    for cat in categories:
-        lines.append(f'      <category id="{cat.id}">{escape(cat.name)}</category>')
+    if categories:
+        for cat in categories:
+            lines.append(f'      <category id="{cat.id}">{escape(cat.name)}</category>')
+    else:
+        lines.append('      <category id="1">Услуги</category>')
 
     lines.append("    </categories>")
     lines.append("    <offers>")
