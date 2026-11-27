@@ -70,6 +70,8 @@
   --radius-section: 28px;
   --radius-card: 36px;
   --radius-btn: 9999px;
+  --btn-height: 56px;
+  --btn-padding-x: 26px;
 
   --modal-pad: clamp(32px, 3.5vw, 44px);                    /* базовый внутренний отступ модалки */
   --modal-pad-service: clamp(28px, 3vw, 36px);              /* отступ модалки с карточкой услуги */

@@ -30,9 +30,9 @@
   align-items: center;
   justify-content: center;
   gap: 10px;
-  height: 44px;
-  padding: 0 24px;
-  border-radius: 999px;
+  height: var(--btn-height);
+  padding: 0 var(--btn-padding-x);
+  border-radius: var(--radius-btn, 9999px);
   background-color: var(--color-blue-pill, #7183bd);
   color: #ffffff;
   font-size: 15px;
