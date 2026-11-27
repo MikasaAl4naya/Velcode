@@ -59,7 +59,8 @@ export function LeadForm({
   initialPhone = '',
   initialQuestion = '',
 }: LeadFormProps) {
-  const { openSuccessModal } = useModal();
+  const { openSuccessModal, triggerMeta } = useModal();
+  const formRef = useRef<HTMLFormElement>(null);
   const [formData, setFormData] = useState({
     name: initialName,
     phone: initialPhone ? formatPhone(initialPhone) : '',
@@ -129,6 +130,14 @@ export function LeadForm({
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? '';
       const openedAt = formOpenedAtRef.current || Math.floor(Date.now() / 1000);
+      const page_url = typeof window !== 'undefined' ? window.location.href : undefined;
+      const section_id =
+        triggerMeta?.section_id ||
+        formRef.current?.closest('section[id], [id]')?.id ||
+        formRef.current?.closest('section')?.className?.split(' ')[0] ||
+        undefined;
+      const button_text = triggerMeta?.button_text || submitLabel;
+
       const res = await fetch(`${apiUrl}/api/v1/leads`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -138,6 +147,9 @@ export function LeadForm({
           question: formData.question,
           consent: formData.consent,
           source,
+          page_url,
+          section_id,
+          button_text,
           website,
           js_token: 'front_js_passed',
           form_opened_at: openedAt,
@@ -175,7 +187,7 @@ export function LeadForm({
   ].filter(Boolean).join(' ');
 
   return (
-    <form id={id} className={formClasses} onSubmit={handleSubmit} noValidate>
+    <form ref={formRef} id={id} className={formClasses} onSubmit={handleSubmit} noValidate>
       {/* Honeypot поле (vangerrf): скрыто от реальных пользователей, боты его заполняют */}
       <div
         style={{

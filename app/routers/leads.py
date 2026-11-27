@@ -65,6 +65,11 @@ async def create_lead(payload: LeadCreate, db: AsyncSession = Depends(get_db)) -
     await db.commit()
     await db.refresh(lead)
 
-    await notify_new_lead(lead)
+    await notify_new_lead(
+        lead,
+        page_url=payload.page_url,
+        section_id=payload.section_id,
+        button_text=payload.button_text,
+    )
 
     return lead

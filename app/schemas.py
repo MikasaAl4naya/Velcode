@@ -101,6 +101,9 @@ class LeadCreate(BaseModel):
     phone: str
     question: str | None = None
     source: str = "contact_form"
+    page_url: str | None = None
+    section_id: str | None = None
+    button_text: str | None = None
     # Согласие с политикой обработки персональных данных — обязательный чекбокс на фронте
     consent: bool
     # Защита от спама (Honeypot + JS-токен + тайминг, как в vangerrf)

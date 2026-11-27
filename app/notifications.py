@@ -10,23 +10,39 @@ from app.models import Lead
 logger = logging.getLogger("velcode.notifications")
 
 
-async def notify_new_lead(lead: Lead) -> None:
+async def notify_new_lead(
+    lead: Lead,
+    page_url: str | None = None,
+    section_id: str | None = None,
+    button_text: str | None = None,
+) -> None:
     """Отправляет уведомление о заявке по всем настроенным каналам."""
-    await _send_email(lead)
-    await _send_to_bitrix(lead)
+    await _send_email(lead, page_url=page_url, section_id=section_id, button_text=button_text)
+    await _send_to_bitrix(lead, page_url=page_url, section_id=section_id, button_text=button_text)
 
 
-async def _send_email(lead: Lead) -> None:
+async def _send_email(
+    lead: Lead,
+    page_url: str | None = None,
+    section_id: str | None = None,
+    button_text: str | None = None,
+) -> None:
     if not settings.smtp_user or not settings.notify_email:
         return
 
     body = (
         f"Новая заявка #{lead.id}\n\n"
-        f"Имя:     {lead.name}\n"
-        f"Телефон: {lead.phone}\n"
+        f"Имя:      {lead.name}\n"
+        f"Телефон:  {lead.phone}\n"
     )
     if lead.question:
-        body += f"Вопрос:  {lead.question}\n"
+        body += f"Вопрос:   {lead.question}\n"
+    if page_url:
+        body += f"Страница: {page_url}\n"
+    if section_id:
+        body += f"Секция:   #{section_id}\n"
+    if button_text:
+        body += f"Кнопка:   {button_text}\n"
     body += f"Источник: {lead.source}\n"
 
     msg = MIMEText(body, "plain", "utf-8")
@@ -48,15 +64,33 @@ async def _send_email(lead: Lead) -> None:
         logger.exception("Ошибка отправки email (заявка #%s)", lead.id)
 
 
-async def _send_to_bitrix(lead: Lead) -> None:
+async def _send_to_bitrix(
+    lead: Lead,
+    page_url: str | None = None,
+    section_id: str | None = None,
+    button_text: str | None = None,
+) -> None:
     if not settings.bitrix_webhook_url:
         return
 
     url = settings.bitrix_webhook_url.rstrip("/") + "/crm.lead.add.json"
 
-    comments = lead.question or ""
+    meta_parts = []
+    if page_url:
+        meta_parts.append(f"Страница: {page_url}")
+    if section_id:
+        meta_parts.append(f"Секция: #{section_id}")
+    if button_text:
+        meta_parts.append(f"Кнопка: {button_text}")
     if lead.source and lead.source != "contact_form":
-        comments = f"[Источник: {lead.source}]\n{comments}".strip()
+        meta_parts.append(f"Источник: {lead.source}")
+
+    comments = lead.question or ""
+    if meta_parts:
+        meta_line = "[" + " | ".join(meta_parts) + "]"
+        comments = f"{meta_line}\n{comments}".strip()
+
+    source_desc = " | ".join(meta_parts) if meta_parts else lead.source
 
     payload = {
         "fields": {
@@ -65,7 +99,7 @@ async def _send_to_bitrix(lead: Lead) -> None:
             "PHONE": [{"VALUE": lead.phone, "VALUE_TYPE": "WORK"}],
             "COMMENTS": comments,
             "SOURCE_ID": "WEB",
-            "SOURCE_DESCRIPTION": lead.source,
+            "SOURCE_DESCRIPTION": source_desc,
         }
     }
 
