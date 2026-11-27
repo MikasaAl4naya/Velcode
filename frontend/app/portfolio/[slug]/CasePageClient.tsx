@@ -63,7 +63,7 @@ export function CasePageClient({ item }: { item: CaseItem }) {
                   />
                 </svg>
               </span>
-              <span className="case-watch-btn__pill">Смотреть</span>
+              <span className="case-watch-btn__pill">Перейти</span>
             </a>
           )}
         </div>
