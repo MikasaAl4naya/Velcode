@@ -121,7 +121,7 @@ async def get_yml_price(request: Request, db: AsyncSession = Depends(get_db)) ->
 
         lines.append(f'      <offer id="{srv.id}" available="true">')
         lines.append(f"        <name>{escape(srv.title)}</name>")
-        lines.append(f"        <url>{escape(base_url)}/services#service-{srv.id}</url>")
+        lines.append(f"        <url>{escape(base_url)}/services</url>")
         lines.append(f"        <price>{price}</price>")
         if old_price is not None:
             lines.append(f"        <oldprice>{old_price}</oldprice>")
